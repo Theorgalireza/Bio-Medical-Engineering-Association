@@ -3,25 +3,22 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import WaveformIcon from "@/components/ui/WaveformIcon";
-import LanguageToggle from "@/components/ui/LanguageToggle";
 import Link from "next/link";
-import { useLanguage } from "@/lib/LanguageContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { language, t } = useLanguage();
 
   const navLinks = [
-    { label: t("nav", "home"), href: "#home" },
-    { label: t("nav", "announcements"), href: "#announcements" },
-    { label: t("nav", "articles"), href: "/articles" },
-    { label: t("nav", "faculty"), href: "#faculty" },
-    { label: t("nav", "survey"), href: "#survey" },
-    { label: t("nav", "contact"), href: "#contact" },
+    { label: "خانه", href: "#home" },
+    { label: "اعلامیه‌ها", href: "#announcements" },
+    { label: "مقالات", href: "/articles" },
+    { label: "هیئت علمی", href: "#faculty" },
+    { label: "نظرسنجی", href: "#survey" },
+    { label: "ارتباط با ما", href: "#contact" },
   ];
 
-  const authLink = { label: language === "fa" ? "ورود" : "Login", href: "/login" };
+  const authLink = { label: "ورود", href: "/login" };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -43,15 +40,13 @@ export default function Navbar() {
           <WaveformIcon size={28} className="group-hover:animate-pulseGlow" />
           <span className="text-lg md:text-xl font-bold text-white leading-tight">
             <span className="hidden sm:inline">
-              {t("hero", "title")} <span className="text-accent text-glow">{t("hero", "subtitle")}</span>
+              انجمن علمی <span className="text-accent text-glow">مهندسی پزشکی</span>
             </span>
-            <span className="inline sm:hidden">
-              {language === "en" ? "BME Assoc." : "انجمن BME"}
-            </span>
+            <span className="inline sm:hidden">انجمن BME</span>
           </span>
         </a>
 
-        {/* Desktop Links + Language Toggle */}
+        {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8">
           <ul className="flex items-center gap-8">
             {navLinks.map((link) => (
@@ -74,12 +69,10 @@ export default function Navbar() {
               </Link>
             </li>
           </ul>
-          <LanguageToggle />
         </div>
 
-        {/* Mobile Menu Toggle + Language Toggle */}
+        {/* Mobile Menu Toggle */}
         <div className="md:hidden flex items-center gap-3">
-          <LanguageToggle />
           <button
             onClick={() => setMobileOpen((prev) => !prev)}
             className="relative w-8 h-8 flex flex-col justify-center items-center gap-1.5"

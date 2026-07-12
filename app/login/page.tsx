@@ -4,11 +4,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
-import { useLanguage } from "@/lib/LanguageContext";
 import { Mail, ArrowLeft, CheckCircle2, LockKeyhole ,Eye, EyeOff} from "lucide-react";
 
 export default function LoginPage() {
-  const { language, t } = useLanguage();
   const [form, setForm] = useState({ email: "", password: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
 const [showPassword, setShowPassword] = useState(false);
@@ -21,29 +19,29 @@ const [showPassword, setShowPassword] = useState(false);
     <main className="min-h-screen px-4 pb-16 pt-24">
       <div className="mx-auto grid max-w-6xl items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <motion.section
-          initial={{ opacity: 0, x: language === "fa" ? -20 : 20 }}
+          initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
           <div className="inline-flex items-center rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-sm text-accent">
-            {t("login", "badge")}
+            پورتال اعضا
           </div>
 
           <div className="space-y-4">
             <h1 className="text-3xl font-bold text-white md:text-5xl">
-              {t("login", "title")}
+              برای داشبورد خود وارد شوید
             </h1>
             <p className="max-w-xl text-lg leading-8 text-gray-300">
-              {t("login", "description")}
+              از طریق این پنل امن به اطلاعیه‌ها، رویدادها و منابع اعضا دسترسی داشته باشید.
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { title: t("login", "feature1Title"), text: t("login", "feature1Text") },
-              { title: t("login", "feature2Title"), text: t("login", "feature2Text") },
-              { title: t("login", "feature3Title"), text: t("login", "feature3Text") },
+              { title: "دسترسی سریع", text: "به‌روزرسانی‌ها و مهلت‌ها را فوراً ببینید." },
+              { title: "محیط خصوصی", text: "با حساب کاربری خود به محتوای امن دسترسی پیدا کنید." },
+              { title: "تجربه مدرن", text: "رابطی شفاف و جذاب برای اعضای انجمن." },
             ].map((item) => (
               <div
                 key={item.title}
@@ -57,7 +55,7 @@ const [showPassword, setShowPassword] = useState(false);
         </motion.section>
 
         <motion.form
-          initial={{ opacity: 0, x: language === "fa" ? 20 : -20 }}
+          initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           onSubmit={handleSubmit}
@@ -65,11 +63,11 @@ const [showPassword, setShowPassword] = useState(false);
         >
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-accent">{t("login", "panelTitle")}</p>
-              <h2 className="text-2xl font-semibold text-white">{t("login", "panelSubtitle")}</h2>
+              <p className="text-sm text-accent">خوش آمدید</p>
+              <h2 className="text-2xl font-semibold text-white">ورود به حساب</h2>
             </div>
             <Link href="/" className="text-sm text-gray-400 transition hover:text-accent">
-              {t("login", "backHome")}
+              بازگشت به خانه
             </Link>
           </div>
 
@@ -81,7 +79,7 @@ const [showPassword, setShowPassword] = useState(false);
     type="email"
     value={form.email}
     onChange={(e) => setForm({ ...form, email: e.target.value })}
-    placeholder={t("login", "emailPlaceholder")}
+    placeholder="name@example.com"
     className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pr-12 pl-4 text-white outline-none transition focus:border-accent"
     required
   />
@@ -94,7 +92,7 @@ const [showPassword, setShowPassword] = useState(false);
     type={showPassword ? "text" : "password"}
     value={form.password}
     onChange={(e) => setForm({ ...form, password: e.target.value })}
-    placeholder={t("login", "passwordPlaceholder")}
+    placeholder="رمز عبور خود را وارد کنید"
     className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pr-12 pl-12 text-white outline-none transition focus:border-accent"
     required
   />
@@ -115,28 +113,28 @@ const [showPassword, setShowPassword] = useState(false);
             <div className="flex items-center justify-between gap-3 text-sm text-gray-400">
               <label className="flex items-center gap-2">
                 <input type="checkbox" className="h-4 w-4 rounded border-borderSoft bg-surface" />
-                <span>{t("login", "remember")}</span>
+                <span>مرا به خاطر بسپار</span>
               </label>
               <Link
   href="/forgot-password"
   className="transition hover:text-accent"
 >
-  {t("login", "forgot")}
+  رمز عبور را فراموش کرده‌ام؟
 </Link>
             </div>
 
             <NeonButton type="submit" className="w-full justify-center">
-              {t("login", "submit")}
+              ورود
             </NeonButton>
           </div>
 
           <p className="mt-4 text-sm leading-7 text-gray-400">
-            {t("login", "helper")}
+            این یک پنل دمو برای سایت انجمن است و هنوز احراز هویت واقعی متصل نشده است.
           </p>
 
           {isSubmitted && (
             <div className="mt-4 rounded-2xl border border-neonGreen/30 bg-neonGreen/10 px-4 py-3 text-sm text-neonGreen">
-              {t("login", "success")}
+              درخواست ورود شما دریافت شد. این پنل برای ادغام آماده است.
             </div>
           )}
         </motion.form>

@@ -2,11 +2,8 @@
 
 import { motion } from "framer-motion";
 import NeonButton from "@/components/ui/NeonButton";
-import { useLanguage } from "@/lib/LanguageContext";
 
 export default function Hero() {
-  const { t } = useLanguage();
-
   return (
     <section
       id="home"
@@ -139,12 +136,12 @@ export default function Hero() {
           className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-4"
         >
          <span className="text-neonPurple drop-shadow-[0_0_12px_rgba(176,38,255,0.8)]">
-    {t("hero", "title")}
+    انجمن علمی
   </span>
-          <span className="text-accent text-glow"> {t("hero", "subtitle")}</span>
+          <span className="text-accent text-glow"> مهندسی پزشکی</span>
           <br />
 
-          {t("hero", "university")}
+          دانشگاه شهید بهشتی تهران
         </motion.h1>
 
         <motion.p
@@ -153,7 +150,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="text-base md:text-lg text-gray-400 max-w-2xl mb-8 leading-8"
         >
-         {t("hero", "description")}
+         دانشگاه شهید بهشتی — جایی برای پژوهش، یادگیری و نوآوری در حوزه سیگنال‌های زیستی، رابط‌های مغز-رایانه (BCI) و علوم اعصاب محاسباتی.
         </motion.p>
 
         {/* Animated ECG waveform strip - positioned below description, above buttons */}
@@ -188,13 +185,13 @@ export default function Hero() {
           className="flex flex-wrap gap-4 justify-center"
         >
           <NeonButton onClick={() => (window.location.href = "#announcements")}>
-            {t("hero", "viewAnnouncements")}
+            مشاهده اعلامیه‌ها
           </NeonButton>
           <NeonButton
             variant="outline"
             onClick={() => (window.location.href = "#contact")}
           >
-            {t("hero", "joinAssociation")}
+            عضویت در انجمن
           </NeonButton>
         </motion.div>
       </div>

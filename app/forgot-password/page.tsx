@@ -4,12 +4,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
-import { useLanguage } from "@/lib/LanguageContext";
 import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 export default function ForgotPasswordPage() {
-  const { language } = useLanguage();
-
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 

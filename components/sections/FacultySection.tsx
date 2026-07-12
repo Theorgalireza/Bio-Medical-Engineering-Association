@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { facultyMembers } from "@/data/mockData";
-import { useLanguage } from "@/lib/LanguageContext";
 
 const container = {
   hidden: {},
@@ -15,8 +14,6 @@ const item = {
 };
 
 export default function Faculty() {
-  const { t } = useLanguage();
-
   return (
     <section id="faculty" className="relative py-24 bg-surface overflow-hidden">
       <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-neonPurple/10 rounded-full blur-[120px] pointer-events-none" />
@@ -29,9 +26,9 @@ export default function Faculty() {
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <span className="text-sm text-accent tracking-widest">{t("faculty", "label")}</span>
+          <span className="text-sm text-accent tracking-widest">تیم علمی</span>
           <h2 className="text-2xl md:text-4xl font-bold text-white mt-2">
-            {t("faculty", "title")}
+            اعضای هیئت علمی و مشاوران
           </h2>
           <div className="w-16 h-1 bg-accent mx-auto mt-4 rounded-full shadow-neon" />
         </motion.div>

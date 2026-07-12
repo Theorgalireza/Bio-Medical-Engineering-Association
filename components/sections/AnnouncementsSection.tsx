@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import WaveformIcon from "@/components/ui/WaveformIcon";
 import { announcements } from "@/data/mockData";
-import { useLanguage } from "@/lib/LanguageContext";
 
 const typeStyles: Record<string, string> = {
   رویداد: "bg-electric/10 text-electric border-electric/30",
@@ -29,8 +28,6 @@ const item = {
 };
 
 export default function Announcements() {
-  const { t } = useLanguage();
-
   return (
     <section
       id="announcements"
@@ -48,10 +45,10 @@ export default function Announcements() {
           className="text-center mb-14"
         >
           <span className="text-sm text-accent tracking-widest">
-            {t("announcements", "label")}
+            آخرین رویدادها
           </span>
           <h2 className="text-2xl md:text-4xl font-bold text-white mt-2">
-            {t("announcements", "title")}
+            اعلامیه‌ها و اخبار انجمن
           </h2>
           <div className="w-16 h-1 bg-accent mx-auto mt-4 rounded-full shadow-neon" />
         </motion.div>
@@ -72,7 +69,7 @@ export default function Announcements() {
               >
                 {a.isNew && (
                   <span className="absolute -top-3 left-4 text-[10px] font-bold px-2 py-1 rounded-full bg-neonGreen text-primary shadow-[0_0_10px_#39FF14]">
-                    {t("announcements", "new")}
+                    جدید
                   </span>
                 )}
 
@@ -99,7 +96,7 @@ export default function Announcements() {
                 <div className="flex items-center justify-between text-xs text-gray-500 border-t border-borderSoft pt-3">
                   <span>{a.date}</span>
                   <span className="text-accent group-hover:translate-x-[-4px] transition-transform duration-300">
-                    {t("announcements", "readMore")}
+                    ادامه ←
                   </span>
                 </div>
               </motion.article>

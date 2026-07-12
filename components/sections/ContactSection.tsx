@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import CircuitBackground from "@/components/ui/CircuitBackground";
 import { MailIcon, PhoneIcon, PinIcon, SendIcon, CheckIcon } from "@/components/ui/Icons";
 import { contactInfo } from "@/data/mockData";
-import { useLanguage } from "@/lib/LanguageContext";
 
 type ContactForm = {
   name: string;
@@ -28,7 +27,6 @@ const infoIcons = {
 } as const;
 
 export default function Contact() {
-  const { t } = useLanguage();
   const [form, setForm] = useState<ContactForm>(initialState);
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
 
@@ -59,9 +57,9 @@ export default function Contact() {
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <span className="text-sm text-accent tracking-widest">{t("contact", "label")}</span>
+          <span className="text-sm text-accent tracking-widest">در تماس باشید</span>
           <h2 className="text-2xl md:text-4xl font-bold text-white mt-2">
-            {t("contact", "title")}
+            ارتباط با انجمن
           </h2>
           <div className="w-16 h-1 bg-accent mx-auto mt-4 rounded-full shadow-neon" />
         </motion.div>
