@@ -5,12 +5,13 @@ import { motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
 import { useLanguage } from "@/lib/LanguageContext";
+import { Mail, ArrowLeft, CheckCircle2, LockKeyhole ,Eye, EyeOff} from "lucide-react";
 
 export default function LoginPage() {
   const { language, t } = useLanguage();
   const [form, setForm] = useState({ email: "", password: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
-
+const [showPassword, setShowPassword] = useState(false);
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitted(true);
@@ -73,38 +74,55 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-4">
-            <label className="block text-sm text-gray-300">
-              <span className="mb-2 block">{t("login", "email")}</span>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(event) => setForm({ ...form, email: event.target.value })}
-                placeholder={t("login", "emailPlaceholder")}
-                className="w-full rounded-2xl border border-borderSoft bg-surface/70 px-4 py-3 text-white outline-none transition focus:border-accent"
-                required
-              />
-            </label>
+<div className="relative">
+  <Mail className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent" />
 
-            <label className="block text-sm text-gray-300">
-              <span className="mb-2 block">{t("login", "password")}</span>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(event) => setForm({ ...form, password: event.target.value })}
-                placeholder={t("login", "passwordPlaceholder")}
-                className="w-full rounded-2xl border border-borderSoft bg-surface/70 px-4 py-3 text-white outline-none transition focus:border-accent"
-                required
-              />
-            </label>
+  <input
+    type="email"
+    value={form.email}
+    onChange={(e) => setForm({ ...form, email: e.target.value })}
+    placeholder={t("login", "emailPlaceholder")}
+    className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pr-12 pl-4 text-white outline-none transition focus:border-accent"
+    required
+  />
+</div>
+
+<div className="relative">
+  <LockKeyhole className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent" />
+
+  <input
+    type={showPassword ? "text" : "password"}
+    value={form.password}
+    onChange={(e) => setForm({ ...form, password: e.target.value })}
+    placeholder={t("login", "passwordPlaceholder")}
+    className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pr-12 pl-12 text-white outline-none transition focus:border-accent"
+    required
+  />
+
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-accent"
+  >
+    {showPassword ? (
+      <EyeOff className="h-5 w-5" />
+    ) : (
+      <Eye className="h-5 w-5" />
+    )}
+  </button>
+</div>
 
             <div className="flex items-center justify-between gap-3 text-sm text-gray-400">
               <label className="flex items-center gap-2">
                 <input type="checkbox" className="h-4 w-4 rounded border-borderSoft bg-surface" />
                 <span>{t("login", "remember")}</span>
               </label>
-              <a href="#" className="transition hover:text-accent">
-                {t("login", "forgot")}
-              </a>
+              <Link
+  href="/forgot-password"
+  className="transition hover:text-accent"
+>
+  {t("login", "forgot")}
+</Link>
             </div>
 
             <NeonButton type="submit" className="w-full justify-center">
