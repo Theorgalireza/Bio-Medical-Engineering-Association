@@ -1,4 +1,4 @@
-import { mockAnnouncements, mockArticles, mockFaculty, mockFeedback, mockContacts } from "@/lib/mockData";
+import { mockAnnouncements, mockArticles, mockFaculty, mockFeedback, mockContacts } from "@/data/mockData";
 import { Megaphone, BookOpen, Users, MessageSquare, Mail, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
@@ -26,10 +26,10 @@ export default function AdminDashboard() {
               <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}15` }}>
                 <Icon size={20} style={{ color }} />
               </div>
-              <span className="text-3xl font-bold font-mono" style={{ color }}>{value}</span>
+              <span className="text-3xl font-bold font-vazir" style={{ color }}>{value}</span>
             </div>
             <p className="text-gray-300 text-sm font-medium">{label}</p>
-            <p className="text-gray-500 text-xs mt-1 font-mono">
+            <p className="text-gray-500 text-xs mt-1 font-vazir">
               {label === "پیام‌های تماس" ? `${published} خوانده شده` : `${published} منتشر شده`}
             </p>
           </Link>

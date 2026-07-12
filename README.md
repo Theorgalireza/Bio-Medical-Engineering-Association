@@ -103,7 +103,7 @@ Contact into a single instrument rather than six independent blocks.
 
 - Every card in the site shares the same anatomy: `card-surface` background,
   `neon-border` hover behavior, a `Waveform` or generated cover as the visual
-  anchor, and `font-mono` for any numeric/date metadata. New sections should
+  anchor, and `font-vazir` for any numeric/date metadata. New sections should
   reuse these three primitives rather than inventing new card chrome.
 - Color is used semantically, not decoratively: `accent` = primary action,
   `electric` = secondary/contact, `neonGreen` = live/status, `neonPurple` =

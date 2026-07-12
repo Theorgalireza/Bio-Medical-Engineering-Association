@@ -1,17 +1,16 @@
 "use client";
 import { useState } from "react";
-import { mockFaculty, type FacultyMember } from "@/lib/mockData";
-import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { mockFaculty, type AdminFacultyMember } from "@/data/mockData";import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
 
-const empty: Omit<FacultyMember, "id"> = { name: "", role: "", field: "", monogram: "", color: "#00d4ff" };
+const empty: Omit<AdminFacultyMember, "id"> = { name: "", role: "", field: "", monogram: "", color: "#00d4ff" };
 
 export default function FacultyPage() {
-  const [items, setItems] = useState<FacultyMember[]>(mockFaculty);
-  const [modal, setModal] = useState<{ open: boolean; editing: FacultyMember | null }>({ open: false, editing: null });
+  const [items, setItems] = useState<AdminFacultyMember[]>(mockFaculty);
+  const [modal, setModal] = useState<{ open: boolean; editing: AdminFacultyMember | null }>({ open: false, editing: null });
   const [form, setForm] = useState(empty);
 
   const openAdd = () => { setForm(empty); setModal({ open: true, editing: null }); };
-  const openEdit = (item: FacultyMember) => { setForm({ name: item.name, role: item.role, field: item.field, monogram: item.monogram, color: item.color }); setModal({ open: true, editing: item }); };
+  const openEdit = (item: AdminFacultyMember) => { setForm({ name: item.name, role: item.role, field: item.field, monogram: item.monogram, color: item.color }); setModal({ open: true, editing: item }); };
   const close = () => setModal({ open: false, editing: null });
 
   const save = () => {
@@ -74,7 +73,7 @@ export default function FacultyPage() {
                 <label className="text-sm text-gray-400">رنگ:</label>
                 <input type="color" value={form.color} onChange={e => setForm({ ...form, color: e.target.value })}
                   className="w-10 h-8 rounded cursor-pointer bg-transparent border-0" />
-                <span className="text-xs font-mono text-gray-500">{form.color}</span>
+                <span className="text-xs font-vazir text-gray-500">{form.color}</span>
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
-import ClientLayout from "./ClientLayout";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -10,9 +9,9 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "انجمن علمی مهندسی پزشکی - شاخه بیوالکتریک | دانشگاه شهید بهشتی",
+  title: "انجمن علمی مهندسی پزشکی - شاخه بیوالکتریک",
   description:
-    "انجمن علمی مهندسی پزشکی، شاخه بیوالکتریک (نورو/بیوالکتریک) دانشگاه شهید بهشتی. فعالیت‌های علمی، پژوهشی و آموزشی در حوزه سیگنال‌های زیستی، الکترونیک پزشکی و علوم اعصاب محاسباتی.",
+    "انجمن علمی مهندسی پزشکی دانشگاه شهید بهشتی",
 };
 
 export default function RootLayout({
@@ -20,12 +19,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
     <html lang="fa" dir="rtl">
       <body
         className={`${vazirmatn.variable} font-vazir bg-surface text-white antialiased`}
       >
-        <ClientLayout>{children}</ClientLayout>
+        {children}
       </body>
     </html>
   );

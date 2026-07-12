@@ -262,24 +262,30 @@ export const articles: Article[] = [
     readingTime: 11,
   },
 ];
-export type Announcement = {
+// ================= ADMIN TYPES =================
+
+export type AdminAnnouncement = {
   id: string;
   title: string;
   date: string;
   category: "event" | "news" | "workshop";
+  content: string;
   published: boolean;
 };
 
-export type Article = {
+
+export type AdminArticle = {
   id: string;
   title: string;
   authors: string[];
   issue: string;
   date: string;
+  content: string;
   published: boolean;
 };
 
-export type FacultyMember = {
+
+export type AdminFacultyMember = {
   id: string;
   name: string;
   role: string;
@@ -288,7 +294,8 @@ export type FacultyMember = {
   color: string;
 };
 
-export type Feedback = {
+
+export type AdminFeedback = {
   id: string;
   name: string;
   message: string;
@@ -296,6 +303,7 @@ export type Feedback = {
   date: string;
   approved: boolean;
 };
+
 
 export type Contact = {
   id: string;
@@ -308,12 +316,66 @@ export type Contact = {
 };
 
 
-export const mockFeedback: Feedback[] = [
-  { id: "1", name: "امیر حسینی", message: "سایت بسیار مفید و کاربردی است.", rating: 5, date: "1403/09/20", approved: true },
-  { id: "2", name: "نیلوفر صادقی", message: "محتوای علمی عالی بود.", rating: 4, date: "1403/09/18", approved: false },
+// ================= ADMIN DATA =================
+
+
+export const mockAnnouncements: AdminAnnouncement[] = [
+  {
+    id:"1",
+    title:"کارگاه پردازش سیگنال EEG",
+    date:"1403/09/15",
+    category:"workshop",
+    content:"آشنایی عملی با پردازش EEG",
+    published:true
+  }
 ];
 
+
+export const mockArticles: AdminArticle[] = [
+  {
+    id:"1",
+    title:"تحلیل سیگنال EEG با ICA",
+    authors:["دکتر رضایی"],
+    issue:"شماره ۱۲",
+    date:"1403/08/01",
+    content:"بررسی ICA در EEG",
+    published:true
+  }
+];
+
+
+export const mockFaculty: AdminFacultyMember[] = [
+  {
+    id:"1",
+    name:"دکتر محمد رضایی",
+    role:"استاد",
+    field:"پردازش سیگنال",
+    monogram:"ر",
+    color:"#00d4ff"
+  }
+];
+
+
+export const mockFeedback: AdminFeedback[] = [
+  {
+    id:"1",
+    name:"امیر حسینی",
+    message:"سایت عالی بود",
+    rating:5,
+    date:"1403/09/20",
+    approved:true
+  }
+];
+
+
 export const mockContacts: Contact[] = [
-  { id: "1", name: "رضا محمدی", email: "reza@example.com", subject: "همکاری پژوهشی", message: "درخواست همکاری در پروژه EEG دارم.", date: "1403/09/22", read: false },
-  { id: "2", name: "مریم احمدی", email: "maryam@example.com", subject: "سوال درباره کارگاه", message: "آیا ثبت‌نام کارگاه هنوز باز است؟", date: "1403/09/21", read: true },
+  {
+    id:"1",
+    name:"رضا محمدی",
+    email:"reza@example.com",
+    subject:"همکاری",
+    message:"درخواست همکاری",
+    date:"1403/09/22",
+    read:false
+  }
 ];

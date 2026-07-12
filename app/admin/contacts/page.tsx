@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { mockContacts, type Contact } from "@/lib/mockData";
+import { mockContacts, type Contact } from "@/data/mockData";
 import { Trash2, Mail, MailOpen } from "lucide-react";
 
 export default function ContactsPage() {
@@ -26,7 +26,7 @@ export default function ContactsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className={`text-sm font-medium ${item.read ? "text-gray-400" : "text-gray-200"}`}>{item.name}</span>
-                    <span className="text-xs text-gray-500 font-mono shrink-0">{item.date}</span>
+                    <span className="text-xs text-gray-500 font-vazir shrink-0">{item.date}</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5 truncate">{item.subject}</p>
                 </div>
@@ -40,13 +40,13 @@ export default function ContactsPage() {
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-medium text-gray-200">{selected.subject}</h3>
-                <p className="text-xs text-gray-500 mt-1 font-mono">{selected.name} — {selected.email}</p>
+                <p className="text-xs text-gray-500 mt-1 font-vazir">{selected.name} — {selected.email}</p>
               </div>
               <button onClick={() => { setItems(items.filter(i => i.id !== selected.id)); setSelected(null); }}
                 className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
             </div>
             <p className="text-sm text-gray-300 leading-relaxed border-t border-[#1e2d4a] pt-4">{selected.message}</p>
-            <p className="text-xs text-gray-500 font-mono">{selected.date}</p>
+            <p className="text-xs text-gray-500 font-vazir">{selected.date}</p>
           </div>
         ) : (
           <div className="bg-[#0d1526] border border-[#1e2d4a] rounded-xl p-5 flex items-center justify-center text-gray-500 text-sm">

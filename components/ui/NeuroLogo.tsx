@@ -108,8 +108,8 @@ export default function NeuroLogo({ size = 320 }: NeuroLogoProps) {
       {/* Center monogram */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="flex h-16 w-16 flex-col items-center justify-center rounded-full border border-borderSoft bg-surface/90 shadow-glowAccent">
-          <span className="font-mono text-base font-bold leading-none text-accent">BE</span>
-          <span className="mt-1 font-mono text-[8px] tracking-widest text-inkMuted">NEURO</span>
+          <span className="font-vazir text-base font-bold leading-none text-accent">BE</span>
+          <span className="mt-1 font-vazir text-[8px] tracking-widest text-inkMuted">NEURO</span>
         </div>
       </div>
     </div>

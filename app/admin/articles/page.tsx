@@ -1,19 +1,19 @@
 "use client";
 import { useState } from "react";
-import { mockArticles, type Article } from "@/lib/mockData";
+import { mockArticles, type AdminArticle } from "@/data/mockData";
 import RichEditor from "@/components/admin/RichEditor";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
 
-const empty: Omit<Article, "id"> = { title: "", authors: [], issue: "", date: "", content: "", published: false };
+const empty: Omit<AdminArticle, "id"> = { title: "", authors: [], issue: "", date: "", content: "", published: false };
 
 export default function ArticlesPage() {
-  const [items, setItems] = useState<Article[]>(mockArticles);
-  const [modal, setModal] = useState<{ open: boolean; editing: Article | null }>({ open: false, editing: null });
+  const [items, setItems] = useState<AdminArticle[]>(mockArticles);
+  const [modal, setModal] = useState<{ open: boolean; editing: AdminArticle | null }>({ open: false, editing: null });
   const [form, setForm] = useState(empty);
   const [authorsStr, setAuthorsStr] = useState("");
 
   const openAdd = () => { setForm(empty); setAuthorsStr(""); setModal({ open: true, editing: null }); };
-  const openEdit = (item: Article) => {
+  const openEdit = (item: AdminArticle) => {
     setForm({ title: item.title, authors: item.authors, issue: item.issue, date: item.date, content: item.content, published: item.published });
     setAuthorsStr(item.authors.join("، "));
     setModal({ open: true, editing: item });
@@ -43,7 +43,7 @@ export default function ArticlesPage() {
       <div className="bg-[#0d1526] border border-[#1e2d4a] rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#1e2d4a] text-gray-400 text-xs font-mono">
+            <tr className="border-b border-[#1e2d4a] text-gray-400 text-xs font-vazir">
               <th className="text-right px-4 py-3">عنوان</th>
               <th className="text-right px-4 py-3">نویسندگان</th>
               <th className="text-right px-4 py-3">شماره</th>
@@ -56,11 +56,11 @@ export default function ArticlesPage() {
               <tr key={item.id} className="border-b border-[#1e2d4a]/50 hover:bg-white/2 transition-colors">
                 <td className="px-4 py-3 text-gray-200">{item.title}</td>
                 <td className="px-4 py-3 text-gray-400 text-xs">{item.authors.join("، ")}</td>
-                <td className="px-4 py-3 text-gray-400 font-mono text-xs">{item.issue}</td>
+                <td className="px-4 py-3 text-gray-400 font-vazir text-xs">{item.issue}</td>
                 <td className="px-4 py-3">
                   <button
                     onClick={() => setItems(items.map(i => i.id === item.id ? { ...i, published: !i.published } : i))}
-                    className={`px-2 py-0.5 rounded text-xs font-mono transition-colors ${item.published ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-gray-500/15 text-gray-400"}`}>
+                    className={`px-2 py-0.5 rounded text-xs font-vazir transition-colors ${item.published ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-gray-500/15 text-gray-400"}`}>
                     {item.published ? "منتشر" : "پیش‌نویس"}
                   </button>
                 </td>
