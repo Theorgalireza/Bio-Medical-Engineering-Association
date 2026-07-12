@@ -262,3 +262,58 @@ export const articles: Article[] = [
     readingTime: 11,
   },
 ];
+export type Announcement = {
+  id: string;
+  title: string;
+  date: string;
+  category: "event" | "news" | "workshop";
+  published: boolean;
+};
+
+export type Article = {
+  id: string;
+  title: string;
+  authors: string[];
+  issue: string;
+  date: string;
+  published: boolean;
+};
+
+export type FacultyMember = {
+  id: string;
+  name: string;
+  role: string;
+  field: string;
+  monogram: string;
+  color: string;
+};
+
+export type Feedback = {
+  id: string;
+  name: string;
+  message: string;
+  rating: number;
+  date: string;
+  approved: boolean;
+};
+
+export type Contact = {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  date: string;
+  read: boolean;
+};
+
+
+export const mockFeedback: Feedback[] = [
+  { id: "1", name: "امیر حسینی", message: "سایت بسیار مفید و کاربردی است.", rating: 5, date: "1403/09/20", approved: true },
+  { id: "2", name: "نیلوفر صادقی", message: "محتوای علمی عالی بود.", rating: 4, date: "1403/09/18", approved: false },
+];
+
+export const mockContacts: Contact[] = [
+  { id: "1", name: "رضا محمدی", email: "reza@example.com", subject: "همکاری پژوهشی", message: "درخواست همکاری در پروژه EEG دارم.", date: "1403/09/22", read: false },
+  { id: "2", name: "مریم احمدی", email: "maryam@example.com", subject: "سوال درباره کارگاه", message: "آیا ثبت‌نام کارگاه هنوز باز است؟", date: "1403/09/21", read: true },
+];
