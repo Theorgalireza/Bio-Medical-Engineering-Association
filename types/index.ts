@@ -1,19 +1,37 @@
-// Shared TypeScript interfaces used across the project
+// types/index.ts
+
+export type AnnouncementType = "WORKSHOP" | "WEBINAR" | "EVENT" | "NEWS";
+export type ContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
 export interface Announcement {
   id: string;
   slug: string;
   title: string;
   date: string;
-  type: "ورکشاپ" | "وبینار" | "رویداد" | "اطلاعیه";
+  type: AnnouncementType;
   description: string;
   imageUrl?: string;
   isNew?: boolean;
 }
 
+export interface Article {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  content?: string;
+  category: string;
+  authors: string[];
+  year: number;
+  readingTime: number;
+  featured?: boolean;
+  status?: ContentStatus;
+  publishedAt?: string;
+}
+
 export interface Publication {
   id: string;
-  slug: string;       
+  slug: string;
   title: string;
   issue: string;
   date: string;
@@ -30,6 +48,10 @@ export interface FacultyMember {
   name: string;
   title: string;
   specialties: string[];
+  role?: string;
+  field?: string;
+  monogram?: string;
+  color?: string;
 }
 
 export interface Feedback {
@@ -37,44 +59,23 @@ export interface Feedback {
   name?: string;
   email?: string;
   message: string;
-  rating: number; // 1 to 5
+  rating: number;
   date: string;
+  approved?: boolean;
 }
-export interface ContactInfoItem {
-  label: string;
-  value: string;
-  icon: "mail" | "phone" | "pin";
-}
-
-export interface Article {
-  id: string;
-
-  slug: string;
-
-  title: string;
-
-  summary: string;
-
-  content?: string;
-
-  category: string;
-
-  authors: string[];
-
-  year: number;
-
-  readingTime: number;
-
-  featured?: boolean;
-}
-
 
 export interface GalleryItem {
   id: string;
   title: string;
   description?: string;
   imageUrl: string;
-  date?: string; // اختیاری
-  category?: string; // اختیاری
+  date?: string;
+  category?: string;
+  uploadedById?: string;
 }
 
+export interface ContactInfoItem {
+  label: string;
+  value: string;
+  icon: "mail" | "phone" | "pin";
+}

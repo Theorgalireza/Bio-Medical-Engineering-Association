@@ -287,16 +287,41 @@ export const galleryItems: GalleryItem[] = [
     category: "وبینار",
   },
 ];
+export const mockMembers: AdminMember[] = [
+  {
+    id: "1", // string
+    name: "علیرضا احمدی",
+    studentId: "401234567",
+    major: "مهندسی پزشکی",
+    entryYear: 1401,
+    role: "عضو فعال",
+    email: "alireza@example.com",
+    phone: "09120000000",
+    status: "active",
+  },
+  {
+    id: "2", // string
+    name: "سارا محمدی",
+    studentId: "391112233",
+    major: "مهندسی پزشکی",
+    entryYear: 1399,
+    role: "عضو عادی",
+    email: "sara@example.com",
+    status: "inactive",
+  },
+];
 
 // ================= ADMIN TYPES =================
+// --- Admin Types ---
 
 export type AdminAnnouncement = {
   id: string;
   title: string;
   date: string;
-  category: "event" | "news" | "workshop";
+  type: "WORKSHOP" | "WEBINAR" | "EVENT" | "NEWS"; // تغییر: category → type، مقادیر انگلیسی
   content: string;
   published: boolean;
+  slug?: string;
 };
 
 export type AdminArticle = {
@@ -307,6 +332,8 @@ export type AdminArticle = {
   date: string;
   content: string;
   published: boolean;
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  publishedAt?: string;
 };
 
 export type AdminFacultyMember = {
@@ -316,6 +343,8 @@ export type AdminFacultyMember = {
   field: string;
   monogram: string;
   color: string;
+  title?: string;
+  specialties?: string[];
 };
 
 export type AdminFeedback = {
@@ -337,20 +366,35 @@ export type Contact = {
   read: boolean;
 };
 
+export type AdminMember = {
+  id: string; // تغییر: number → string (UUID)
+  name: string;
+  studentId: string;
+  major: string;
+  entryYear: number;
+  role: string;
+  email: string;
+  phone?: string;
+  status: "active" | "inactive";
+};
+
 // ================= ADMIN HELPERS =================
 
-function mapAnnouncementType(
-  type: Announcement["type"]
-): AdminAnnouncement["category"] {
-  switch (type) {
-    case "ورکشاپ":
-      return "workshop";
-    case "اطلاعیه":
-      return "news";
-    default:
-      return "event"; // وبینار، رویداد
-  }
+export function mapAnnouncementType(
+  type: string
+): "WORKSHOP" | "WEBINAR" | "EVENT" | "NEWS" {
+  const map: Record<string, "WORKSHOP" | "WEBINAR" | "EVENT" | "NEWS"> = {
+    ورکشاپ: "WORKSHOP",
+    وبینار: "WEBINAR",
+    رویداد: "EVENT",
+    اطلاعیه: "NEWS",
+    event: "EVENT",
+    news: "NEWS",
+    workshop: "WORKSHOP",
+  };
+  return map[type] ?? "NEWS";
 }
+
 
 function getMonogram(name: string): string {
   const clean = name.replace("دکتر", "").trim();
@@ -421,44 +465,5 @@ export const mockContacts: Contact[] = [
     message: "درخواست همکاری",
     date: "1403/09/22",
     read: false,
-  },
-];
-// در "@/data/mockData.ts"
-
-// نوع اعضای انجمن
-export type AdminMember = {
-  id: number;
-  name: string;
-  studentId: string;
-  major: string;
-  entryYear: number;
-  role: string;      // عضو عادی، عضو فعال، هیئت مدیره، ...
-  email: string;
-  phone?: string;
-  status: "active" | "inactive";
-};
-
-// داده‌های نمونه
-export const mockMembers: AdminMember[] = [
-  {
-    id: 1,
-    name: "علیرضا احمدی",
-    studentId: "401234567",
-    major: "مهندسی پزشکی",
-    entryYear: 1401,
-    role: "عضو فعال",
-    email: "alireza@example.com",
-    phone: "09120000000",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "سارا محمدی",
-    studentId: "391112233",
-    major: "مهندسی پزشکی",
-    entryYear: 1399,
-    role: "عضو عادی",
-    email: "sara@example.com",
-    status: "inactive",
   },
 ];

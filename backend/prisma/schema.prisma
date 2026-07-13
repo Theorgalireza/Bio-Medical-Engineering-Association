@@ -1,0 +1,205 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  CONTENT_EDITOR
+  STUDENT_MEMBER
+  STUDENT_ACTIVE_MEMBER
+  STUDENT_INACTIVE_MEMBER
+  FACULTY_MEMBER
+  GUEST
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AnnouncementType {
+  WORKSHOP
+  WEBINAR
+  EVENT
+  NEWS
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String?  @unique
+  phone         String?  @unique
+  passwordHash  String?
+  role          Role     @default(GUEST)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isActive     Boolean  @default(true)
+
+  profile              Profile?
+  otpCodes             OtpCode[]
+  passwordResetTokens  PasswordResetToken[]
+  announcements        Announcement[]
+  articles             Article[]
+  galleryItems         GalleryItem[]
+}
+
+model Profile {
+  id           String  @id @default(uuid())
+  userId       String  @unique
+  firstName    String?
+  lastName     String?
+  studentId    String?
+  university   String?
+  major        String?
+  field        String?
+  entryYear    Int?
+  github       String?
+  linkedin     String?
+  website      String?
+  profileEmail String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  userId    String
+  code      String
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Announcement {
+  id          String           @id @default(uuid())
+  slug        String           @unique
+  title       String
+  description String           @db.Text
+  imageUrl    String?
+  type        AnnouncementType @default(NEWS)
+  isNew       Boolean          @default(false)
+  status      ContentStatus    @default(DRAFT)
+  publishedAt DateTime?
+  authorId    String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  author User? @relation(fields: [authorId], references: [id])
+}
+
+model Article {
+  id          String        @id @default(uuid())
+  slug        String        @unique
+  title       String
+  summary     String        @db.Text
+  content     String        @db.LongText
+  category    String
+  authors     Json
+  year        Int
+  readingTime Int?
+  featured    Boolean       @default(false)
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  authorId    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  author User?        @relation(fields: [authorId], references: [id])
+  tags   ArticleTag[]
+}
+
+model Tag {
+  id       String       @id @default(uuid())
+  name     String       @unique
+  articles ArticleTag[]
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+}
+
+model Publication {
+  id          String        @id @default(uuid())
+  slug        String        @unique
+  title       String
+  issue       String?
+  category    String
+  summary     String        @db.Text
+  description String?       @db.Text
+  authors     Json
+  year        Int
+  downloadUrl String?
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model FacultyMember {
+  id          String   @id @default(uuid())
+  name        String
+  title       String
+  specialties Json
+  monogram    String
+  color       String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GalleryItem {
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
+  imageUrl     String
+  category     String?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  uploadedBy User? @relation(fields: [uploadedById], references: [id])
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  name      String
+  message   String   @db.Text
+  rating    Int?
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String?
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
