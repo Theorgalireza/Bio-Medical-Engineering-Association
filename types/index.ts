@@ -66,3 +66,14 @@ export interface Article {
 
   featured?: boolean;
 }
+
+
+export interface GalleryItem {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  date?: string; // اختیاری
+  category?: string; // اختیاری
+}
+

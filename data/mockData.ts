@@ -3,7 +3,12 @@ import {
   Publication,
   FacultyMember,
   Article,
-} from "@/types";export const announcements: Announcement[] = [
+  GalleryItem
+} from "@/types";
+
+// ================= SITE DATA (واقعی - بدون تغییر) =================
+
+export const announcements: Announcement[] = [
   {
     id: "1",
     slug: "eeg-signal-workshop",
@@ -73,7 +78,8 @@ export const publications: Publication[] = [
     issue: "شماره ۱",
     date: "پاییز 1404",
     category: "نشریه",
-    summary: "اولین انتشار انجمن علمی مهندسی پزشکی با تمرکز بر آشنایی دانشجویان نو ورودی با فضای دانشگاه و رشه",
+    summary:
+      "اولین انتشار انجمن علمی مهندسی پزشکی با تمرکز بر آشنایی دانشجویان نو ورودی با فضای دانشگاه و رشه",
     authors: ["اعضای انجمن علمی مهندسی پزشکی"],
     year: 2024,
     description:
@@ -134,134 +140,150 @@ export const facultyMembers: FacultyMember[] = [
     specialties: ["BCI", "رباتیک", "کنترل عصبی"],
   },
 ];
+
 export const contactInfo = [
-  {
-    label: "ایمیل",
-    value: "AlirezaJafary@gmail.com",
-    icon: "mail",
-  },
-  {
-    label: "تلفن",
-    value: "+98 21 2243 1000",
-    icon: "phone",
-  },
+  { label: "ایمیل", value: "AlirezaJafary@gmail.com", icon: "mail" },
+  { label: "تلفن", value: "+98 21 2243 1000", icon: "phone" },
   {
     label: "آدرس",
     value: "تهران، اوین، دانشگاه شهید بهشتی، دانشکده مهندسی پزشکی",
     icon: "pin",
   },
 ];
+
 export const articles: Article[] = [
   {
     id: "1",
     slug: "brain-computer-interface",
-
     title: "رابط مغز و رایانه؛ آینده تعامل انسان و ماشین",
-
     summary:
       "در این مقاله با ساختار سیستم‌های BCI، کاربردهای پزشکی، صنعتی و آینده این فناوری آشنا می‌شویم.",
-
     category: "BCI",
-
     authors: ["دکتر علی محمدی"],
-
     year: 2025,
-
     readingTime: 8,
-
     featured: true,
   },
-
   {
     id: "2",
     slug: "eeg-signal-processing",
-
     title: "پردازش سیگنال EEG با روش‌های یادگیری ماشین",
-
     summary:
       "بررسی روش‌های استخراج ویژگی، حذف نویز و دسته‌بندی سیگنال‌های مغزی با الگوریتم‌های هوش مصنوعی.",
-
     category: "EEG",
-
     authors: ["دکتر سارا احمدی"],
-
     year: 2025,
-
     readingTime: 12,
   },
-
   {
     id: "3",
     slug: "ecg-analysis",
-
     title: "تحلیل سیگنال ECG برای تشخیص بیماری‌های قلبی",
-
     summary:
       "مروری بر روش‌های نوین تحلیل سیگنال‌های قلبی و کاربرد شبکه‌های عصبی در تشخیص بیماری.",
-
     category: "ECG",
-
     authors: ["دکتر رضا کریمی"],
-
     year: 2024,
-
     readingTime: 10,
   },
-
   {
     id: "4",
     slug: "deep-learning-biomedical",
-
     title: "کاربرد Deep Learning در مهندسی پزشکی",
-
     summary:
       "بررسی کاربرد شبکه‌های عصبی عمیق در تحلیل تصاویر پزشکی، سیگنال‌های زیستی و سامانه‌های تشخیص.",
-
     category: "Deep Learning",
-
     authors: ["دکتر مریم حسینی"],
-
     year: 2025,
-
     readingTime: 14,
   },
-
   {
     id: "5",
     slug: "biosensors",
-
     title: "نسل جدید حسگرهای زیستی",
-
     summary:
       "آشنایی با Biosensorهای نسل جدید و نقش آن‌ها در تشخیص سریع بیماری‌ها.",
-
     category: "BioSensors",
-
     authors: ["دکتر علی محمدی"],
-
     year: 2024,
-
     readingTime: 9,
   },
-
   {
     id: "6",
     slug: "medical-ai",
-
     title: "هوش مصنوعی در پزشکی",
-
     summary:
       "کاربرد مدل‌های هوشمند در تشخیص، درمان و مدیریت داده‌های پزشکی.",
-
     category: "AI",
-
     authors: ["دکتر سارا احمدی"],
-
     year: 2025,
-
     readingTime: 11,
   },
 ];
+// داده‌های نمونه برای گالری
+export const galleryItems: GalleryItem[] = [
+  {
+    id: "gal1",
+    title: "کارگاه پردازش سیگنال EEG",
+    description:
+      "جلسه عملی پردازش سیگنال‌های مغزی با استفاده از نرم‌افزارهای تخصصی.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80",
+    date: "۱۴۰۳/۰۹/۱۵",
+    category: "ورکشاپ",
+  },
+  {
+    id: "gal2",
+    title: "وبینار مقدمه‌ای بر BCI",
+    description:
+      "بررسی کاربردها و آخرین تحقیقات در زمینه رابط‌های مغز و رایانه.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
+    date: "۱۴۰۳/۰۹/۰۲",
+    category: "وبینار",
+  },
+  {
+    id: "gal3",
+    title: "نشست علمی علوم اعصاب",
+    description:
+      "گردهمایی اساتید و دانشجویان برای بحث در مورد پیشرفت‌های علوم اعصاب.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1517841905240-3726766de014?auto=format&fit=crop&w=1200&q=80",
+    date: "۱۴۰۳/۰۸/۲۰",
+    category: "رویداد",
+  },
+  {
+    id: "gal4",
+    title: "اولین فراخوان عضویت",
+    description:
+      "آغاز ثبت‌نام اعضای جدید برای دوره ۱۴۰۳-۱۴۰۴ انجمن.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1579779855271-e9887103889e?auto=format&fit=crop&w=1200&q=80",
+    date: "۱۴۰۳/۰۸/۱۰",
+    category: "اطلاعیه",
+  },
+  {
+    id: "gal5",
+    title: "کارگاه مدارهای زیستی",
+    description:
+      "طراحی و شبیه‌سازی مدارات آنالوگ برای سیگنال‌های زیستی.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80", // تکراری برای مثال
+    date: "۱۴۰۳/۰۷/۲۸",
+    category: "ورکشاپ",
+  },
+  {
+    id: "gal6",
+    title: "مسیر شغلی در نوروتک",
+    description:
+      "گفتگو با متخصصان صنعت نوروتکنولوژی.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80", // تکراری برای مثال
+    date: "۱۴۰۳/۰۷/۱۵",
+    category: "وبینار",
+  },
+];
+
 // ================= ADMIN TYPES =================
 
 export type AdminAnnouncement = {
@@ -273,7 +295,6 @@ export type AdminAnnouncement = {
   published: boolean;
 };
 
-
 export type AdminArticle = {
   id: string;
   title: string;
@@ -284,7 +305,6 @@ export type AdminArticle = {
   published: boolean;
 };
 
-
 export type AdminFacultyMember = {
   id: string;
   name: string;
@@ -294,7 +314,6 @@ export type AdminFacultyMember = {
   color: string;
 };
 
-
 export type AdminFeedback = {
   id: string;
   name: string;
@@ -303,7 +322,6 @@ export type AdminFeedback = {
   date: string;
   approved: boolean;
 };
-
 
 export type Contact = {
   id: string;
@@ -315,67 +333,128 @@ export type Contact = {
   read: boolean;
 };
 
+// ================= ADMIN HELPERS =================
 
-// ================= ADMIN DATA =================
-
-
-export const mockAnnouncements: AdminAnnouncement[] = [
-  {
-    id:"1",
-    title:"کارگاه پردازش سیگنال EEG",
-    date:"1403/09/15",
-    category:"workshop",
-    content:"آشنایی عملی با پردازش EEG",
-    published:true
+function mapAnnouncementType(
+  type: Announcement["type"]
+): AdminAnnouncement["category"] {
+  switch (type) {
+    case "ورکشاپ":
+      return "workshop";
+    case "اطلاعیه":
+      return "news";
+    default:
+      return "event"; // وبینار، رویداد
   }
+}
+
+function getMonogram(name: string): string {
+  const clean = name.replace("دکتر", "").trim();
+  return clean.charAt(0);
+}
+
+const facultyColorPalette = [
+  "#00d4ff",
+  "#7c3aed",
+  "#f59e0b",
+  "#10b981",
+  "#ef4444",
 ];
 
+// ================= ADMIN DATA (مشتق‌شده از داده‌های واقعی) =================
 
-export const mockArticles: AdminArticle[] = [
-  {
-    id:"1",
-    title:"تحلیل سیگنال EEG با ICA",
-    authors:["دکتر رضایی"],
-    issue:"شماره ۱۲",
-    date:"1403/08/01",
-    content:"بررسی ICA در EEG",
-    published:true
-  }
-];
-
-
-export const mockFaculty: AdminFacultyMember[] = [
-  {
-    id:"1",
-    name:"دکتر محمد رضایی",
-    role:"استاد",
-    field:"پردازش سیگنال",
-    monogram:"ر",
-    color:"#00d4ff"
-  }
-];
+export const mockAnnouncements: AdminAnnouncement[] = announcements.map(
+  (a) => ({
+    id: a.id,
+    title: a.title,
+    date: a.date,
+    category: mapAnnouncementType(a.type),
+    content: a.description,
+    published: true,
+  })
+);
+export const mockArticles: AdminArticle[] = publications.map((p) => ({
+  id: p.id,
+  title: p.title,
+  authors: p.authors ?? [],
+  issue: p.issue,
+  date: p.date,
+  // اگر 'content' در 'p' وجود ندارد، از یک رشته خالی یا یک متن پیش‌فرض استفاده می‌کنیم
+  content: (p as any).content || "محتوایی برای این مقاله ثبت نشده است.", 
+  published: true,
+}));
 
 
+export const mockFaculty: AdminFacultyMember[] = facultyMembers.map(
+  (f, index) => ({
+    id: f.id,
+    name: f.name,
+    role: f.title,
+    field: f.specialties.join("، "),
+    monogram: getMonogram(f.name),
+    color: facultyColorPalette[index % facultyColorPalette.length],
+  })
+);
+
+// این دو مورد منبع واقعی در سایت ندارند و فعلاً ثابت باقی می‌مانند
 export const mockFeedback: AdminFeedback[] = [
   {
-    id:"1",
-    name:"امیر حسینی",
-    message:"سایت عالی بود",
-    rating:5,
-    date:"1403/09/20",
-    approved:true
-  }
+    id: "1",
+    name: "امیر حسینی",
+    message: "سایت عالی بود",
+    rating: 5,
+    date: "1403/09/20",
+    approved: true,
+  },
 ];
-
 
 export const mockContacts: Contact[] = [
   {
-    id:"1",
-    name:"رضا محمدی",
-    email:"reza@example.com",
-    subject:"همکاری",
-    message:"درخواست همکاری",
-    date:"1403/09/22",
-    read:false
-  }
+    id: "1",
+    name: "رضا محمدی",
+    email: "reza@example.com",
+    subject: "همکاری",
+    message: "درخواست همکاری",
+    date: "1403/09/22",
+    read: false,
+  },
+];
+// در "@/data/mockData.ts"
+
+// نوع اعضای انجمن
+export type AdminMember = {
+  id: number;
+  name: string;
+  studentId: string;
+  major: string;
+  entryYear: number;
+  role: string;      // عضو عادی، عضو فعال، هیئت مدیره، ...
+  email: string;
+  phone?: string;
+  status: "active" | "inactive";
+};
+
+// داده‌های نمونه
+export const mockMembers: AdminMember[] = [
+  {
+    id: 1,
+    name: "علیرضا احمدی",
+    studentId: "401234567",
+    major: "مهندسی پزشکی",
+    entryYear: 1401,
+    role: "عضو فعال",
+    email: "alireza@example.com",
+    phone: "09120000000",
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "سارا محمدی",
+    studentId: "391112233",
+    major: "مهندسی پزشکی",
+    entryYear: 1399,
+    role: "عضو عادی",
+    email: "sara@example.com",
+    status: "inactive",
+  },
 ];

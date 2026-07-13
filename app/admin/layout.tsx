@@ -5,15 +5,16 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Megaphone, BookOpen, Users, MessageSquare, Mail, Menu, X, Activity,
 } from "lucide-react";
-
 const navItems = [
   { href: "/admin", label: "داشبورد", icon: LayoutDashboard },
   { href: "/admin/announcements", label: "اعلان‌ها", icon: Megaphone },
   { href: "/admin/articles", label: "مقالات", icon: BookOpen },
   { href: "/admin/faculty", label: "اعضای هیئت علمی", icon: Users },
+  { href: "/admin/members", label: "اعضای انجمن", icon: Users }, // NEW
   { href: "/admin/feedback", label: "بازخوردها", icon: MessageSquare },
   { href: "/admin/contacts", label: "تماس‌ها", icon: Mail },
 ];
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
