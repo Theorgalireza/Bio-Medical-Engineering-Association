@@ -13,13 +13,14 @@ export interface Announcement {
 
 export interface Publication {
   id: string;
+  slug: string;       
   title: string;
   issue: string;
   date: string;
-  category?: string;
-  summary?: string;
-  authors?: string[];
-  year?: number;
+  category: string;
+  summary: string;
+  authors: string[];
+  year: number;
   description: string;
   downloadUrl: string;
 }

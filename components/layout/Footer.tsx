@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Heart } from "lucide-react"; // ← این رو اضافه کن
 
 const quickLinks = [
   { label: "خانه", href: "#home" },
@@ -109,11 +110,19 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-borderSoft text-center">
-          <p className="text-xs text-gray-500">
-            © 2026-2027 Alireza Jafary
-            <br />
-            طراحی و توسعه با ❤️ برای انجمن
-          </p>
+<p className="text-xs text-gray-500">
+  © 2026-2027 Alireza Jafary
+  <br />
+  <span className="inline-flex items-center gap-1">
+    طراحی و توسعه با
+    <Heart
+      className="h-3 w-3 text-cyan-400"
+      aria-label="love"
+    />
+    برای انجمن
+  </span>
+</p>
+
         </div>
       </div>
     </footer>

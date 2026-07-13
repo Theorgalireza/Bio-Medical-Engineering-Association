@@ -74,6 +74,7 @@ export const announcements: Announcement[] = [
 export const publications: Publication[] = [
   {
     id: "1",
+    slug: "special-issue-1",   // ← slug انگلیسی و kebab-case
     title: "ویژه نامه شماره 1",
     issue: "شماره ۱",
     date: "پاییز 1404",
@@ -88,6 +89,7 @@ export const publications: Publication[] = [
   },
   {
     id: "2",
+    slug: "bci-special-report",
     title: "گزارش ویژه: رابط‌های مغز و رایانه",
     issue: "شماره ۲",
     date: "زمستان ۱۴۰۳",
@@ -101,6 +103,7 @@ export const publications: Publication[] = [
   },
   {
     id: "3",
+    slug: "computational-neuroscience-collection",
     title: "مجموعه مقالات علوم اعصاب محاسباتی",
     issue: "شماره ۳",
     date: "بهار ۱۴۰۴",
@@ -113,6 +116,7 @@ export const publications: Publication[] = [
     downloadUrl: "#",
   },
 ];
+
 
 export const facultyMembers: FacultyMember[] = [
   {
