@@ -1,7 +1,9 @@
-import { galleryItems } from "@/data/mockData";
 import Image from "next/image";
+import { getGalleryItems } from "@/lib/api";
 
-export default function GalleryPage() {
+export default async function GalleryPage() {
+  const galleryItems = await getGalleryItems();
+
   return (
     <main className="min-h-screen py-24 px-8 max-w-7xl mx-auto">
       <h1 className="text-4xl font-bold text-white mb-12 text-center">گالری کامل تصاویر</h1>

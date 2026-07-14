@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { facultyMembers } from "@/data/mockData";
+import { useEffect, useState } from "react";
+import { getFacultyMembers } from "@/lib/api";
+import type { FacultyMember } from "@/types";
 
 const container = {
   hidden: {},
@@ -13,7 +15,27 @@ const item = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5 } },
 };
 
-export default function Faculty() {
+type Props = { items?: FacultyMember[] };
+
+export default function Faculty({ items }: Props) {
+  const [facultyItems, setFacultyItems] = useState<FacultyMember[]>(items ?? []);
+
+  useEffect(() => {
+    if (items) {
+      setFacultyItems(items);
+      return;
+    }
+
+    let mounted = true;
+    getFacultyMembers()
+      .then((data) => mounted && setFacultyItems(data))
+      .catch(() => mounted && setFacultyItems([]));
+
+    return () => {
+      mounted = false;
+    };
+  }, [items]);
+
   return (
     <section id="faculty" className="relative py-24 bg-surface overflow-hidden">
       <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-neonPurple/10 rounded-full blur-[120px] pointer-events-none" />
@@ -40,7 +62,7 @@ export default function Faculty() {
           viewport={{ once: true, amount: 0.2 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {facultyMembers.map((member) => (
+          {facultyItems.map((member) => (
             <motion.div
               key={member.id}
               variants={item}

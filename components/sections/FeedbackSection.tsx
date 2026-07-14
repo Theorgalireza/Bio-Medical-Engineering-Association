@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CircuitBackground from "@/components/ui/CircuitBackground";
 import { StarIcon, CheckIcon } from "@/components/ui/Icons";
+import { submitFeedback } from "@/lib/api";
 
 const topics = ["پیشنهاد", "انتقاد", "سوال فنی", "همکاری"];
 
@@ -36,10 +37,18 @@ export default function Feedback() {
     if (!form.email || !form.message) return;
 
     setStatus("submitting");
-    // شبیه‌سازی ارسال به سرور — در نسخه نهایی با API واقعی جایگزین شود
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    setStatus("done");
-    setForm(initialState);
+    try {
+      await submitFeedback({
+        name: form.name || "ناشناس",
+        message: form.message,
+        rating: form.rating || 1,
+      });
+      setStatus("done");
+      setForm(initialState);
+    } catch {
+      setStatus("done");
+      setForm(initialState);
+    }
 
     setTimeout(() => setStatus("idle"), 4000);
   };

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { articles } from "@/data/mockData";
 import NeonButton from "@/components/ui/NeonButton";
+import { getArticleBySlug } from "@/lib/api";
 
 interface Props {
   params: {
@@ -66,11 +66,8 @@ function ArticleCover() {
   );
 }
 
-export default function ArticlePage({ params }: Props) {
-
-  const article = articles.find(
-    (item) => item.slug === params.slug
-  );
+export default async function ArticlePage({ params }: Props) {
+  const article = await getArticleBySlug(params.slug);
 
   if (!article) {
     notFound();
@@ -88,82 +85,57 @@ export default function ArticlePage({ params }: Props) {
           ← بازگشت به مقالات
         </Link>
 
-        <div className="mt-8">
+        <div className="mt-8 space-y-8">
+
           <ArticleCover />
-        </div>
 
-        <div className="mt-12">
+          <div className="space-y-6">
 
-          <span className="inline-block px-4 py-1 rounded-full bg-accent/10 border border-accent text-accent text-sm">
-            {article.category}
-          </span>
+            <div className="flex flex-wrap gap-3 text-xs text-gray-400">
+              <span className="inline-block px-3 py-1 rounded-full bg-surface border border-borderSoft">
+                {article.category}
+              </span>
 
-          <h1 className="text-white text-4xl md:text-5xl font-bold leading-relaxed mt-6">
-            {article.title}
-          </h1>
+              <span className="inline-block px-3 py-1 rounded-full bg-surface border border-borderSoft">
+                {article.year}
+              </span>
 
-          <div className="flex flex-wrap gap-6 text-gray-500 mt-8 text-sm">
+              <span className="inline-block px-3 py-1 rounded-full bg-surface border border-borderSoft">
+                {article.readingTime} دقیقه مطالعه
+              </span>
+            </div>
 
-            <span>
-              نویسنده:
-              {" "}
-              {article.authors.join("، ")}
-            </span>
+            <h1 className="text-white text-4xl md:text-5xl font-bold leading-relaxed">
+              {article.title}
+            </h1>
 
-            <span>
-              سال انتشار:
-              {" "}
-              {article.year}
-            </span>
-
-            <span>
-              زمان مطالعه:
-              {" "}
-              {article.readingTime}
-              {" "}
-              دقیقه
-            </span>
-
-          </div>
-
-          <div className="mt-10 p-8 rounded-3xl bg-primaryLight border border-borderSoft">
-
-            <p className="text-gray-300 leading-9 text-justify">
-              {article.content ??
-                `
-این صفحه نسخه اولیه نمایش مقاله است.
-
-در این قسمت متن کامل مقاله نمایش داده می‌شود.
-
-در آینده می‌توانید این محتوا را از API،
-Headless CMS یا دیتابیس دریافت کنید.
-
-طراحی صفحه به گونه‌ای انجام شده که برای مقالات بلند نیز مناسب باشد و خوانایی بالایی داشته باشد.
-
-همچنین امکان افزودن تصاویر، کد، فرمول‌های ریاضی، ویدئو و منابع نیز به راحتی وجود دارد.
-`}
+            <p className="text-gray-400 leading-8 text-justify">
+              {article.summary}
             </p>
 
+            <div className="rounded-2xl border border-borderSoft bg-primaryLight/80 p-8 text-gray-300 leading-8 text-justify whitespace-pre-line">
+              {article.content}
+            </div>
+
+            <div className="flex flex-wrap gap-4 pt-4 text-sm text-gray-500">
+              {article.authors.map((author) => (
+                <span
+                  key={author}
+                  className="inline-block px-3 py-1 rounded-full bg-surface border border-borderSoft"
+                >
+                  {author}
+                </span>
+              ))}
+            </div>
+
+            <div className="pt-6">
+              <Link href="/articles">
+                <NeonButton variant="outline">بازگشت به مقالات</NeonButton>
+              </Link>
+            </div>
           </div>
-
-          <div className="flex gap-4 mt-12">
-
-            <Link href="/articles">
-              <NeonButton variant="outline">
-                بازگشت
-              </NeonButton>
-            </Link>
-
-            <NeonButton>
-              دانلود PDF
-            </NeonButton>
-
-          </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }

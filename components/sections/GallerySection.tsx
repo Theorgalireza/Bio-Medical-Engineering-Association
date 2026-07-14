@@ -2,19 +2,36 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { galleryItems } from "@/data/mockData";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { getGalleryItems } from "@/lib/api";
+import type { GalleryItem } from "@/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import NeonButton from "@/components/ui/NeonButton";
 
 const MAX_ITEMS_HOME = 6;
 
-export default function GallerySection() {
-  const itemsToShow = useMemo(
-    () => galleryItems.slice(0, MAX_ITEMS_HOME),
-    []
-  );
+type Props = { items?: GalleryItem[] };
+
+export default function GallerySection({ items }: Props) {
+  const [gallery, setGallery] = useState<GalleryItem[]>(items ?? []);
+  const itemsToShow = useMemo(() => gallery.slice(0, MAX_ITEMS_HOME), [gallery]);
+
+  useEffect(() => {
+    if (items) {
+      setGallery(items);
+      return;
+    }
+
+    let mounted = true;
+    getGalleryItems()
+      .then((data) => mounted && setGallery(data))
+      .catch(() => mounted && setGallery([]));
+
+    return () => {
+      mounted = false;
+    };
+  }, [items]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);

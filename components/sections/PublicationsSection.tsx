@@ -2,10 +2,32 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { publications } from "@/data/mockData";
+import { useEffect, useState } from "react";
 import SyntheticCover from "@/components/ui/WaveformIcon"; // اگر SyntheticCover در مسیر دیگری است، این را اصلاح کن
+import { getPublications } from "@/lib/api";
+import type { Publication } from "@/types";
 
-const PublicationsSection = () => {
+type Props = { items?: Publication[] };
+
+const PublicationsSection = ({ items }: Props) => {
+  const [publicationItems, setPublicationItems] = useState<Publication[]>(items ?? []);
+
+  useEffect(() => {
+    if (items) {
+      setPublicationItems(items);
+      return;
+    }
+
+    let mounted = true;
+    getPublications()
+      .then((data) => mounted && setPublicationItems(data))
+      .catch(() => mounted && setPublicationItems([]));
+
+    return () => {
+      mounted = false;
+    };
+  }, [items]);
+
   return (
     <section
       id="publications"
@@ -53,7 +75,7 @@ const PublicationsSection = () => {
             },
           }}
         >
-          {publications.map((pub, idx) => (
+          {publicationItems.map((pub, idx) => (
   <Link
     key={pub.id}
     href={`/articles/${pub.slug}`}   // یا مسیر دلخواهت، اگر بعداً slug را اضافه کنی

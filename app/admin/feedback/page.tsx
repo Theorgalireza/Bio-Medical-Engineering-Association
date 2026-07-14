@@ -1,16 +1,31 @@
 "use client";
-import { useState } from "react";
-import { mockFeedback, type AdminFeedback } from "@/data/mockData";
+import { useEffect, useState } from "react";
 import { Trash2, Star } from "lucide-react";
+import { adminDeleteFeedback, adminGetFeedback, adminUpdateFeedback } from "@/lib/api";
+import type { AdminFeedback } from "@/types";
 
 export default function FeedbackPage() {
-const [items, setItems] = useState<AdminFeedback[]>(mockFeedback);
+const [items, setItems] = useState<AdminFeedback[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      setItems(await adminGetFeedback());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load().catch(() => setLoading(false));
+  }, []);
   return (
     <div className="space-y-5" dir="rtl">
       <h2 className="text-xl font-bold">بازخوردها</h2>
 
       <div className="space-y-3">
-        {items.map(item => (
+        {!loading && items.map(item => (
           <div key={item.id} className="bg-[#0d1526] border border-[#1e2d4a] rounded-xl p-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
@@ -26,11 +41,11 @@ const [items, setItems] = useState<AdminFeedback[]>(mockFeedback);
                 <p className="text-sm text-gray-400">{item.message}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => setItems(items.map(i => i.id === item.id ? { ...i, approved: !i.approved } : i))}
+                <button onClick={async () => { await adminUpdateFeedback(item.id, !item.approved); await load(); }}
                   className={`px-2 py-0.5 rounded text-xs font-vazir transition-colors ${item.approved ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-gray-500/15 text-gray-400"}`}>
                   {item.approved ? "تأیید شده" : "در انتظار"}
                 </button>
-                <button onClick={() => setItems(items.filter(i => i.id !== item.id))} className="text-gray-400 hover:text-red-400 transition-colors">
+                <button onClick={async () => { await adminDeleteFeedback(item.id); await load(); }} className="text-gray-400 hover:text-red-400 transition-colors">
                   <Trash2 size={15} />
                 </button>
               </div>
@@ -38,6 +53,7 @@ const [items, setItems] = useState<AdminFeedback[]>(mockFeedback);
           </div>
         ))}
       </div>
+      {loading && <p className="text-sm text-gray-500">در حال بارگذاری...</p>}
     </div>
   );
 }

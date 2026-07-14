@@ -1,28 +1,34 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Megaphone, BookOpen, Users, MessageSquare, Mail, Menu, X, Activity,
 } from "lucide-react";
+
 const navItems = [
   { href: "/admin", label: "داشبورد", icon: LayoutDashboard },
   { href: "/admin/announcements", label: "اعلان‌ها", icon: Megaphone },
   { href: "/admin/articles", label: "مقالات", icon: BookOpen },
   { href: "/admin/faculty", label: "اعضای هیئت علمی", icon: Users },
-  { href: "/admin/members", label: "اعضای انجمن", icon: Users }, // NEW
+  { href: "/admin/members", label: "اعضای انجمن", icon: Users },
   { href: "/admin/feedback", label: "بازخوردها", icon: MessageSquare },
   { href: "/admin/contacts", label: "تماس‌ها", icon: Mail },
 ];
 
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!localStorage.getItem("access_token")) {
+      router.push("/login");
+    }
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white flex overflow-hidden" dir="rtl">
-      {/* Sidebar */}
       <aside className={`${sidebarOpen ? "w-64" : "w-16"} transition-all duration-300 bg-[#0d1526] border-l border-[#1e2d4a] flex flex-col`}>
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#1e2d4a]">
           {sidebarOpen && (
@@ -50,12 +56,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 bg-[#0d1526] border-b border-[#1e2d4a] flex items-center justify-between px-6">
-<h1 className="text-sm text-gray-300 font-vazir font-semibold tracking-tight">
-  پنل مدیریت انجمن مهندسی پزشکی
-</h1>       <div className="flex items-center gap-2">
+          <h1 className="text-sm text-gray-300 font-vazir font-semibold tracking-tight">
+            پنل مدیریت انجمن مهندسی پزشکی
+          </h1>
+          <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
             <span className="text-xs text-gray-500 font-vazir">آنلاین</span>
           </div>

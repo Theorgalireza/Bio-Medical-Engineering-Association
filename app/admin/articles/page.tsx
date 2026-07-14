@@ -1,16 +1,31 @@
 "use client";
-import { useState } from "react";
-import { mockArticles, type AdminArticle } from "@/data/mockData";
+import { useEffect, useState } from "react";
 import RichEditor from "@/components/admin/RichEditor";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { adminCreateArticle, adminDeleteArticle, adminGetArticles, adminUpdateArticle } from "@/lib/api";
+import type { AdminArticle } from "@/types";
 
 const empty: Omit<AdminArticle, "id"> = { title: "", authors: [], issue: "", date: "", content: "", published: false };
 
 export default function ArticlesPage() {
-  const [items, setItems] = useState<AdminArticle[]>(mockArticles);
+  const [items, setItems] = useState<AdminArticle[]>([]);
   const [modal, setModal] = useState<{ open: boolean; editing: AdminArticle | null }>({ open: false, editing: null });
   const [form, setForm] = useState(empty);
   const [authorsStr, setAuthorsStr] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      setItems(await adminGetArticles());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load().catch(() => setLoading(false));
+  }, []);
 
   const openAdd = () => { setForm(empty); setAuthorsStr(""); setModal({ open: true, editing: null }); };
   const openEdit = (item: AdminArticle) => {
@@ -20,15 +35,29 @@ export default function ArticlesPage() {
   };
   const close = () => setModal({ open: false, editing: null });
 
-  const save = () => {
+  const save = async () => {
     if (!form.title) return;
-    const authors = authorsStr.split("،").map(s => s.trim()).filter(Boolean);
+    const authors = authorsStr.split("،").map((s) => s.trim()).filter(Boolean);
+    const year = Number(String(form.date).match(/\d{4}/)?.[0] || new Date().getFullYear());
+    const payload = {
+      title: form.title,
+      summary: form.content || form.title,
+      content: form.content,
+      category: form.issue || "نشریه",
+      authors,
+      year,
+      readingTime: Math.max(1, Math.ceil((form.content || "").length / 800)),
+      featured: false,
+      status: form.published ? "PUBLISHED" : "DRAFT",
+      tags: [],
+    };
     if (modal.editing) {
-      setItems(items.map(i => i.id === modal.editing!.id ? { ...i, ...form, authors } : i));
+      await adminUpdateArticle(modal.editing.id, payload);
     } else {
-      setItems([...items, { ...form, authors, id: Date.now().toString() }]);
+      await adminCreateArticle(payload);
     }
     close();
+    await load();
   };
 
   return (
@@ -52,14 +81,18 @@ export default function ArticlesPage() {
             </tr>
           </thead>
           <tbody>
-            {items.map(item => (
+            {!loading && items.map(item => (
               <tr key={item.id} className="border-b border-[#1e2d4a]/50 hover:bg-white/2 transition-colors">
                 <td className="px-4 py-3 text-gray-200">{item.title}</td>
                 <td className="px-4 py-3 text-gray-400 text-xs">{item.authors.join("، ")}</td>
                 <td className="px-4 py-3 text-gray-400 font-vazir text-xs">{item.issue}</td>
                 <td className="px-4 py-3">
                   <button
-                    onClick={() => setItems(items.map(i => i.id === item.id ? { ...i, published: !i.published } : i))}
+                    onClick={async () => {
+                      const next = !item.published;
+                      await adminUpdateArticle(item.id, { status: next ? "PUBLISHED" : "DRAFT" });
+                      await load();
+                    }}
                     className={`px-2 py-0.5 rounded text-xs font-vazir transition-colors ${item.published ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-gray-500/15 text-gray-400"}`}>
                     {item.published ? "منتشر" : "پیش‌نویس"}
                   </button>
@@ -67,13 +100,14 @@ export default function ArticlesPage() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2 justify-end">
                     <button onClick={() => openEdit(item)} className="text-gray-400 hover:text-[#a855f7] transition-colors"><Pencil size={15} /></button>
-                    <button onClick={() => setItems(items.filter(i => i.id !== item.id))} className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
+                    <button onClick={async () => { await adminDeleteArticle(item.id); await load(); }} className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {loading && <p className="p-4 text-sm text-gray-500">در حال بارگذاری...</p>}
       </div>
 
       {modal.open && (

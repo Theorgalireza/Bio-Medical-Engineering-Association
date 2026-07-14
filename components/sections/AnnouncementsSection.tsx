@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import WaveformIcon from "@/components/ui/WaveformIcon";
-import { announcements } from "@/data/mockData";
+import { getAnnouncements } from "@/lib/api";
+import type { Announcement } from "@/types";
 
 const typeStyles: Record<string, string> = {
   رویداد: "bg-electric/10 text-electric border-electric/30",
   کارگاه: "bg-neonGreen/10 text-neonGreen border-neonGreen/30",
   خبر: "bg-accent/10 text-accent border-accent/30",
   مهم: "bg-neonPurple/10 text-neonPurple border-neonPurple/30",
-  Event: "bg-electric/10 text-electric border-electric/30",
-  Workshop: "bg-neonGreen/10 text-neonGreen border-neonGreen/30",
-  News: "bg-accent/10 text-accent border-accent/30",
+  EVENT: "bg-electric/10 text-electric border-electric/30",
+  WORKSHOP: "bg-neonGreen/10 text-neonGreen border-neonGreen/30",
+  NEWS: "bg-accent/10 text-accent border-accent/30",
+  WEBINAR: "bg-neonPurple/10 text-neonPurple border-neonPurple/30",
 };
 
 const container = {
@@ -27,7 +30,27 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-export default function Announcements() {
+type Props = { items?: Announcement[] };
+
+export default function Announcements({ items }: Props) {
+  const [announcementItems, setAnnouncementItems] = useState<Announcement[]>(items ?? []);
+
+  useEffect(() => {
+    if (items) {
+      setAnnouncementItems(items);
+      return;
+    }
+
+    let mounted = true;
+    getAnnouncements()
+      .then((data) => mounted && setAnnouncementItems(data))
+      .catch(() => mounted && setAnnouncementItems([]));
+
+    return () => {
+      mounted = false;
+    };
+  }, [items]);
+
   return (
     <section
       id="announcements"
@@ -60,7 +83,7 @@ export default function Announcements() {
           viewport={{ once: true, amount: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {announcements.map((a) => (
+          {announcementItems.map((a) => (
             <Link href={`/announcements/${a.slug}`} key={a.id} className="group block">
               <motion.article
                 variants={item}

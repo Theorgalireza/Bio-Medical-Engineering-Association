@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { mockAnnouncements, type AdminAnnouncement } from "@/data/mockData";
+import { useEffect, useState } from "react";
 import RichEditor from "@/components/admin/RichEditor";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { adminCreateAnnouncement, adminDeleteAnnouncement, adminGetAnnouncements, adminUpdateAnnouncement } from "@/lib/api";
+import type { AdminAnnouncement } from "@/types";
 
 const empty: Omit<AdminAnnouncement, "id"> = {
   title: "",
@@ -13,8 +14,15 @@ const empty: Omit<AdminAnnouncement, "id"> = {
   published: false,
 };
 
+const toApiType = (category?: string) => {
+  const value = String(category || "NEWS").toUpperCase();
+  return value === "WORKSHOP" || value === "WEBINAR" || value === "EVENT" || value === "NEWS"
+    ? value
+    : "NEWS";
+};
+
 export default function AnnouncementsPage() {
-  const [items, setItems] = useState<AdminAnnouncement[]>(mockAnnouncements);
+  const [items, setItems] = useState<AdminAnnouncement[]>([]);
   const [modal, setModal] = useState<{
     open: boolean;
     editing: AdminAnnouncement | null;
@@ -24,6 +32,21 @@ export default function AnnouncementsPage() {
   });
 
   const [form, setForm] = useState(empty);
+
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      setItems(await adminGetAnnouncements());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load().catch(() => setLoading(false));
+  }, []);
 
   const openAdd = () => {
     setForm(empty);
@@ -55,31 +78,26 @@ export default function AnnouncementsPage() {
     });
   };
 
-  const save = () => {
+  const save = async () => {
     if (!form.title) return;
 
+    const payload = {
+      title: form.title,
+      description: form.content,
+      type: toApiType(form.category),
+      imageUrl: undefined,
+      isNew: false,
+      status: form.published ? "PUBLISHED" : "DRAFT",
+    };
+
     if (modal.editing) {
-      setItems(
-        items.map((i) =>
-          i.id === modal.editing!.id
-            ? {
-                ...i,
-                ...form,
-              }
-            : i
-        )
-      );
+      await adminUpdateAnnouncement(modal.editing.id, payload);
     } else {
-      setItems([
-        ...items,
-        {
-          ...form,
-          id: Date.now().toString(),
-        },
-      ]);
+      await adminCreateAnnouncement(payload);
     }
 
     close();
+    await load();
   };
 
   return (
@@ -108,7 +126,7 @@ export default function AnnouncementsPage() {
           </thead>
 
           <tbody>
-            {items.map((item) => (
+            {!loading && items.map((item) => (
               <tr
                 key={item.id}
                 className="border-b border-[#1e2d4a]/50 hover:bg-white/2 transition-colors"
@@ -121,18 +139,11 @@ export default function AnnouncementsPage() {
 
                 <td className="px-4 py-3">
                   <button
-                    onClick={() =>
-                      setItems(
-                        items.map((i) =>
-                          i.id === item.id
-                            ? {
-                                ...i,
-                                published: !i.published,
-                              }
-                            : i
-                        )
-                      )
-                    }
+                    onClick={async () => {
+                      const next = !item.published;
+                      await adminUpdateAnnouncement(item.id, { status: next ? "PUBLISHED" : "DRAFT" });
+                      await load();
+                    }}
                     className={`px-2 py-0.5 rounded text-xs font-vazir transition-colors ${
                       item.published
                         ? "bg-[#22c55e]/15 text-[#22c55e]"
@@ -153,9 +164,10 @@ export default function AnnouncementsPage() {
                     </button>
 
                     <button
-                      onClick={() =>
-                        setItems(items.filter((i) => i.id !== item.id))
-                      }
+                      onClick={async () => {
+                        await adminDeleteAnnouncement(item.id);
+                        await load();
+                      }}
                       className="text-gray-400 hover:text-red-400 transition-colors"
                     >
                       <Trash2 size={15} />
@@ -166,6 +178,7 @@ export default function AnnouncementsPage() {
             ))}
           </tbody>
         </table>
+        {loading && <p className="p-4 text-sm text-gray-500">در حال بارگذاری...</p>}
       </div>
 
       {modal.open && (

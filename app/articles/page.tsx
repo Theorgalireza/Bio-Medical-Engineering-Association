@@ -2,8 +2,10 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { articles } from "@/data/mockData";
+import { useEffect, useState } from "react";
 import NeonButton from "@/components/ui/NeonButton";
+import { getArticles } from "@/lib/api";
+import type { Article } from "@/types";
 
 function ArticleCover({ seed }: { seed: number }) {
   const hue = (seed * 53) % 360;
@@ -72,6 +74,19 @@ function ArticleCover({ seed }: { seed: number }) {
 }
 
 export default function ArticlesPage() {
+  const [articles, setArticles] = useState<Article[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    getArticles()
+      .then((data) => mounted && setArticles(data))
+      .catch(() => mounted && setArticles([]));
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const featured = articles.find((a) => a.featured);
   const list = articles.filter((a) => !a.featured);
 
@@ -192,7 +207,7 @@ export default function ArticlesPage() {
               className="rounded-2xl overflow-hidden border border-borderSoft bg-primaryLight/60 backdrop-blur"
             >
 
-              <ArticleCover seed={Number(article.id)} />
+              <ArticleCover seed={index + 2} />
 
               <div className="p-6">
 

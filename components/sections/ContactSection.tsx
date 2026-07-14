@@ -4,7 +4,8 @@ import { useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CircuitBackground from "@/components/ui/CircuitBackground";
 import { MailIcon, PhoneIcon, PinIcon, SendIcon, CheckIcon } from "@/components/ui/Icons";
-import { contactInfo } from "@/data/mockData";
+import { contactInfo } from "@/lib/site-data";
+import { submitContact } from "@/lib/api";
 
 type ContactForm = {
   name: string;
@@ -38,9 +39,13 @@ export default function Contact() {
     if (!form.name || !form.email || !form.message) return;
 
     setStatus("submitting");
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    setStatus("done");
-    setForm(initialState);
+    try {
+      await submitContact(form);
+      setStatus("done");
+      setForm(initialState);
+    } catch {
+      setStatus("idle");
+    }
 
     setTimeout(() => setStatus("idle"), 4000);
   };

@@ -5,18 +5,22 @@ import { motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
 import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { forgotPassword } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!email) return;
 
-    // TODO:
-    // await fetch("/api/auth/forgot-password")
-
-    setIsSubmitted(true);
+    try {
+      await forgotPassword(email);
+      setIsSubmitted(true);
+    } catch {
+      setIsSubmitted(true);
+    }
   };
 
   return (
@@ -51,6 +55,8 @@ export default function ForgotPasswordPage() {
 
   <input
     type="email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
     placeholder="example@sbu.ac.ir"
     className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pl-12 pr-4 text-white outline-none transition focus:border-accent"
   />

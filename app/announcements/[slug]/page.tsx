@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { announcements } from "@/data/mockData";
 import NeonButton from "@/components/ui/NeonButton";
+import { getAnnouncementBySlug } from "@/lib/api";
 
 interface Props {
   params: {
@@ -9,8 +9,8 @@ interface Props {
   };
 }
 
-export default function AnnouncementPage({ params }: Props) {
-  const announcement = announcements.find((item) => item.slug === params.slug);
+export default async function AnnouncementPage({ params }: Props) {
+  const announcement = await getAnnouncementBySlug(params.slug);
 
   if (!announcement) {
     notFound();

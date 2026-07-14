@@ -1,20 +1,44 @@
-// src/modules/auth/sms/sms.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as Kavenegar from 'kavenegar';
 
 @Injectable()
 export class SmsService {
   private readonly logger = new Logger(SmsService.name);
+  private readonly api: any;
 
-  constructor(private config: ConfigService) {}
+  constructor(private readonly config: ConfigService) {
+    this.api = Kavenegar.KavenegarApi({
+      apikey: this.config.get<string>('app.kavenegarApiKey')!,
+    });
+  }
 
   async sendOtp(phone: string, code: string): Promise<void> {
-    const provider = this.config.get('app.smsProvider');
-    if (provider === 'mock') {
-      this.logger.log(`[MOCK SMS] To: ${phone} | OTP: ${code}`);
-      return;
-    }
-    // TODO: integrate Kavenegar or other provider
-    // await kavenegarClient.send({ receptor: phone, message: `کد تایید: ${code}` });
+  const provider = this.config.get<string>("app.smsProvider");
+
+  if (provider === "mock") {
+    this.logger.log(`[MOCK SMS] ${phone} -> ${code}`);
+    return;
   }
+
+  await new Promise<void>((resolve, reject) => {
+      this.api.Send(
+        {
+          receptor: phone,
+          message: `کد تایید شما: ${code}`,
+        },
+        (response: any, status: number) => {
+          console.log("STATUS =", status);
+          console.log("RESPONSE =", response);
+
+          if (status === 200) {
+            this.logger.log(`SMS sent to ${phone}`);
+            resolve();
+          } else {
+            reject(response);
+          }
+        },
+      );
+  });
+}
 }

@@ -1,16 +1,79 @@
-import { mockAnnouncements, mockArticles, mockFaculty, mockFeedback, mockContacts } from "@/data/mockData";
-import { Megaphone, BookOpen, Users, MessageSquare, Mail, TrendingUp } from "lucide-react";
-import Link from "next/link";
+"use client";
 
-const stats = [
-  { label: "اعلان‌ها", value: mockAnnouncements.length, published: mockAnnouncements.filter(a => a.published).length, href: "/admin/announcements", icon: Megaphone, color: "#00d4ff" },
-  { label: "مقالات", value: mockArticles.length, published: mockArticles.filter(a => a.published).length, href: "/admin/articles", icon: BookOpen, color: "#a855f7" },
-  { label: "هیئت علمی", value: mockFaculty.length, published: mockFaculty.length, href: "/admin/faculty", icon: Users, color: "#22c55e" },
-  { label: "بازخوردها", value: mockFeedback.length, published: mockFeedback.filter(f => f.approved).length, href: "/admin/feedback", icon: MessageSquare, color: "#f59e0b" },
-  { label: "پیام‌های تماس", value: mockContacts.length, published: mockContacts.filter(c => c.read).length, href: "/admin/contacts", icon: Mail, color: "#ef4444" },
+import { useEffect, useState } from "react";
+import { Megaphone, BookOpen, Users, MessageSquare, Mail, TrendingUp, type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { adminGetAnnouncements, adminGetArticles, adminGetContacts, adminGetFaculty, adminGetFeedback } from "@/lib/api";
+
+type Stat = {
+  label: string;
+  value: number;
+  published: number;
+  href: string;
+  icon: LucideIcon;
+  color: string;
+};
+
+const baseStats: Stat[] = [
+  { label: "اعلان‌ها", value: 0, published: 0, href: "/admin/announcements", icon: Megaphone, color: "#00d4ff" },
+  { label: "مقالات", value: 0, published: 0, href: "/admin/articles", icon: BookOpen, color: "#a855f7" },
+  { label: "هیئت علمی", value: 0, published: 0, href: "/admin/faculty", icon: Users, color: "#22c55e" },
+  { label: "بازخوردها", value: 0, published: 0, href: "/admin/feedback", icon: MessageSquare, color: "#f59e0b" },
+  { label: "پیام‌های تماس", value: 0, published: 0, href: "/admin/contacts", icon: Mail, color: "#ef4444" },
 ];
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<Stat[]>(baseStats);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([
+      adminGetAnnouncements(),
+      adminGetArticles(),
+      adminGetFaculty(),
+      adminGetFeedback(),
+      adminGetContacts(),
+    ])
+      .then(([announcements, articles, faculty, feedback, contacts]) => {
+        if (!mounted) return;
+        setStats([
+          {
+            ...baseStats[0],
+            value: announcements.length,
+            published: announcements.filter((item) => item.published).length,
+          },
+          {
+            ...baseStats[1],
+            value: articles.length,
+            published: articles.filter((item) => item.published).length,
+          },
+          {
+            ...baseStats[2],
+            value: faculty.length,
+            published: faculty.filter((item) => item.isActive !== false).length,
+          },
+          {
+            ...baseStats[3],
+            value: feedback.length,
+            published: feedback.filter((item) => item.approved).length,
+          },
+          {
+            ...baseStats[4],
+            value: contacts.length,
+            published: contacts.filter((item) => item.read).length,
+          },
+        ]);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setStats(baseStats);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center gap-3">

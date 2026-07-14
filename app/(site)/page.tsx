@@ -8,9 +8,17 @@ import FacultySection from "@/components/sections/FacultySection";
 import Feedback from "@/components/sections/FeedbackSection";
 import Contact from "@/components/sections/ContactSection";
 import NeonButton from "@/components/ui/NeonButton";
-import GallerySection from "@/components/sections/GallerySection"; // استفاده می‌کنیم
+import GallerySection from "@/components/sections/GallerySection";
+import { getAnnouncements, getPublications, getFacultyMembers, getGalleryItems } from "@/lib/api";
 
-export default function Home() {
+export default async function Home() {
+  const [announcements, publications, faculty, gallery] = await Promise.all([
+    getAnnouncements(),
+    getPublications(),
+    getFacultyMembers(),
+    getGalleryItems(),
+  ]);
+
   return (
     <main>
       <Hero />
@@ -18,7 +26,7 @@ export default function Home() {
       <StatsSection />
 
       <section id="announcements" className="py-4">
-        <AnnouncementsSection />
+        <AnnouncementsSection items={announcements} />
 
         <div className="flex justify-center mt-10 pb-8">
           <Link href="/announcements" className="inline-block">
@@ -29,7 +37,7 @@ export default function Home() {
         </div>
       </section>
 
-      <PublicationsSection />
+      <PublicationsSection items={publications} />
 
       <div className="flex justify-center mt-10 pb-12">
         <Link href="/articles" className="inline-block">
@@ -40,10 +48,10 @@ export default function Home() {
       </div>
 
       {/* Gallery بین Publications و Faculty */}
-      <GallerySection />
+      <GallerySection items={gallery} />
 
       {/* این‌ها خودشون سکشن دارند، نیازی به پیچیدن داخل <section> جدید نیست */}
-      <FacultySection />
+      <FacultySection items={faculty} />
       <Feedback />
       <Contact />
     </main>

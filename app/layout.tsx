@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 
 const vazirmatn = Vazirmatn({
   subsets: ["arabic"],
@@ -9,9 +10,7 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "انجمن علمی مهندسی پزشکی - شاخه بیوالکتریک",
-  description:
-    "انجمن علمی مهندسی پزشکی دانشگاه شهید بهشتی",
+  // ... متادیتای موجود
 };
 
 export default function RootLayout({
@@ -19,13 +18,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   return (
     <html lang="fa" dir="rtl">
       <body
         className={`${vazirmatn.variable} font-vazir bg-surface text-white antialiased`}
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

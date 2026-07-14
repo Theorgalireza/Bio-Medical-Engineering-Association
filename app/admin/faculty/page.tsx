@@ -1,26 +1,51 @@
 "use client";
-import { useState } from "react";
-import { mockFaculty, type AdminFacultyMember } from "@/data/mockData";import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { adminCreateFaculty, adminDeleteFaculty, adminGetFaculty, adminUpdateFaculty } from "@/lib/api";
+import type { AdminFacultyMember } from "@/types";
 
 const empty: Omit<AdminFacultyMember, "id"> = { name: "", role: "", field: "", monogram: "", color: "#00d4ff" };
 
 export default function FacultyPage() {
-  const [items, setItems] = useState<AdminFacultyMember[]>(mockFaculty);
+  const [items, setItems] = useState<AdminFacultyMember[]>([]);
   const [modal, setModal] = useState<{ open: boolean; editing: AdminFacultyMember | null }>({ open: false, editing: null });
   const [form, setForm] = useState(empty);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      setItems(await adminGetFaculty());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load().catch(() => setLoading(false));
+  }, []);
 
   const openAdd = () => { setForm(empty); setModal({ open: true, editing: null }); };
   const openEdit = (item: AdminFacultyMember) => { setForm({ name: item.name, role: item.role, field: item.field, monogram: item.monogram, color: item.color }); setModal({ open: true, editing: item }); };
   const close = () => setModal({ open: false, editing: null });
 
-  const save = () => {
+  const save = async () => {
     if (!form.name) return;
+    const payload = {
+      name: form.name,
+      title: form.role,
+      specialties: String(form.field || "").split("،").map((s) => s.trim()).filter(Boolean),
+      monogram: form.monogram,
+      color: form.color,
+      isActive: true,
+    };
     if (modal.editing) {
-      setItems(items.map(i => i.id === modal.editing!.id ? { ...i, ...form } : i));
+      await adminUpdateFaculty(modal.editing.id, payload);
     } else {
-      setItems([...items, { ...form, id: Date.now().toString() }]);
+      await adminCreateFaculty(payload);
     }
     close();
+    await load();
   };
 
   return (
@@ -33,7 +58,7 @@ export default function FacultyPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {items.map(item => (
+        {!loading && items.map(item => (
           <div key={item.id} className="bg-[#0d1526] border border-[#1e2d4a] rounded-xl p-5 flex items-start gap-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shrink-0"
               style={{ backgroundColor: `${item.color}20`, color: item.color, border: `1px solid ${item.color}40` }}>
@@ -45,11 +70,12 @@ export default function FacultyPage() {
             </div>
             <div className="flex gap-2 shrink-0">
               <button onClick={() => openEdit(item)} className="text-gray-400 hover:text-[#22c55e] transition-colors"><Pencil size={15} /></button>
-              <button onClick={() => setItems(items.filter(i => i.id !== item.id))} className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
+              <button onClick={async () => { await adminDeleteFaculty(item.id); await load(); }} className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
             </div>
           </div>
         ))}
       </div>
+      {loading && <p className="text-sm text-gray-500">در حال بارگذاری...</p>}
 
       {modal.open && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
