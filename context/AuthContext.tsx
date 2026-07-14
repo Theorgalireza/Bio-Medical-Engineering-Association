@@ -14,7 +14,7 @@ interface AuthContextValue {
   user: CurrentUser | null;
   loading: boolean;
   isAuthenticated: boolean;
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<CurrentUser | null>;
   logout: () => Promise<void>;
 }
 
@@ -28,8 +28,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      return currentUser;
     } catch {
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }

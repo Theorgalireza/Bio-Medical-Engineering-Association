@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, type ChangeEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   User,
@@ -19,9 +19,11 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
+  
 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
+import { FaLinkedinIn } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { updateMyProfile, type Profile } from "@/lib/api";
@@ -97,7 +99,7 @@ function ProfilePageContent() {
   const roleColor = user?.role ? ROLE_COLORS[user.role] ?? "" : "";
 
   const handleChange = (key: keyof ProfileForm) => (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: ChangeEvent<HTMLInputElement>
   ) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   };
@@ -139,7 +141,7 @@ function ProfilePageContent() {
   };
 
   const infoFields: {
-    icon: React.ReactNode;
+    icon: ReactNode;
     label: string;
     key: keyof ProfileForm;
     placeholder: string;
@@ -152,8 +154,8 @@ function ProfilePageContent() {
     { icon: <BookOpen size={16} />, label: "گرایش", key: "field", placeholder: "بیوالکتریک" },
     { icon: <CalendarDays size={16} />, label: "سال ورود", key: "entryYear", placeholder: "۱۴۰۲" },
     { icon: <Mail size={16} />, label: "ایمیل نمایشی", key: "profileEmail", placeholder: "email@example.com" },
-    { icon: <Github size={16} />, label: "گیت‌هاب", key: "github", placeholder: "https://github.com/username" },
-    { icon: <Linkedin size={16} />, label: "لینکدین", key: "linkedin", placeholder: "https://linkedin.com/in/username" },
+    { icon: <FaGithub size={16} />, label: "گیت‌هاب", key: "github", placeholder: "https://github.com/username" },
+    { icon: <FaLinkedinIn size={16} />, label: "لینکدین", key: "linkedin", placeholder: "https://linkedin.com/in/username" },
     { icon: <Globe size={16} />, label: "وب‌سایت", key: "website", placeholder: "https://example.com" },
   ];
 

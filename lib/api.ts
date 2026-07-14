@@ -1,7 +1,6 @@
 import type {
   Announcement,
   Article,
-  Publication,
   FacultyMember,
   GalleryItem,
   Feedback,
@@ -16,6 +15,7 @@ import type {
   AdminFeedback,
   AdminContact,
   CurrentUser,
+  Profile,
 } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
@@ -24,15 +24,18 @@ type ApiEnvelope<T> = { success?: boolean; data?: T };
 
 async function apiFetch<T>(
   path: string,
-  options: RequestInit & { auth?: boolean } = {}
+  options: RequestInit & { auth?: boolean } = {},
+  auth = false,
 ): Promise<T> {
-  const { auth, ...rest } = options;
+  const { auth: authFromOptions, ...rest } = options;
+  const needsAuth = auth || Boolean(authFromOptions);
   const headers = new Headers(rest.headers);
 
   if (rest.body) {
     headers.set("Content-Type", "application/json");
   }
   // هدر Authorization حذف شد؛ کوکی httpOnly به‌طور خودکار ارسال می‌شود
+  void needsAuth;
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...rest,
@@ -106,6 +109,7 @@ function toArticle(item: any): Article {
     summary: String(item.summary ?? ""),
     content: item.content ?? item.summary ?? "",
     category: String(item.category ?? ""),
+    date: item.date ? String(item.date) : getPublishedDate(item),
     authors: asStringArray(item.authors),
     year: Number(item.year ?? new Date(item.createdAt ?? Date.now()).getFullYear()),
     readingTime: Number(item.readingTime ?? 8),
@@ -115,21 +119,6 @@ function toArticle(item: any): Article {
   };
 }
 
-function toPublication(item: any): Publication {
-  return {
-    id: String(item.id),
-    slug: String(item.slug ?? ""),
-    title: String(item.title ?? ""),
-    issue: String(item.issue ?? ""),
-    date: item.date ? String(item.date) : getPublishedDate(item),
-    category: String(item.category ?? ""),
-    summary: String(item.summary ?? item.description ?? ""),
-    authors: asStringArray(item.authors),
-    year: Number(item.year ?? new Date(item.createdAt ?? Date.now()).getFullYear()),
-    description: String(item.description ?? item.summary ?? ""),
-    downloadUrl: String(item.downloadUrl ?? "#"),
-  };
-}
 
 function toFacultyMember(item: any): FacultyMember {
   const specialties = asStringArray(item.specialties);
@@ -180,10 +169,20 @@ function toContact(item: any): AdminContact {
   };
 }
 
+const VALID_ROLES = new Set<Role>([
+  "OWNER",
+  "ADMIN",
+  "CONTENT_EDITOR",
+  "STUDENT_MEMBER",
+  "STUDENT_ACTIVE_MEMBER",
+  "STUDENT_INACTIVE_MEMBER",
+  "FACULTY_MEMBER",
+  "GUEST",
+]);
+
 function mapBackendRole(role: unknown): Role {
-  const value = String(role ?? "").toUpperCase();
-  if (value === "OWNER" || value === "ADMIN") return value;
-  return "MEMBER";
+  const value = String(role ?? "").toUpperCase() as Role;
+  return VALID_ROLES.has(value) ? value : "GUEST";
 }
 
 function toUser(item: any): ApiUser {
@@ -199,6 +198,7 @@ function toUser(item: any): ApiUser {
     profile: profile
       ? {
           id: String(profile.id ?? item.id),
+          userId: String(profile.userId ?? item.id),
           firstName: profile.firstName ?? null,
           lastName: profile.lastName ?? null,
           studentId: profile.studentId ?? null,
@@ -206,7 +206,7 @@ function toUser(item: any): ApiUser {
           entryYear:
             profile.entryYear === null || profile.entryYear === undefined
               ? null
-              : String(profile.entryYear),
+              : Number(profile.entryYear),
           university: profile.university ?? null,
           field: profile.field ?? null,
           github: profile.github ?? null,
@@ -217,10 +217,17 @@ function toUser(item: any): ApiUser {
       : null,
   };
 }
-
-function normalizeRole(role: Role | string): string {
+function normalizeRole(role: Role | string): Role {
   const upper = String(role).toUpperCase();
-  if (upper === "OWNER" || upper === "ADMIN") return upper;
+
+  if (upper === "MEMBER") {
+    return "STUDENT_MEMBER";
+  }
+
+  if (VALID_ROLES.has(upper as Role)) {
+    return upper as Role;
+  }
+
   return "STUDENT_MEMBER";
 }
 
@@ -238,9 +245,7 @@ export async function getAnnouncementBySlug(slug: string): Promise<Announcement 
   }
 }
 
-export async function getArticles(): Promise<Article[]> {
-  return (await apiFetch<any[]>("/articles")).map(toArticle);
-}
+
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
@@ -251,10 +256,11 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   }
 }
 
-export async function getPublications(): Promise<Publication[]> {
-  return (await apiFetch<any[]>("/publications?status=PUBLISHED")).map(toPublication);
+export async function getArticles(): Promise<Article[]> {
+  return (
+    await apiFetch<any[]>("/articles?status=PUBLISHED")
+  ).map(toArticle);
 }
-
 export async function getFacultyMembers(): Promise<FacultyMember[]> {
   return (await apiFetch<any[]>("/faculty")).map(toFacultyMember);
 }
@@ -520,19 +526,32 @@ export async function createUser(body: CreateUserPayload) {
         firstName: body.firstName || undefined,
         lastName: body.lastName || undefined,
         studentId: body.studentId || undefined,
+        university: body.university || undefined,
         major: body.major || undefined,
-        entryYear: body.entryYear ? Number(body.entryYear) : undefined,
+        field: body.field || undefined,
+        entryYear: body.entryYear ?? undefined,
+        github: body.github || undefined,
+        linkedin: body.linkedin || undefined,
+        website: body.website || undefined,
+        profileEmail: body.profileEmail || undefined,
       }),
     },
     true,
   ).then(toUser);
 }
 
-export async function updateMyProfile(payload: Partial<Profile>) {
+export async function updateMyProfile(payload: UpdateProfilePayload) {
   return apiFetch<CurrentUser>("/users/me/profile", {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
+}
+
+export async function updateUserProfile(id: string, payload: UpdateProfilePayload) {
+  return apiFetch<ApiUser>(`/users/${id}/profile`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  }, true).then(toUser);
 }
 
 export async function updateUserRole(id: string, role: Role) {
@@ -560,3 +579,5 @@ export async function updateUserStatus(id: string, isActive: boolean) {
 export async function deleteUser(id: string) {
   return apiFetch<void>(`/users/${id}`, { method: "DELETE" }, true);
 }
+
+export type { Profile, CurrentUser } from "@/types";

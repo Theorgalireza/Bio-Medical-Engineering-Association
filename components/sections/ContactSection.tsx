@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CircuitBackground from "@/components/ui/CircuitBackground";
-import { MailIcon, PhoneIcon, PinIcon, SendIcon, CheckIcon } from "@/components/ui/Icons";
+import { MailIcon, PhoneIcon, PinIcon, CheckIcon, SendIcon } from "@/components/ui/Icons";
 import { contactInfo } from "@/lib/site-data";
 import { submitContact } from "@/lib/api";
 
@@ -29,25 +29,41 @@ const infoIcons = {
 
 export default function Contact() {
   const [form, setForm] = useState<ContactForm>(initialState);
-  const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [error, setError] = useState("");
+  const timeoutRef = useRef<number | null>(null);
 
   const update = <K extends keyof ContactForm>(key: K, value: ContactForm[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.message) return;
-
-    setStatus("submitting");
-    try {
-      await submitContact(form);
-      setStatus("done");
-      setForm(initialState);
-    } catch {
-      setStatus("idle");
+    if (!form.name || !form.email || !form.message) {
+      setError("نام، ایمیل و پیام الزامی است.");
+      setStatus("error");
+      return;
     }
 
-    setTimeout(() => setStatus("idle"), 4000);
+    setStatus("submitting");
+    setError("");
+    try {
+      await submitContact(form);
+      setStatus("success");
+      setForm(initialState);
+      timeoutRef.current = window.setTimeout(() => setStatus("idle"), 4000);
+    } catch {
+      setStatus("error");
+      setError("ارسال پیام ناموفق بود. دوباره تلاش کنید.");
+      timeoutRef.current = window.setTimeout(() => setStatus("idle"), 4000);
+    }
   };
 
   return (
@@ -70,7 +86,6 @@ export default function Contact() {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Contact info cards */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -83,56 +98,42 @@ export default function Contact() {
               return (
                 <div
                   key={info.label}
-                  className="flex items-start gap-4 rounded-2xl border border-borderSoft bg-primaryLight/60 backdrop-blur-sm p-5 hover:border-accent/50 transition-colors duration-300"
+                  className="flex items-start gap-4 rounded-2xl border border-borderSoft bg-primaryLight/60 p-4 backdrop-blur-sm"
                 >
-                  <div className="w-11 h-11 shrink-0 rounded-xl bg-accent/10 flex items-center justify-center">
-                    <Icon size={20} className="text-accent" />
+                  <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <Icon size={20} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">{info.label}</p>
-                    <p className="text-sm text-white font-medium" dir="ltr">
-                      {info.value}
-                    </p>
+                    <h3 className="text-sm font-semibold text-white">{info.label}</h3>
+                    <p className="mt-1 text-sm leading-7 text-gray-400">{info.value}</p>
                   </div>
                 </div>
               );
             })}
-
-            {/* map placeholder - synthetic circuit-grid style, no external tiles */}
-            <div className="relative rounded-2xl border border-borderSoft bg-primaryLight/60 backdrop-blur-sm h-48 overflow-hidden flex items-center justify-center">
-              <CircuitBackground />
-              <div className="relative flex flex-col items-center gap-2 text-center">
-                <PinIcon size={26} className="text-accent drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]" />
-                <span className="text-xs text-gray-400">
-                  دانشکده مهندسی برق، دانشگاه ...
-                </span>
-              </div>
-            </div>
           </motion.div>
 
-          {/* Contact form */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.6 }}
-            className="lg:col-span-3 relative rounded-2xl border border-borderSoft bg-primaryLight/60 backdrop-blur-sm p-6 md:p-8"
+            className="lg:col-span-3 rounded-2xl border border-borderSoft bg-primaryLight/60 p-6 backdrop-blur-sm md:p-8"
           >
             <AnimatePresence mode="wait">
-              {status === "done" ? (
+              {status === "success" ? (
                 <motion.div
                   key="success"
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex flex-col items-center justify-center py-16 text-center"
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  className="flex min-h-[320px] flex-col items-center justify-center text-center"
                 >
-                  <div className="w-16 h-16 rounded-full bg-neonGreen/10 border border-neonGreen/40 flex items-center justify-center mb-4 shadow-[0_0_25px_rgba(57,255,20,0.25)]">
-                    <CheckIcon size={28} className="text-neonGreen" />
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-neonGreen/40 bg-neonGreen/10 text-neonGreen">
+                    <CheckIcon size={28} />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-1">پیام شما ارسال شد</h3>
-                  <p className="text-sm text-gray-400">
-                    در اسرع وقت با شما تماس می‌گیریم.
+                  <h3 className="text-lg font-bold text-white">پیام شما ثبت شد</h3>
+                  <p className="mt-2 text-sm leading-7 text-gray-400">
+                    به‌زودی پاسخ شما را بررسی می‌کنیم.
                   </p>
                 </motion.div>
               ) : (
@@ -142,78 +143,51 @@ export default function Contact() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onSubmit={handleSubmit}
-                  className="space-y-5"
+                  className="space-y-4"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-xs text-gray-400 mb-2">
-                        نام و نام‌خانوادگی <span className="text-accent">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={form.name}
-                        onChange={(e) => update("name", e.target.value)}
-                        placeholder="نام شما"
-                        className="w-full bg-primary/60 border border-borderSoft rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(0,212,255,0.12)] transition-all duration-300"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-400 mb-2">
-                        ایمیل <span className="text-accent">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        value={form.email}
-                        onChange={(e) => update("email", e.target.value)}
-                        placeholder="you@example.com"
-                        className="w-full bg-primary/60 border border-borderSoft rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(0,212,255,0.12)] transition-all duration-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-2">موضوع</label>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <input
-                      type="text"
-                      value={form.subject}
-                      onChange={(e) => update("subject", e.target.value)}
-                      placeholder="موضوع پیام"
-                      className="w-full bg-primary/60 border border-borderSoft rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(0,212,255,0.12)] transition-all duration-300"
+                      value={form.name}
+                      onChange={(e) => update("name", e.target.value)}
+                      placeholder="نام"
+                      className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent"
+                    />
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => update("email", e.target.value)}
+                      placeholder="ایمیل"
+                      className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-2">
-                      پیام <span className="text-accent">*</span>
-                    </label>
-                    <textarea
-                      required
-                      rows={5}
-                      value={form.message}
-                      onChange={(e) => update("message", e.target.value)}
-                      placeholder="پیام خود را بنویسید..."
-                      className="w-full bg-primary/60 border border-borderSoft rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 resize-none focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(0,212,255,0.12)] transition-all duration-300"
-                    />
-                  </div>
+                  <input
+                    value={form.subject}
+                    onChange={(e) => update("subject", e.target.value)}
+                    placeholder="موضوع"
+                    className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent"
+                  />
 
-                  <motion.button
+                  <textarea
+                    value={form.message}
+                    onChange={(e) => update("message", e.target.value)}
+                    placeholder="پیام شما"
+                    rows={6}
+                    className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent"
+                  />
+
+                  {status === "error" && error && (
+                    <p className="text-sm text-red-400">{error}</p>
+                  )}
+
+                  <button
                     type="submit"
                     disabled={status === "submitting"}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-accent text-primary font-bold text-sm shadow-[0_0_20px_rgba(0,212,255,0.35)] hover:shadow-[0_0_30px_rgba(0,212,255,0.55)] transition-shadow duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {status === "submitting" ? (
-                      "در حال ارسال..."
-                    ) : (
-                      <>
-                        <SendIcon size={16} />
-                        ارسال پیام
-                      </>
-                    )}
-                  </motion.button>
+                    <SendIcon size={18} />
+                    {status === "submitting" ? "در حال ارسال..." : "ارسال پیام"}
+                  </button>
                 </motion.form>
               )}
             </AnimatePresence>

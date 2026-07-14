@@ -79,7 +79,8 @@ export class AuthController {
   @Public()
   @Post('logout')
   logout(@Res() reply: any) {
-    reply.clearCookie('access_token', { path: '/' });
+    const isProd = this.config.get<string>('NODE_ENV') === 'production';
+    reply.clearCookie('access_token', { path: '/', sameSite: 'lax', secure: isProd });
     return reply.send({ success: true });
   }
 

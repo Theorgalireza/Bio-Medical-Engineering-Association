@@ -1,4 +1,6 @@
-export const ROLE_LABELS: Record<string, string> = {
+import type { Role } from "@/types";
+
+export const ROLE_LABELS: Record<Role, string> = {
   OWNER: "مالک انجمن",
   ADMIN: "مدیر سیستم",
   CONTENT_EDITOR: "ویراستار محتوا",
@@ -9,7 +11,7 @@ export const ROLE_LABELS: Record<string, string> = {
   GUEST: "مهمان",
 };
 
-export const ROLE_COLORS: Record<string, string> = {
+export const ROLE_COLORS: Record<Role, string> = {
   OWNER: "bg-neonPurple/15 text-neonPurple border-neonPurple/40",
   ADMIN: "bg-accent/15 text-accent border-accent/40",
   CONTENT_EDITOR: "bg-electric/15 text-electric border-electric/40",

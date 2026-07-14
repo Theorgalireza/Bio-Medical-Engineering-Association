@@ -1,0 +1,194 @@
+import { PrismaService } from '../../prisma/prisma.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+export declare class UsersService {
+    private readonly prisma;
+    constructor(prisma: PrismaService);
+    private readonly userSelect;
+    private normalizeProfileData;
+    private hasProfileData;
+    private upsertProfile;
+    findAll(): Promise<{
+        profile: {
+            github: string | null;
+            linkedin: string | null;
+            id: string;
+            userId: string;
+            firstName: string | null;
+            lastName: string | null;
+            studentId: string | null;
+            university: string | null;
+            major: string | null;
+            field: string | null;
+            entryYear: number | null;
+            website: string | null;
+            profileEmail: string | null;
+        } | null;
+        email: string | null;
+        phone: string | null;
+        id: string;
+        role: import(".prisma/client").$Enums.Role;
+        avatarUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+    }[]>;
+    findById(id: string): Promise<{
+        profile: {
+            github: string | null;
+            linkedin: string | null;
+            id: string;
+            userId: string;
+            firstName: string | null;
+            lastName: string | null;
+            studentId: string | null;
+            university: string | null;
+            major: string | null;
+            field: string | null;
+            entryYear: number | null;
+            website: string | null;
+            profileEmail: string | null;
+        } | null;
+        email: string | null;
+        phone: string | null;
+        id: string;
+        role: import(".prisma/client").$Enums.Role;
+        avatarUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+    }>;
+    create(dto: CreateUserDto): Promise<{
+        profile: {
+            github: string | null;
+            linkedin: string | null;
+            id: string;
+            userId: string;
+            firstName: string | null;
+            lastName: string | null;
+            studentId: string | null;
+            university: string | null;
+            major: string | null;
+            field: string | null;
+            entryYear: number | null;
+            website: string | null;
+            profileEmail: string | null;
+        } | null;
+        email: string | null;
+        phone: string | null;
+        id: string;
+        role: import(".prisma/client").$Enums.Role;
+        avatarUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+    }>;
+    getProfile(userId: string): Promise<{
+        profile: {
+            github: string | null;
+            linkedin: string | null;
+            id: string;
+            userId: string;
+            firstName: string | null;
+            lastName: string | null;
+            studentId: string | null;
+            university: string | null;
+            major: string | null;
+            field: string | null;
+            entryYear: number | null;
+            website: string | null;
+            profileEmail: string | null;
+        } | null;
+        email: string | null;
+        phone: string | null;
+        id: string;
+        role: import(".prisma/client").$Enums.Role;
+        avatarUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+    }>;
+    updateProfile(userId: string, dto: UpdateProfileDto): Promise<{
+        profile: {
+            github: string | null;
+            linkedin: string | null;
+            id: string;
+            userId: string;
+            firstName: string | null;
+            lastName: string | null;
+            studentId: string | null;
+            university: string | null;
+            major: string | null;
+            field: string | null;
+            entryYear: number | null;
+            website: string | null;
+            profileEmail: string | null;
+        } | null;
+        email: string | null;
+        phone: string | null;
+        id: string;
+        role: import(".prisma/client").$Enums.Role;
+        avatarUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+    }>;
+    updateStatus(id: string, isActive: boolean): Promise<{
+        profile: {
+            github: string | null;
+            linkedin: string | null;
+            id: string;
+            userId: string;
+            firstName: string | null;
+            lastName: string | null;
+            studentId: string | null;
+            university: string | null;
+            major: string | null;
+            field: string | null;
+            entryYear: number | null;
+            website: string | null;
+            profileEmail: string | null;
+        } | null;
+        email: string | null;
+        phone: string | null;
+        id: string;
+        role: import(".prisma/client").$Enums.Role;
+        avatarUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+    }>;
+    updateRole(id: string, dto: UpdateUserRoleDto): Promise<{
+        profile: {
+            github: string | null;
+            linkedin: string | null;
+            id: string;
+            userId: string;
+            firstName: string | null;
+            lastName: string | null;
+            studentId: string | null;
+            university: string | null;
+            major: string | null;
+            field: string | null;
+            entryYear: number | null;
+            website: string | null;
+            profileEmail: string | null;
+        } | null;
+        email: string | null;
+        phone: string | null;
+        id: string;
+        role: import(".prisma/client").$Enums.Role;
+        avatarUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+    }>;
+    remove(id: string): Promise<{
+        message: string;
+    }>;
+    countByRole(): Promise<{
+        role: "OWNER" | "ADMIN" | "CONTENT_EDITOR" | "STUDENT_MEMBER" | "STUDENT_ACTIVE_MEMBER" | "STUDENT_INACTIVE_MEMBER" | "FACULTY_MEMBER" | "GUEST";
+        count: number;
+    }[]>;
+}

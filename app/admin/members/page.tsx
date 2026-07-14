@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "@/context/AuthContext";
 import {
   getUsers, createUser, updateUserProfile,
   updateUserRole, updateUserStatus, deleteUser,
@@ -11,7 +12,7 @@ import type { ApiUser, Role, CreateUserPayload, UpdateProfilePayload } from "@/t
 const fullName = (u: ApiUser) =>
   [u.profile?.firstName, u.profile?.lastName].filter(Boolean).join(" ") || "—";
 
-const ROLES: Role[] = ["MEMBER", "ADMIN", "OWNER"];
+const ROLES: Role[] = ["OWNER", "ADMIN", "CONTENT_EDITOR", "STUDENT_MEMBER", "STUDENT_ACTIVE_MEMBER", "STUDENT_INACTIVE_MEMBER", "FACULTY_MEMBER", "GUEST"];
 
 // ─── types ───────────────────────────────────────────────
 interface FormState {
@@ -28,11 +29,16 @@ interface FormState {
 
 const EMPTY_FORM: FormState = {
   firstName: "", lastName: "", email: "", phone: "",
-  studentId: "", major: "", entryYear: "", role: "MEMBER", password: "",
+  studentId: "", major: "", entryYear: "", role: "STUDENT_MEMBER", password: "",
 };
 
 // ─── component ───────────────────────────────────────────
 export default function MembersPage() {
+  const { user: currentUser, loading: authLoading } = useAuth();
+  const canManageUsers = currentUser?.role === "OWNER" || currentUser?.role === "ADMIN";
+  const canManageRoles = currentUser?.role === "OWNER";
+  const canManageStatus = canManageUsers;
+
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +60,15 @@ export default function MembersPage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (authLoading) return;
+    if (!canManageUsers) {
+      setLoading(false);
+      setError("شما دسترسی مدیریت اعضا را ندارید.");
+      return;
+    }
+    load();
+  }, [authLoading, canManageUsers, load]);
 
   const openAdd = () => {
     setForm(EMPTY_FORM);
@@ -69,7 +83,7 @@ export default function MembersPage() {
       phone: u.phone ?? "",
       studentId: u.profile?.studentId ?? "",
       major: u.profile?.major ?? "",
-      entryYear: u.profile?.entryYear ?? "",
+      entryYear: u.profile?.entryYear ? String(u.profile.entryYear) : "",
       role: u.role,
       password: "",
     });
@@ -77,6 +91,10 @@ export default function MembersPage() {
   };
 
   const save = async () => {
+    if (!canManageUsers) {
+      alert("شما دسترسی مدیریت اعضا را ندارید.");
+      return;
+    }
     setSaving(true);
     try {
       if (modal.editing) {
@@ -85,10 +103,10 @@ export default function MembersPage() {
           lastName: form.lastName || undefined,
           studentId: form.studentId || undefined,
           major: form.major || undefined,
-          entryYear: form.entryYear || undefined,
+          entryYear: form.entryYear ? Number(form.entryYear) : undefined,
         };
         await updateUserProfile(modal.editing.id, profilePayload);
-        if (form.role !== modal.editing.role)
+        if (canManageRoles && form.role !== modal.editing.role)
           await updateUserRole(modal.editing.id, form.role);
       } else {
         const payload: CreateUserPayload = {
@@ -100,7 +118,7 @@ export default function MembersPage() {
           lastName: form.lastName || undefined,
           studentId: form.studentId || undefined,
           major: form.major || undefined,
-          entryYear: form.entryYear || undefined,
+          entryYear: form.entryYear ? Number(form.entryYear) : undefined,
         };
         await createUser(payload);
       }
@@ -114,6 +132,10 @@ export default function MembersPage() {
   };
 
   const remove = async (id: string) => {
+    if (!canManageRoles) {
+      alert("فقط مالک می‌تواند اعضا را حذف کند.");
+      return;
+    }
     if (!confirm("آیا مطمئن هستید؟")) return;
     try {
       await deleteUser(id);
@@ -125,6 +147,7 @@ export default function MembersPage() {
 
   const toggleStatus = async (u: ApiUser) => {
     try {
+      if (!canManageStatus) return;
       await updateUserStatus(u.id, !u.isActive);
       setUsers((prev) =>
         prev.map((x) => (x.id === u.id ? { ...x, isActive: !u.isActive } : x))
@@ -139,18 +162,20 @@ export default function MembersPage() {
     <div className="p-6 text-white" dir="rtl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">مدیریت اعضا</h1>
-        <button
-          onClick={openAdd}
-          className="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-lg text-sm"
-        >
-          + افزودن عضو
-        </button>
+        {canManageUsers && (
+          <button
+            onClick={openAdd}
+            className="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-lg text-sm"
+          >
+            + افزودن عضو
+          </button>
+        )}
       </div>
 
       {loading && <p className="text-gray-400">در حال بارگذاری...</p>}
       {error && <p className="text-red-400">{error}</p>}
 
-      {!loading && !error && (
+      {!loading && !error && canManageUsers && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
@@ -177,9 +202,10 @@ export default function MembersPage() {
                   <td className="py-3 px-4">
                     <button
                       onClick={() => toggleStatus(u)}
+                      disabled={!canManageStatus}
                       className={`px-2 py-0.5 rounded text-xs ${
                         u.isActive ? "bg-green-600/30 text-green-400" : "bg-red-600/30 text-red-400"
-                      }`}
+                      } ${!canManageStatus ? "cursor-not-allowed opacity-60" : ""}`}
                     >
                       {u.isActive ? "فعال" : "غیرفعال"}
                     </button>
@@ -191,12 +217,14 @@ export default function MembersPage() {
                     >
                       ویرایش
                     </button>
-                    <button
-                      onClick={() => remove(u.id)}
-                      className="text-red-400 hover:text-red-300 text-xs"
-                    >
-                      حذف
-                    </button>
+                    {canManageRoles && (
+                      <button
+                        onClick={() => remove(u.id)}
+                        className="text-red-400 hover:text-red-300 text-xs"
+                      >
+                        حذف
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -206,6 +234,12 @@ export default function MembersPage() {
             <p className="text-center text-gray-500 py-8">هیچ عضوی یافت نشد</p>
           )}
         </div>
+      )}
+
+      {!loading && !error && !canManageUsers && (
+        <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
+          این بخش فقط برای مدیران در دسترس است.
+        </p>
       )}
 
       {/* Modal */}
@@ -250,9 +284,10 @@ export default function MembersPage() {
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-gray-400">نقش</label>
                 <select
-                  className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-sm"
+                  className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-sm disabled:opacity-60"
                   value={form.role}
                   onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as Role }))}
+                  disabled={!canManageRoles}
                 >
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>

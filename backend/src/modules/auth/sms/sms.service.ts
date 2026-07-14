@@ -14,31 +14,28 @@ export class SmsService {
   }
 
   async sendOtp(phone: string, code: string): Promise<void> {
-  const provider = this.config.get<string>("app.smsProvider");
+    const provider = this.config.get<string>('app.smsProvider');
 
-  if (provider === "mock") {
-    this.logger.log(`[MOCK SMS] ${phone} -> ${code}`);
-    return;
-  }
+    if (provider === 'mock') {
+      this.logger.log(`[MOCK SMS] ${phone} -> ${code}`);
+      return;
+    }
 
-  await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this.api.Send(
         {
           receptor: phone,
           message: `کد تایید شما: ${code}`,
         },
-        (response: any, status: number) => {
-          console.log("STATUS =", status);
-          console.log("RESPONSE =", response);
-
+        (_response: any, status: number) => {
           if (status === 200) {
             this.logger.log(`SMS sent to ${phone}`);
             resolve();
           } else {
-            reject(response);
+            reject(new Error('SMS provider request failed'));
           }
         },
       );
-  });
-}
+    });
+  }
 }

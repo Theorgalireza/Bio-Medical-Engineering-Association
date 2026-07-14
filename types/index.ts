@@ -22,26 +22,18 @@ export interface Article {
   content?: string;
   category: string;
   authors: string[];
+    date: string;
   year: number;
   readingTime: number;
   featured?: boolean;
   status?: ContentStatus;
   publishedAt?: string;
+  issue?: string;
+    downloadUrl?: string;
+    description?: string;
 }
 
-export interface Publication {
-  id: string;
-  slug: string;
-  title: string;
-  issue: string;
-  date: string;
-  category: string;
-  summary: string;
-  authors: string[];
-  year: number;
-  description: string;
-  downloadUrl: string;
-}
+
 
 export interface FacultyMember {
   id: string;
@@ -79,7 +71,15 @@ export interface ContactInfoItem {
   value: string;
   icon: "mail" | "phone" | "pin";
 }
-export type Role = 'OWNER' | 'ADMIN' | 'MEMBER';
+export type Role =
+  | 'OWNER'
+  | 'ADMIN'
+  | 'CONTENT_EDITOR'
+  | 'STUDENT_MEMBER'
+  | 'STUDENT_ACTIVE_MEMBER'
+  | 'STUDENT_INACTIVE_MEMBER'
+  | 'FACULTY_MEMBER'
+  | 'GUEST';
 
 export interface Profile {
   id: string;
@@ -101,15 +101,7 @@ export interface CurrentUser {
   id: string;
   email: string | null;
   phone: string | null;
-  role:
-    | "OWNER"
-    | "ADMIN"
-    | "CONTENT_EDITOR"
-    | "STUDENT_MEMBER"
-    | "STUDENT_ACTIVE_MEMBER"
-    | "STUDENT_INACTIVE_MEMBER"
-    | "FACULTY_MEMBER"
-    | "GUEST";
+  role: Role;
   createdAt: string;
   updatedAt: string;
   avatarUrl?: string | null;
@@ -134,16 +126,28 @@ export interface CreateUserPayload {
   firstName?: string;
   lastName?: string;
   studentId?: string;
+  university?: string;
   major?: string;
-  entryYear?: string;
+  field?: string;
+  entryYear?: number;
+  github?: string;
+  linkedin?: string;
+  website?: string;
+  profileEmail?: string;
 }
 
 export interface UpdateProfilePayload {
-  firstName?: string;
-  lastName?: string;
-  studentId?: string;
-  major?: string;
-  entryYear?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  studentId?: string | null;
+  university?: string | null;
+  major?: string | null;
+  field?: string | null;
+  entryYear?: number | null;
+  github?: string | null;
+  linkedin?: string | null;
+  website?: string | null;
+  profileEmail?: string | null;
 }
 
 

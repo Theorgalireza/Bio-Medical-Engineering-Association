@@ -1,0 +1,32 @@
+declare const _default: (() => {
+    port: number;
+    backendUrl: string;
+    frontendUrl: string;
+    jwtSecret: string;
+    jwtExpiresIn: string;
+    smsProvider: string;
+    kavenegarApiKey: string;
+    kavenegarTemplate: string;
+    googleClientId: string;
+    googleClientSecret: string;
+    githubClientId: string;
+    githubClientSecret: string;
+    linkedinClientId: string;
+    linkedinClientSecret: string;
+}) & import("@nestjs/config").ConfigFactoryKeyHost<{
+    port: number;
+    backendUrl: string;
+    frontendUrl: string;
+    jwtSecret: string;
+    jwtExpiresIn: string;
+    smsProvider: string;
+    kavenegarApiKey: string;
+    kavenegarTemplate: string;
+    googleClientId: string;
+    googleClientSecret: string;
+    githubClientId: string;
+    githubClientSecret: string;
+    linkedinClientId: string;
+    linkedinClientSecret: string;
+}>;
+export default _default;

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Spinner from "@/components/ui/Spinner";
 
-export default function ProfileGuard({ children }: { children: React.ReactNode }) {
+export default function ProfileGuard({ children }: { children: ReactNode }) {
   const { loading, isAuthenticated } = useAuth();
   const router = useRouter();
 

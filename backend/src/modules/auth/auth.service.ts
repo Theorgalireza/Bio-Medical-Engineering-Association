@@ -169,7 +169,6 @@ export class AuthService {
       },
     });
 
-    console.log(`Reset token: ${token}`);
     return { message: 'If account exists, reset link sent' };
   }
 

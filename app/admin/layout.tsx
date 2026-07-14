@@ -1,31 +1,54 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Megaphone, BookOpen, Users, MessageSquare, Mail, Menu, X, Activity,
+  LayoutDashboard, Megaphone, BookOpen, Users, MessageSquare, Mail, Menu, X, Activity
 } from "lucide-react";
+import Spinner from "@/components/ui/Spinner";
+import { useAuth } from "@/context/AuthContext";
+import type { Role } from "@/types";
 
-const navItems = [
+type AdminNavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  roles?: Role[];
+};
+
+const navItems: AdminNavItem[] = [
   { href: "/admin", label: "داشبورد", icon: LayoutDashboard },
   { href: "/admin/announcements", label: "اعلان‌ها", icon: Megaphone },
   { href: "/admin/articles", label: "مقالات", icon: BookOpen },
   { href: "/admin/faculty", label: "اعضای هیئت علمی", icon: Users },
-  { href: "/admin/members", label: "اعضای انجمن", icon: Users },
+  { href: "/admin/members", label: "اعضای انجمن", icon: Users, roles: ["OWNER", "ADMIN"] },
   { href: "/admin/feedback", label: "بازخوردها", icon: MessageSquare },
   { href: "/admin/contacts", label: "تماس‌ها", icon: Mail },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+const ADMIN_ROLES = new Set<Role>(["OWNER", "ADMIN", "CONTENT_EDITOR"]);
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
+  const { user, loading } = useAuth();
+
+  const canAccessAdmin = !!user && ADMIN_ROLES.has(user.role);
 
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
-      router.push("/login");
+    if (!loading && !canAccessAdmin) {
+      router.replace(user ? "/" : "/login");
     }
-  }, [router]);
+  }, [loading, canAccessAdmin, router, user]);
+
+  if (loading || !canAccessAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e]" dir="rtl">
+        <Spinner size={40} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white flex overflow-hidden" dir="rtl">
@@ -42,17 +65,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
         <nav className="flex-1 py-4 space-y-1 px-2">
-          {navItems.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href;
-            return (
-              <Link key={href} href={href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm
-                  ${active ? "bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/20" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
-                <Icon size={18} className="shrink-0" />
-                {sidebarOpen && <span>{label}</span>}
-              </Link>
-            );
-          })}
+          {navItems
+            .filter((item) => !item.roles || (user ? item.roles.includes(user.role) : false))
+            .map(({ href, label, icon: Icon }) => {
+              const active = pathname === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm
+                  ${active ? "bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/20" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+                >
+                  <Icon size={18} className="shrink-0" />
+                  {sidebarOpen && <span>{label}</span>}
+                </Link>
+              );
+            })}
         </nav>
       </aside>
 

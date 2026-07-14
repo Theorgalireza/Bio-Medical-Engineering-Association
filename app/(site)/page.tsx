@@ -9,12 +9,13 @@ import Feedback from "@/components/sections/FeedbackSection";
 import Contact from "@/components/sections/ContactSection";
 import NeonButton from "@/components/ui/NeonButton";
 import GallerySection from "@/components/sections/GallerySection";
-import { getAnnouncements, getPublications, getFacultyMembers, getGalleryItems } from "@/lib/api";
+import { getAnnouncements, getFacultyMembers, getGalleryItems,getArticles } from "@/lib/api";
 
 export default async function Home() {
-  const [announcements, publications, faculty, gallery] = await Promise.all([
+ const [announcements, articles, faculty, gallery] =
+  await Promise.all([
     getAnnouncements(),
-    getPublications(),
+    getArticles(),
     getFacultyMembers(),
     getGalleryItems(),
   ]);
@@ -37,7 +38,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <PublicationsSection items={publications} />
+      <PublicationsSection items={articles} />
 
       <div className="flex justify-center mt-10 pb-12">
         <Link href="/articles" className="inline-block">

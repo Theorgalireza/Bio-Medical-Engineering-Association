@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CircuitBackground from "@/components/ui/CircuitBackground";
 import { StarIcon, CheckIcon } from "@/components/ui/Icons";
@@ -27,30 +27,46 @@ const initialState: FormState = {
 export default function Feedback() {
   const [form, setForm] = useState<FormState>(initialState);
   const [hoverRating, setHoverRating] = useState(0);
-  const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [error, setError] = useState("");
+  const timeoutRef = useRef<number | null>(null);
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.email || !form.message) return;
+    if (!form.email || !form.message) {
+      setError("ایمیل و پیام الزامی است.");
+      setStatus("error");
+      return;
+    }
 
     setStatus("submitting");
+    setError("");
+
     try {
       await submitFeedback({
         name: form.name || "ناشناس",
         message: form.message,
         rating: form.rating || 1,
       });
-      setStatus("done");
+      setStatus("success");
       setForm(initialState);
+      timeoutRef.current = window.setTimeout(() => setStatus("idle"), 4000);
     } catch {
-      setStatus("done");
-      setForm(initialState);
+      setStatus("error");
+      setError("ارسال بازخورد ناموفق بود. دوباره تلاش کنید.");
+      timeoutRef.current = window.setTimeout(() => setStatus("idle"), 4000);
     }
-
-    setTimeout(() => setStatus("idle"), 4000);
   };
 
   return (
@@ -84,7 +100,7 @@ export default function Feedback() {
           className="relative rounded-2xl border border-borderSoft bg-primaryLight/60 backdrop-blur-sm p-6 md:p-10"
         >
           <AnimatePresence mode="wait">
-            {status === "done" ? (
+            {status === "success" ? (
               <motion.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -200,6 +216,10 @@ export default function Feedback() {
                     className="w-full bg-primary/60 border border-borderSoft rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 resize-none focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(0,212,255,0.12)] transition-all duration-300"
                   />
                 </div>
+
+                {status === "error" && error && (
+                  <p className="text-sm text-red-400">{error}</p>
+                )}
 
                 <motion.button
                   type="submit"

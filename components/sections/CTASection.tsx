@@ -7,12 +7,9 @@ import NeonButton from "@/components/ui/NeonButton";
 export default function CTASection() {
   return (
     <section className="relative py-24 bg-primary overflow-hidden">
-      {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          animate={{
-            backgroundPosition: ["0% 0%", "100% 100%"],
-          }}
+          animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
           transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
           className="absolute inset-0 opacity-30"
           style={{
@@ -35,15 +32,14 @@ export default function CTASection() {
           </span>
 
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
-            انجمن علمی <span className="text-accent"></span>
+            انجمن علمی <span className="text-accent">مهندسی پزشکی</span>
             <br />
-          
           </h2>
 
           <p className="text-gray-300 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
             ما یک انجمن علمی فعال و پویا برای دانشجویان مهندسی پزشکی هستیم که در
-            حوزه‌های فرهنگی, آموزشی و علمی فعالیت می‌کنیم. هدف ما ارتقای دانش، تبادل تجربیات و ایجاد
-            فرصت‌های سرنوشت ساز است.
+            حوزه‌های فرهنگی، آموزشی و علمی فعالیت می‌کنیم. هدف ما ارتقای دانش، تبادل تجربیات و ایجاد
+            فرصت‌های سرنوشت‌ساز است.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
