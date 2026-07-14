@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
-import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Mail, CheckCircle2 } from "lucide-react";
 import { forgotPassword } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
@@ -101,11 +101,7 @@ export default function ForgotPasswordPage() {
                 </p>
               </div>
 
-              <Link href="/login">
-                <NeonButton className="w-full justify-center">
-                  بازگشت به ورود
-                </NeonButton>
-              </Link>
+              <NeonButton href="/login" className="w-full justify-center">بازگشت به ورود</NeonButton>
             </motion.div>
           )}
         </motion.form>

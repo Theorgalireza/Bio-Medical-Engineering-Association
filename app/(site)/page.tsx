@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Hero from "@/components/sections/Hero";
 import CTASection from "@/components/sections/CTASection";
 import StatsSection from "@/components/sections/StatsSection";
@@ -9,11 +8,10 @@ import Feedback from "@/components/sections/FeedbackSection";
 import Contact from "@/components/sections/ContactSection";
 import NeonButton from "@/components/ui/NeonButton";
 import GallerySection from "@/components/sections/GallerySection";
-import { getAnnouncements, getFacultyMembers, getGalleryItems,getArticles } from "@/lib/api";
+import { getAnnouncements, getFacultyMembers, getGalleryItems, getArticles } from "@/lib/api";
 
 export default async function Home() {
- const [announcements, articles, faculty, gallery] =
-  await Promise.all([
+  const [announcements, articles, faculty, gallery] = await Promise.all([
     getAnnouncements(),
     getArticles(),
     getFacultyMembers(),
@@ -30,22 +28,14 @@ export default async function Home() {
         <AnnouncementsSection items={announcements} />
 
         <div className="flex justify-center mt-10 pb-8">
-          <Link href="/announcements" className="inline-block">
-            <NeonButton variant="outline">
-              مشاهده تمام اخبار ↶
-            </NeonButton>
-          </Link>
+          <NeonButton href="/announcements" variant="outline">مشاهده تمام اخبار ↶</NeonButton>
         </div>
       </section>
 
       <PublicationsSection items={articles} />
 
       <div className="flex justify-center mt-10 pb-12">
-        <Link href="/articles" className="inline-block">
-          <NeonButton variant="outline">
-            مشاهده تمام مقالات ↶
-          </NeonButton>
-        </Link>
+        <NeonButton href="/articles" variant="outline">مشاهده تمام مقالات ↶</NeonButton>
       </div>
 
       {/* Gallery بین Publications و Faculty */}

@@ -52,80 +52,80 @@ export default function Announcements({ items }: Props) {
   }, [items]);
 
   return (
-    <section
-      id="announcements"
-      className="relative py-24 bg-surface overflow-hidden"
-    >
-      {/* subtle background glow */}
-      <div className="absolute top-0 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[100px] pointer-events-none" />
+    <section id="announcements" className="relative overflow-hidden bg-surface py-24">
+      <div className="pointer-events-none absolute top-0 right-1/4 h-72 w-72 rounded-full bg-accent/10 blur-[100px]" />
 
-      <div className="relative max-w-7xl mx-auto px-4 md:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 md:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-14"
+          className="mb-14 text-center"
         >
-          <span className="text-sm text-accent tracking-widest">
-            آخرین رویدادها
-          </span>
-          <h2 className="text-2xl md:text-4xl font-bold text-white mt-2">
+          <span className="tracking-widest text-sm text-accent">آخرین رویدادها</span>
+          <h2 className="mt-2 text-2xl font-bold text-white md:text-4xl">
             اعلامیه‌ها و اخبار انجمن
           </h2>
-          <div className="w-16 h-1 bg-accent mx-auto mt-4 rounded-full shadow-neon" />
+          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-accent shadow-neon" />
         </motion.div>
 
-        <motion.div
-          variants={container}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {announcementItems.map((a) => (
-            <Link href={`/announcements/${a.slug}`} key={a.id} className="group block">
-              <motion.article
-                variants={item}
-                whileHover={{ y: -6 }}
-                className="group relative rounded-2xl border border-borderSoft bg-primaryLight/60 backdrop-blur-sm p-6 transition-colors duration-300 hover:border-accent/60 hover:shadow-[0_0_25px_rgba(0,212,255,0.15)]"
-              >
-                {a.isNew && (
-                  <span className="absolute -top-3 left-4 text-[10px] font-bold px-2 py-1 rounded-full bg-neonGreen text-primary shadow-[0_0_10px_#39FF14]">
-                    جدید
-                  </span>
-                )}
+        {announcementItems.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 py-14 text-center text-sm text-gray-400">
+            هنوز اعلامیه‌ای ثبت نشده است.
+          </div>
+        ) : (
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {announcementItems.map((a) => (
+              <Link href={`/announcements/${a.slug}`} key={a.id} className="group block">
+                <motion.article
+                  variants={item}
+                  whileHover={{ y: -6 }}
+                  className="group relative rounded-2xl border border-borderSoft bg-primaryLight/60 p-6 backdrop-blur-sm transition-colors duration-300 hover:border-accent/60 hover:shadow-[0_0_25px_rgba(0,212,255,0.15)]"
+                >
+                  {a.isNew && (
+                    <span className="absolute -top-3 left-4 rounded-full bg-neonGreen px-2 py-1 text-[10px] font-bold text-primary shadow-[0_0_10px_#39FF14]">
+                      جدید
+                    </span>
+                  )}
 
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <WaveformIcon size={20} className="text-accent" />
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
+                      <WaveformIcon size={20} className="text-accent" />
+                    </div>
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs ${
+                        typeStyles[a.type] ?? typeStyles.خبر
+                      }`}
+                    >
+                      {a.type}
+                    </span>
                   </div>
-                  <span
-                    className={`text-xs px-3 py-1 rounded-full border ${
-                      typeStyles[a.type] ?? typeStyles["خبر"]
-                    }`}
-                  >
-                    {a.type}
-                  </span>
-                </div>
 
-                <h3 className="text-lg font-bold text-white mb-2 leading-7">
-                  {a.title}
-                </h3>
-                <p className="text-sm text-gray-400 leading-6 mb-4 line-clamp-3">
-                  {a.description}
-                </p>
+                  <h3 className="mb-2 text-lg font-bold leading-7 text-white">
+                    {a.title}
+                  </h3>
+                  <p className="mb-4 line-clamp-3 text-sm leading-6 text-gray-400">
+                    {a.description}
+                  </p>
 
-                <div className="flex items-center justify-between text-xs text-gray-500 border-t border-borderSoft pt-3">
-                  <span>{a.date}</span>
-                  <span className="text-accent group-hover:translate-x-[-4px] transition-transform duration-300">
-                    ادامه ←
-                  </span>
-                </div>
-              </motion.article>
-            </Link>
-          ))}
-        </motion.div>
+                  <div className="flex items-center justify-between border-t border-borderSoft pt-3 text-xs text-gray-500">
+                    <span>{a.date}</span>
+                    <span className="text-accent transition-transform duration-300 group-hover:-translate-x-1">
+                      ادامه ←
+                    </span>
+                  </div>
+                </motion.article>
+              </Link>
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
   );

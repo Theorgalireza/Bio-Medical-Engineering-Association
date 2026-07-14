@@ -184,15 +184,8 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.7 }}
           className="flex flex-wrap gap-4 justify-center"
         >
-          <NeonButton onClick={() => (window.location.href = "#announcements")}>
-            مشاهده اعلامیه‌ها
-          </NeonButton>
-          <NeonButton
-            variant="outline"
-            onClick={() => (window.location.href = "#contact")}
-          >
-            عضویت در انجمن
-          </NeonButton>
+          <NeonButton href="#announcements">مشاهده اعلامیه‌ها</NeonButton>
+          <NeonButton href="#contact" variant="outline">عضویت در انجمن</NeonButton>
         </motion.div>
       </div>
     </section>

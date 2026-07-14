@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useEffect } from "react"; // useEffect هم اضافه شد
+import { useRef, useCallback, useEffect, type ReactNode } from "react"; // useEffect هم اضافه شد
 
 import {
   Bold, Italic, Underline, AlignRight, AlignCenter, AlignLeft,
@@ -20,7 +20,7 @@ type CommandAction =
   | { fn: () => void };
 
 const ToolbarBtn = ({ onClick, active, title, children }: {
-  onClick: () => void; active?: boolean; title: string; children: React.ReactNode;
+  onClick: () => void; active?: boolean; title: string; children: ReactNode;
 }) => (
   <button type="button" title={title} onMouseDown={e => { e.preventDefault(); onClick(); }}
     className={`p-1.5 rounded transition-colors ${active ? "bg-[#00d4ff]/20 text-[#00d4ff]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
@@ -276,7 +276,7 @@ export default function RichEditor({ value, onChange, placeholder = "متن را
 
   const tools: {
     title: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
     action: CommandAction;
   }[] = [
     { title: "Bold", icon: <Bold size={15} />, action: { cmd: "bold" } },

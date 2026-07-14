@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import NeonButton from "@/components/ui/NeonButton";
 
 export default function CTASection() {
@@ -43,16 +42,8 @@ export default function CTASection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/articles" className="w-full sm:w-auto">
-              <NeonButton className="w-full">
-                بیشتر بخوانید
-              </NeonButton>
-            </Link>
-            <a href="#contact" className="w-full sm:w-auto">
-              <NeonButton variant="outline" className="w-full">
-                تماس با ما
-              </NeonButton>
-            </a>
+            <NeonButton href="/articles" className="w-full sm:w-auto">بیشتر بخوانید</NeonButton>
+            <NeonButton href="#contact" variant="outline" className="w-full sm:w-auto">تماس با ما</NeonButton>
           </div>
         </motion.div>
       </div>

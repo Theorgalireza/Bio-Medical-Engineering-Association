@@ -1,23 +1,42 @@
-import Image from "next/image";
+import NeonButton from "@/components/ui/NeonButton";
 import { getGalleryItems } from "@/lib/api";
 
 export default async function GalleryPage() {
   const galleryItems = await getGalleryItems();
 
   return (
-    <main className="min-h-screen py-24 px-8 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold text-white mb-12 text-center">گالری کامل تصاویر</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {galleryItems.map((item) => (
-          <div key={item.id} className="bg-[#0d1526] rounded-2xl overflow-hidden border border-[#1e2d4a]">
-            <div className="relative aspect-[4/3]">
-              <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
-            </div>
-            <div className="p-4">
-              <h2 className="text-white font-semibold">{item.title}</h2>
-            </div>
+    <main className="min-h-screen bg-primary py-24">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
+        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="text-sm tracking-widest text-accent">آرشیو تصویری</span>
+            <h1 className="mt-2 text-3xl font-bold text-white md:text-4xl">گالری کامل تصاویر</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-gray-400">
+              تصاویر رویدادها، جلسات و فعالیت‌های انجمن را در یک نمای منظم و قابل مرور ببینید.
+            </p>
           </div>
-        ))}
+          <NeonButton href="/" variant="outline">بازگشت به صفحه اصلی</NeonButton>
+        </div>
+
+        {galleryItems.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 py-20 text-center text-sm text-gray-400">
+            هنوز تصویری برای نمایش ثبت نشده است.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {galleryItems.map((item) => (
+              <article key={item.id} className="overflow-hidden rounded-2xl border border-borderSoft bg-primaryLight/60">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img src={item.imageUrl} alt={item.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
+                </div>
+                <div className="p-4 md:p-5">
+                  <h2 className="font-semibold text-white">{item.title}</h2>
+                  {item.description && <p className="mt-2 text-sm leading-7 text-gray-400">{item.description}</p>}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );

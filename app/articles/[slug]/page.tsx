@@ -129,9 +129,7 @@ export default async function ArticlePage({ params }: Props) {
             </div>
 
             <div className="pt-6">
-              <Link href="/articles">
-                <NeonButton variant="outline">بازگشت به مقالات</NeonButton>
-              </Link>
+              <NeonButton href="/articles" variant="outline">بازگشت به مقالات</NeonButton>
             </div>
           </div>
         </div>

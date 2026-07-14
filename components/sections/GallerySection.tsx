@@ -1,12 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getGalleryItems } from "@/lib/api";
 import type { GalleryItem } from "@/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
 import NeonButton from "@/components/ui/NeonButton";
 
 const MAX_ITEMS_HOME = 6;
@@ -107,9 +105,7 @@ export default function GallerySection({ items }: Props) {
             </h2>
           </div>
 
-          <Link href="/gallery" className="hidden md:inline-block">
-            <NeonButton variant="outline">مشاهده گالری کامل ↶</NeonButton>
-          </Link>
+          <NeonButton href="/gallery" variant="outline" className="hidden md:inline-flex">مشاهده گالری کامل ↶</NeonButton>
         </motion.div>
 
         <motion.div
@@ -122,19 +118,23 @@ export default function GallerySection({ items }: Props) {
           <div
             ref={scrollContainerRef}
             onScroll={updateScrollState}
-            className="scrollbar-hide flex gap-4 overflow-x-hidden pb-4 md:gap-6"
+            className="scrollbar-hide flex gap-4 overflow-x-auto pb-4 md:gap-6"
           >
-            {itemsToShow.map((item) => (
+            {itemsToShow.length === 0 ? (
+              <div className="flex min-h-[260px] w-full items-center justify-center rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 text-center text-sm text-gray-400">
+                هنوز تصویری در گالری ثبت نشده است.
+              </div>
+            ) : itemsToShow.map((item) => (
               <article
                 key={item.id}
                 className="w-[260px] shrink-0 overflow-hidden rounded-2xl border border-[#1e2d4a] bg-[#0d1526] shadow-lg md:w-[320px]"
               >
-                <div className="relative aspect-[4/3]">
-                  <Image
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img
                     src={item.imageUrl}
                     alt={item.title}
-                    fill
-                    className="object-cover transition-transform duration-500 hover:scale-105"
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                   />
                 </div>
 

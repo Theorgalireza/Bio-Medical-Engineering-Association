@@ -19,11 +19,11 @@ export default async function AnnouncementPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-primary pt-24 pb-20">
       <section className="max-w-5xl mx-auto px-4">
-        <Link href="/announcements" className="text-accent hover:text-signal transition">
+        <Link href="/announcements" className="text-accent transition hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary rounded-sm">
           ← بازگشت به اخبار انجمن
         </Link>
 
-        <div className="mt-8 rounded-3xl border border-borderSoft bg-primaryLight/80 overflow-hidden shadow-glowAccent">
+        <div className="mt-8 rounded-3xl border border-borderSoft bg-primaryLight/80 overflow-hidden shadow-neon">
           {announcement.imageUrl && (
             <img
               src={announcement.imageUrl}
@@ -51,9 +51,7 @@ export default async function AnnouncementPage({ params }: Props) {
             </p>
 
             <div className="mt-10 flex gap-4">
-              <Link href="/announcements">
-                <NeonButton variant="outline">بازگشت</NeonButton>
-              </Link>
+              <NeonButton href="/announcements" variant="outline">بازگشت</NeonButton>
             </div>
           </div>
         </div>
