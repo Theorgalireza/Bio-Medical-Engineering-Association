@@ -34,6 +34,17 @@ export interface Article {
 }
 
 
+export interface ActivityLog {
+  id: string;
+  actorId?: string;
+  actorEmail?: string;
+  action: string;
+  targetType?: string;
+  targetId?: string;
+  detail?: string;
+  ip?: string;
+  createdAt: string;
+}
 
 export interface FacultyMember {
   id: string;

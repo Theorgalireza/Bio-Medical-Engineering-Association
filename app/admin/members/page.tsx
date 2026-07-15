@@ -10,7 +10,8 @@ import type { ApiUser, Role, CreateUserPayload, UpdateProfilePayload } from "@/t
 
 // ─── helpers ─────────────────────────────────────────────
 const fullName = (u: ApiUser) =>
-  [u.profile?.firstName, u.profile?.lastName].filter(Boolean).join(" ") || "—";
+  [u.profile?.firstName, u.profile?.lastName].filter(Boolean).join(" ") ||
+  u.email || u.phone || "—";
 
 const ROLES: Role[] = ["OWNER", "ADMIN", "CONTENT_EDITOR", "STUDENT_MEMBER", "STUDENT_ACTIVE_MEMBER", "STUDENT_INACTIVE_MEMBER", "FACULTY_MEMBER", "GUEST"];
 
@@ -25,11 +26,15 @@ interface FormState {
   entryYear: string;
   role: Role;
   password: string;
+  github: string;
+  linkedin: string;
+  website: string;
 }
 
 const EMPTY_FORM: FormState = {
   firstName: "", lastName: "", email: "", phone: "",
   studentId: "", major: "", entryYear: "", role: "STUDENT_MEMBER", password: "",
+  github: "", linkedin: "", website: "",
 };
 
 // ─── component ───────────────────────────────────────────
@@ -86,6 +91,9 @@ export default function MembersPage() {
       entryYear: u.profile?.entryYear ? String(u.profile.entryYear) : "",
       role: u.role,
       password: "",
+      github: u.profile?.github ?? "",
+      linkedin: u.profile?.linkedin ?? "",
+      website: u.profile?.website ?? "",
     });
     setModal({ open: true, editing: u });
   };
@@ -104,6 +112,9 @@ export default function MembersPage() {
           studentId: form.studentId || undefined,
           major: form.major || undefined,
           entryYear: form.entryYear ? Number(form.entryYear) : undefined,
+          github: form.github || undefined,
+          linkedin: form.linkedin || undefined,
+          website: form.website || undefined,
         };
         await updateUserProfile(modal.editing.id, profilePayload);
         if (canManageRoles && form.role !== modal.editing.role)
@@ -184,6 +195,7 @@ export default function MembersPage() {
                 <th className="py-3 px-4 text-right">ایمیل / تلفن</th>
                 <th className="py-3 px-4 text-right">شماره دانشجویی</th>
                 <th className="py-3 px-4 text-right">رشته</th>
+                <th className="py-3 px-4 text-right">لینک‌ها</th>
                 <th className="py-3 px-4 text-right">نقش</th>
                 <th className="py-3 px-4 text-right">وضعیت</th>
                 <th className="py-3 px-4 text-right">عملیات</th>
@@ -196,6 +208,25 @@ export default function MembersPage() {
                   <td className="py-3 px-4 text-gray-300">{u.email || u.phone || "—"}</td>
                   <td className="py-3 px-4 text-gray-300">{u.profile?.studentId || "—"}</td>
                   <td className="py-3 px-4 text-gray-300">{u.profile?.major || "—"}</td>
+                  <td className="py-3 px-4">
+                    <div className="flex gap-2 text-xs">
+                      {u.profile?.github && (
+                        <a href={u.profile.github} target="_blank" rel="noreferrer"
+                          className="text-cyan-400 hover:underline">GitHub</a>
+                      )}
+                      {u.profile?.linkedin && (
+                        <a href={u.profile.linkedin} target="_blank" rel="noreferrer"
+                          className="text-cyan-400 hover:underline">LinkedIn</a>
+                      )}
+                      {u.profile?.website && (
+                        <a href={u.profile.website} target="_blank" rel="noreferrer"
+                          className="text-cyan-400 hover:underline">وب‌سایت</a>
+                      )}
+                      {!u.profile?.github && !u.profile?.linkedin && !u.profile?.website && (
+                        <span className="text-gray-600">—</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="py-3 px-4">
                     <span className="bg-white/10 px-2 py-0.5 rounded text-xs">{u.role}</span>
                   </td>
@@ -249,7 +280,7 @@ export default function MembersPage() {
             <h2 className="text-lg font-bold mb-4">
               {modal.editing ? "ویرایش عضو" : "افزودن عضو جدید"}
             </h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
               {(
                 [
                   ["firstName", "نام"],
@@ -270,6 +301,31 @@ export default function MembersPage() {
                   />
                 </div>
               ))}
+
+              {/* فیلدهای لینک‌های اجتماعی — فقط در حالت ویرایش نمایش داده می‌شود */}
+              {modal.editing && (
+                <>
+                  {(
+                    [
+                      ["github", "گیت‌هاب"],
+                      ["linkedin", "لینکدین"],
+                      ["website", "وب‌سایت"],
+                    ] as [keyof FormState, string][]
+                  ).map(([key, label]) => (
+                    <div key={key} className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-400">{label}</label>
+                      <input
+                        className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-sm"
+                        dir="ltr"
+                        placeholder="https://..."
+                        value={form[key]}
+                        onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                      />
+                    </div>
+                  ))}
+                </>
+              )}
+
               {!modal.editing && (
                 <div className="flex flex-col gap-1">
                   <label className="text-xs text-gray-400">رمز عبور</label>

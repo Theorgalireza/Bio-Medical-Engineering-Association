@@ -17,6 +17,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import appConfig from './config/config';
+import { ActivityLogModule } from './modules/activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import appConfig from './config/config';
     GalleryModule,
     FeedbackModule,
     ContactModule,
+    ActivityLogModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

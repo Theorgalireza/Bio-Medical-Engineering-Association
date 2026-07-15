@@ -8,6 +8,7 @@ import {
   Activity,
   BookOpen,
   LayoutDashboard,
+  Logs,
   Mail,
   Megaphone,
   Menu,
@@ -64,6 +65,12 @@ const navItems: AdminNavItem[] = [
     label: "تماس‌ها",
     icon: Mail,
     roles: ["OWNER", "ADMIN"],
+  },
+  {
+    href: "/admin/logs",
+    label: "لاگ فعالیت‌ها",
+    icon: Logs,
+    roles: ["OWNER"],
   },
 ];
 
@@ -162,9 +169,12 @@ export default function AdminLayout({
                   <Icon size={18} />
 
                   <span>{label}</span>
+                  
                 </Link>
+                
               );
             })}
+            
         </nav>
       </aside>
 

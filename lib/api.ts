@@ -305,6 +305,12 @@ export async function loginWithPassword(payload: { email: string; password: stri
     },
   );
 }
+export async function getActivityLogs(limit = 200): Promise<ActivityLog[]> {
+  const res = await fetchWithAuth(`/activity-logs?limit=${limit}`);
+  if (!res.ok) throw new Error('خطا در دریافت لاگ‌ها');
+  const data = await res.json();
+  return data.data ?? data;
+}
 
 export async function register(payload: {
   email?: string;
