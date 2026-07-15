@@ -7,6 +7,22 @@ import type { AdminArticle } from "@/types";
 
 const empty: Omit<AdminArticle, "id"> = { title: "", authors: [], issue: "", date: "", content: "", published: false };
 
+function normalizeDigits(value: string) {
+  return value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+}
+
+function extractYear(value: string) {
+  const ascii = normalizeDigits(value);
+  const match = ascii.match(/(?:19|20)?\d{2}/);
+  const year = match ? Number(match[0].slice(-4)) : NaN;
+  if (Number.isFinite(year) && year >= 1900 && year <= 2100) {
+    return year;
+  }
+  return new Date().getFullYear();
+}
+
 export default function ArticlesPage() {
   const [items, setItems] = useState<AdminArticle[]>([]);
   const [modal, setModal] = useState<{ open: boolean; editing: AdminArticle | null }>({ open: false, editing: null });
@@ -38,7 +54,7 @@ export default function ArticlesPage() {
   const save = async () => {
     if (!form.title) return;
     const authors = authorsStr.split("،").map((s) => s.trim()).filter(Boolean);
-    const year = Number(String(form.date).match(/\d{4}/)?.[0] || new Date().getFullYear());
+    const year = extractYear(form.date);
     const payload = {
       title: form.title,
       summary: form.content || form.title,
@@ -49,7 +65,6 @@ export default function ArticlesPage() {
       readingTime: Math.max(1, Math.ceil((form.content || "").length / 800)),
       featured: false,
       status: form.published ? "PUBLISHED" : "DRAFT",
-      tags: [],
     };
     if (modal.editing) {
       await adminUpdateArticle(modal.editing.id, payload);
@@ -140,7 +155,7 @@ export default function ArticlesPage() {
                 <input
                   value={form.date}
                   onChange={e => setForm({ ...form, date: e.target.value })}
-                  placeholder="تاریخ (مثال: ۱۴۰۳/۰۹/۱۵)"
+                  placeholder="سال انتشار (مثال: 1403)"
                   className="w-full bg-[#0a0f1e] border border-[#1e2d4a] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#a855f7]/50"
                 />
               </div>

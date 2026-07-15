@@ -1,6 +1,17 @@
 // dto/article.dto.ts
 import { IsString, IsInt, IsOptional, IsBoolean, IsEnum, IsArray } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ContentStatus } from '@prisma/client';
+
+function toBoolean(value: unknown): boolean | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  const normalized = String(value).trim().toLowerCase();
+  if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+  if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+  return undefined;
+}
 
 export class CreateArticleDto {
   @IsString() title: string;
@@ -10,7 +21,10 @@ export class CreateArticleDto {
   @IsArray() @IsString({ each: true }) authors: string[];
   @IsInt() year: number;
   @IsOptional() @IsInt() readingTime?: number;
-  @IsOptional() @IsBoolean() featured?: boolean;
+  @IsOptional()
+  @Transform(({ value }) => toBoolean(value))
+  @IsBoolean()
+  featured?: boolean;
   @IsOptional() @IsEnum(ContentStatus) status?: ContentStatus;
   @IsOptional() @IsArray() @IsString({ each: true }) tags?: string[];
 }
@@ -23,7 +37,10 @@ export class UpdateArticleDto {
   @IsOptional() @IsArray() @IsString({ each: true }) authors?: string[];
   @IsOptional() @IsInt() year?: number;
   @IsOptional() @IsInt() readingTime?: number;
-  @IsOptional() @IsBoolean() featured?: boolean;
+  @IsOptional()
+  @Transform(({ value }) => toBoolean(value))
+  @IsBoolean()
+  featured?: boolean;
   @IsOptional() @IsEnum(ContentStatus) status?: ContentStatus;
   @IsOptional() @IsArray() @IsString({ each: true }) tags?: string[];
 }
@@ -31,7 +48,10 @@ export class UpdateArticleDto {
 export class QueryArticleDto {
   @IsOptional() @IsEnum(ContentStatus) status?: ContentStatus;
   @IsOptional() @IsString() category?: string;
-  @IsOptional() @IsBoolean() featured?: boolean;
+  @IsOptional()
+  @Transform(({ value }) => toBoolean(value))
+  @IsBoolean()
+  featured?: boolean;
   @IsOptional() @IsString() search?: string;
   @IsOptional() @IsString() tag?: string;
 }

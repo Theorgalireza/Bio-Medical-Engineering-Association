@@ -28,39 +28,28 @@ const ToolbarBtn = ({ onClick, active, title, children }: {
   </button>
 );
 
-// --- کمک: آپلود فایل و گرفتن URL ---
-// !!! توجه: این تابع فقط برای تست است. وقتی API آپلود را ساختی، آن را جایگزین کن. !!!
 async function uploadImageAndGetUrl(file: File): Promise<string | null> {
-  // --- نسخه تست (بدون سرور): فقط URL لوکال برمی‌گردانیم
-  // return URL.createObjectURL(file);
-
-  // --- نسخه واقعی: وقتی API نوشتی، اینجا را جایگزین کن:
   const formData = new FormData();
   formData.append("file", file);
 
   try {
-    const res = await fetch("/api/upload", { // مطمئن شو این API وجود دارد یا آدرس درست را بده
+    const res = await fetch("/api/upload", {
       method: "POST",
       body: formData,
-      // headers: { 'Content-Type': 'multipart/form-data' } // fetch معمولا خودش ست می‌کند
     });
 
     if (!res.ok) {
-      console.error("Upload response not OK:", res.status, res.statusText);
-      throw new Error("Upload failed");
-    }
-
-    const data = await res.json();
-    // فرض: API برمی‌گرداند { url: "https://..." }
-    if (data.url) {
-      return data.url;
-    } else {
-      console.error("Upload response missing URL:", data);
       return null;
     }
-  } catch (err) {
-    console.error("Error during image upload fetch:", err);
-    throw err; // خطا را دوباره throw می‌کنیم تا در catch اصلی مدیریت شود
+
+    const data = await res.json().catch(() => null);
+    if (typeof data?.url === "string" && data.url.length > 0) {
+      return data.url;
+    }
+
+    return null;
+  } catch {
+    return null;
   }
 }
 
@@ -193,53 +182,26 @@ export default function RichEditor({ value, onChange, placeholder = "متن را
       const file = input.files?.[0];
       if (!file) return;
 
-      // تعریف متغیر در اسکوپ بالاتر
-      let tempImageUrl: string | null = null;
-
-      try {
-        tempImageUrl = URL.createObjectURL(file);
-        insertHtmlAtCursor(`<img src="${tempImageUrl}" alt="در حال آپلود..." style="max-width:100%; height:auto; opacity: 0.6;" />`);
+      const uploadedUrl = await uploadImageAndGetUrl(file);
+      if (uploadedUrl) {
+        insertHtmlAtCursor(`<img src="${uploadedUrl}" alt="تصویر" style="max-width:100%; height:auto;" />`);
         onChange(editorRef.current?.innerHTML ?? "");
-
-        const url = await uploadImageAndGetUrl(file);
-
-        if (!url) {
-           console.error("Image upload returned null URL.");
-           alert("آپلود تصویر ناموفق بود.");
-           
-           if (editorRef.current) {
-             editorRef.current.innerHTML = editorRef.current.innerHTML.replace(
-               `<img src="${tempImageUrl}" alt="در حال آپلود..." style="max-width:100%; height:auto; opacity: 0.6;" />`,
-               ""
-             );
-             onChange(editorRef.current.innerHTML);
-           }
-           return;
-        }
-
-        if (editorRef.current) {
-          const imgHtml = `<img src="${url}" alt="تصویر گالری" style="max-width:100%; height:auto;" />`;
-          const tempImgs = editorRef.current.querySelectorAll('img[alt="در حال آپلود..."]');
-          tempImgs.forEach(img => img.remove());
-
-          insertHtmlAtCursor(imgHtml);
-          onChange(editorRef.current.innerHTML);
-        }
-
-      } catch (err) {
-        console.error("Image upload process failed:", err);
-        alert("آپلود تصویر با خطا مواجه شد.");
-         if (editorRef.current) {
-           const tempImgs = editorRef.current.querySelectorAll('img[alt="در حال آپلود..."]');
-           tempImgs.forEach(img => img.remove());
-           onChange(editorRef.current.innerHTML);
-         }
-      } finally {
-         // حالا tempImageUrl اینجا در دسترس است
-         if (tempImageUrl) {
-            URL.revokeObjectURL(tempImageUrl);
-         }
+        return;
       }
+
+      const fallbackUrl = window.prompt("آدرس تصویر را وارد کنید:", "https://");
+      if (!fallbackUrl) {
+        return;
+      }
+
+      const normalizedUrl = fallbackUrl.trim();
+      if (!/^https?:\/\//i.test(normalizedUrl)) {
+        alert("لطفاً یک آدرس معتبر با http یا https وارد کنید.");
+        return;
+      }
+
+      insertHtmlAtCursor(`<img src="${normalizedUrl}" alt="تصویر" style="max-width:100%; height:auto;" />`);
+      onChange(editorRef.current?.innerHTML ?? "");
     };
 
     input.click();

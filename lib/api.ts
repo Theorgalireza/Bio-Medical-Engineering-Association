@@ -236,6 +236,27 @@ function mapBackendRole(role: unknown): Role {
   return VALID_ROLES.has(value) ? value : "GUEST";
 }
 
+function toProfile(profile: any, fallbackUserId?: string): Profile {
+  return {
+    id: String(profile?.id ?? fallbackUserId ?? ""),
+    userId: String(profile?.userId ?? fallbackUserId ?? ""),
+    firstName: profile?.firstName ?? null,
+    lastName: profile?.lastName ?? null,
+    studentId: profile?.studentId ?? null,
+    university: profile?.university ?? null,
+    major: profile?.major ?? null,
+    field: profile?.field ?? null,
+    entryYear:
+      profile?.entryYear === null || profile?.entryYear === undefined
+        ? null
+        : Number(profile.entryYear),
+    github: profile?.github ?? null,
+    linkedin: profile?.linkedin ?? null,
+    website: profile?.website ?? null,
+    profileEmail: profile?.profileEmail ?? null,
+  };
+}
+
 function toUser(item: any): ApiUser {
   const profile = item.profile ?? null;
   return {
@@ -246,26 +267,7 @@ function toUser(item: any): ApiUser {
     isActive: Boolean(item.isActive),
     createdAt: item.createdAt ? String(item.createdAt) : new Date().toISOString(),
     updatedAt: item.updatedAt ? String(item.updatedAt) : new Date().toISOString(),
-    profile: profile
-      ? {
-          id: String(profile.id ?? item.id),
-          userId: String(profile.userId ?? item.id),
-          firstName: profile.firstName ?? null,
-          lastName: profile.lastName ?? null,
-          studentId: profile.studentId ?? null,
-          major: profile.major ?? null,
-          entryYear:
-            profile.entryYear === null || profile.entryYear === undefined
-              ? null
-              : Number(profile.entryYear),
-          university: profile.university ?? null,
-          field: profile.field ?? null,
-          github: profile.github ?? null,
-          linkedin: profile.linkedin ?? null,
-          website: profile.website ?? null,
-          profileEmail: profile.profileEmail ?? null,
-        }
-      : null,
+    profile: profile ? toProfile(profile, item.id) : null,
   };
 }
 function normalizeRole(role: Role | string): Role {
@@ -476,7 +478,7 @@ export async function adminGetArticles(): Promise<AdminArticle[]> {
     title: String(item.title ?? ""),
     authors: asStringArray(item.authors),
     issue: String(item.category ?? ""),
-    date: item.date ? String(item.date) : getPublishedDate(item),
+    date: String(item.year ?? new Date(item.createdAt ?? Date.now()).getFullYear()),
     content: String(item.content ?? item.summary ?? ""),
     published: String(item.status ?? "").toUpperCase() === "PUBLISHED",
     slug: item.slug ?? undefined,
@@ -509,10 +511,11 @@ export async function adminGetFaculty(): Promise<AdminFacultyMember[]> {
       name: String(item.name ?? ""),
       title: String(item.title ?? ""),
       specialties: asStringArray(item.specialties),
-      role: item.role ?? "",
-      field: item.field ?? "",
+      role: item.title ?? "",
+      field: asStringArray(item.specialties).join("، "),
       monogram: item.monogram ?? String(item.name ?? "").charAt(0),
       color: item.color ?? "#00d4ff",
+      isActive: Boolean(item.isActive),
     })),
   );
 }
@@ -603,19 +606,19 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
 export async function getProfile(): Promise<Profile | null> {
   try {
-    const response = await apiFetch<any>("/users/profile", { auth: true }, true);
-    return response?.profile ? response.profile : response ?? null;
+    const response = await apiFetch<any>("/users/me", { auth: true }, true);
+    return response?.profile ? toProfile(response.profile, response.id) : null;
   } catch {
     return null;
   }
 }
 
 export async function updateProfile(payload: UpdateProfilePayload): Promise<Profile> {
-  const response = await apiFetch<any>("/users/profile", {
+  const response = await apiFetch<any>("/users/me/profile", {
     method: "PATCH",
     body: JSON.stringify(payload),
   }, true);
-  return response?.profile ? response.profile : response;
+  return response?.profile ? toProfile(response.profile, response.id) : toProfile(response, response?.id);
 }
 
 export async function updateUserRole(userId: string, role: Role) {
@@ -671,7 +674,7 @@ export const adminGetContacts = adminGetContact;
 export const adminMarkContactRead = (id: string) => adminUpdateContact(id, { read: true });
 export const getUsers = adminGetUsers;
 export const updateUserProfile = (userId: string, payload: UpdateProfilePayload) =>
-  apiFetch(`/users/${userId}`, { method: "PATCH", body: JSON.stringify(payload) }, true);
+  apiFetch(`/users/${userId}/profile`, { method: "PATCH", body: JSON.stringify(payload) }, true);
 export const createUser = adminCreateUser;
 export const deleteUser = adminDeleteUser;
 export const updateMyProfile = updateProfile;
