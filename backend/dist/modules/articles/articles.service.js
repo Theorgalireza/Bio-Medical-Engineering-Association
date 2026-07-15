@@ -16,6 +16,7 @@ const client_1 = require("@prisma/client");
 const slugify_1 = require("slugify");
 const activity_log_service_1 = require("../activity-log/activity-log.service");
 const sanitize_html_util_1 = require("../../common/utils/sanitize-html.util");
+const rich_text_util_1 = require("../../common/utils/rich-text.util");
 let ArticlesService = class ArticlesService {
     constructor(prisma, activityLog) {
         this.prisma = prisma;
@@ -71,7 +72,7 @@ let ArticlesService = class ArticlesService {
         const status = dto.status ?? client_1.ContentStatus.DRAFT;
         const sanitizedData = {
             ...data,
-            content: (0, sanitize_html_util_1.sanitizeRichText)(data.content),
+            content: (0, sanitize_html_util_1.sanitizeRichText)((0, rich_text_util_1.normalizeRichTextInput)(data.content)),
         };
         const article = await this.prisma.article.create({
             data: {
@@ -111,7 +112,7 @@ let ArticlesService = class ArticlesService {
         }
         const sanitizedData = {
             ...data,
-            content: data.content !== undefined ? (0, sanitize_html_util_1.sanitizeRichText)(data.content) : undefined,
+            content: data.content !== undefined ? (0, sanitize_html_util_1.sanitizeRichText)((0, rich_text_util_1.normalizeRichTextInput)(data.content)) : undefined,
         };
         const article = await this.prisma.article.update({
             where: { id },

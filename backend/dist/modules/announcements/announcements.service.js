@@ -16,6 +16,7 @@ const client_1 = require("@prisma/client");
 const slugify_1 = require("slugify");
 const activity_log_service_1 = require("../activity-log/activity-log.service");
 const sanitize_html_util_1 = require("../../common/utils/sanitize-html.util");
+const rich_text_util_1 = require("../../common/utils/rich-text.util");
 let AnnouncementsService = class AnnouncementsService {
     constructor(prisma, activityLog) {
         this.prisma = prisma;
@@ -63,7 +64,7 @@ let AnnouncementsService = class AnnouncementsService {
         const status = dto.status ?? client_1.ContentStatus.DRAFT;
         const sanitizedData = {
             ...dto,
-            description: (0, sanitize_html_util_1.sanitizeRichText)(dto.description),
+            description: (0, sanitize_html_util_1.sanitizeRichText)((0, rich_text_util_1.normalizeRichTextInput)(dto.description)),
         };
         const announcement = await this.prisma.announcement.create({
             data: { ...sanitizedData, slug, authorId: user.id, status, publishedAt: status === client_1.ContentStatus.PUBLISHED ? new Date() : null },
@@ -91,7 +92,7 @@ let AnnouncementsService = class AnnouncementsService {
         const status = dto.status ?? existing.status;
         const sanitizedData = {
             ...dto,
-            description: dto.description !== undefined ? (0, sanitize_html_util_1.sanitizeRichText)(dto.description) : undefined,
+            description: dto.description !== undefined ? (0, sanitize_html_util_1.sanitizeRichText)((0, rich_text_util_1.normalizeRichTextInput)(dto.description)) : undefined,
         };
         const announcement = await this.prisma.announcement.update({
             where: { id },

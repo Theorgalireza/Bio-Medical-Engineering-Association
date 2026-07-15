@@ -13,6 +13,15 @@ exports.QueryArticleDto = exports.UpdateArticleDto = exports.CreateArticleDto = 
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const client_1 = require("@prisma/client");
+function toText(value) {
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (value === undefined || value === null) {
+        return '';
+    }
+    return String(value);
+}
 function toBoolean(value) {
     if (value === undefined || value === null || value === '')
         return undefined;
@@ -31,18 +40,22 @@ class CreateArticleDto {
 }
 exports.CreateArticleDto = CreateArticleDto;
 __decorate([
+    (0, class_transformer_1.Transform)(({ value }) => toText(value)),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "title", void 0);
 __decorate([
+    (0, class_transformer_1.Transform)(({ value }) => toText(value)),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "summary", void 0);
 __decorate([
+    (0, class_transformer_1.Transform)(({ value }) => toText(value)),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "content", void 0);
 __decorate([
+    (0, class_transformer_1.Transform)(({ value }) => toText(value)),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "category", void 0);
@@ -82,21 +95,25 @@ class UpdateArticleDto {
 exports.UpdateArticleDto = UpdateArticleDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateArticleDto.prototype, "title", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateArticleDto.prototype, "summary", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateArticleDto.prototype, "content", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateArticleDto.prototype, "category", void 0);
@@ -143,6 +160,7 @@ __decorate([
 ], QueryArticleDto.prototype, "status", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], QueryArticleDto.prototype, "category", void 0);
@@ -154,6 +172,7 @@ __decorate([
 ], QueryArticleDto.prototype, "featured", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], QueryArticleDto.prototype, "search", void 0);

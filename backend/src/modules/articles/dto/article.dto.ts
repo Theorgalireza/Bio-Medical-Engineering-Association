@@ -3,6 +3,18 @@ import { IsString, IsInt, IsOptional, IsBoolean, IsEnum, IsArray } from 'class-v
 import { Transform } from 'class-transformer';
 import { ContentStatus } from '@prisma/client';
 
+function toText(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  return String(value);
+}
+
 function toBoolean(value: unknown): boolean | undefined {
   if (value === undefined || value === null || value === '') return undefined;
   if (typeof value === 'boolean') return value;
@@ -14,9 +26,13 @@ function toBoolean(value: unknown): boolean | undefined {
 }
 
 export class CreateArticleDto {
+  @Transform(({ value }) => toText(value))
   @IsString() title: string;
+  @Transform(({ value }) => toText(value))
   @IsString() summary: string;
+  @Transform(({ value }) => toText(value))
   @IsString() content: string;
+  @Transform(({ value }) => toText(value))
   @IsString() category: string;
   @IsArray() @IsString({ each: true }) authors: string[];
   @IsInt() year: number;
@@ -30,10 +46,22 @@ export class CreateArticleDto {
 }
 
 export class UpdateArticleDto {
-  @IsOptional() @IsString() title?: string;
-  @IsOptional() @IsString() summary?: string;
-  @IsOptional() @IsString() content?: string;
-  @IsOptional() @IsString() category?: string;
+  @IsOptional()
+  @Transform(({ value }) => (value === undefined || value === null ? undefined : toText(value)))
+  @IsString()
+  title?: string;
+  @IsOptional()
+  @Transform(({ value }) => (value === undefined || value === null ? undefined : toText(value)))
+  @IsString()
+  summary?: string;
+  @IsOptional()
+  @Transform(({ value }) => (value === undefined || value === null ? undefined : toText(value)))
+  @IsString()
+  content?: string;
+  @IsOptional()
+  @Transform(({ value }) => (value === undefined || value === null ? undefined : toText(value)))
+  @IsString()
+  category?: string;
   @IsOptional() @IsArray() @IsString({ each: true }) authors?: string[];
   @IsOptional() @IsInt() year?: number;
   @IsOptional() @IsInt() readingTime?: number;
@@ -47,11 +75,17 @@ export class UpdateArticleDto {
 
 export class QueryArticleDto {
   @IsOptional() @IsEnum(ContentStatus) status?: ContentStatus;
-  @IsOptional() @IsString() category?: string;
+  @IsOptional()
+  @Transform(({ value }) => (value === undefined || value === null ? undefined : toText(value)))
+  @IsString()
+  category?: string;
   @IsOptional()
   @Transform(({ value }) => toBoolean(value))
   @IsBoolean()
   featured?: boolean;
-  @IsOptional() @IsString() search?: string;
+  @IsOptional()
+  @Transform(({ value }) => (value === undefined || value === null ? undefined : toText(value)))
+  @IsString()
+  search?: string;
   @IsOptional() @IsString() tag?: string;
 }

@@ -86,6 +86,8 @@ export default function ArticlesPage() {
       }
       await load();
       setModal({ open: false, editing: null });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "ذخیره مقاله ناموفق بود.");
     } finally {
       setLoading(false);
     }

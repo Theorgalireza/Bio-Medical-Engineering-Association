@@ -6,6 +6,7 @@ import { CreateArticleDto, UpdateArticleDto, QueryArticleDto } from './dto/artic
 import slugify from 'slugify';
 import { ActivityLogService } from '../activity-log/activity-log.service';
 import { sanitizeRichText } from '../../common/utils/sanitize-html.util';
+import { normalizeRichTextInput } from '../../common/utils/rich-text.util';
 
 @Injectable()
 export class ArticlesService {
@@ -69,7 +70,7 @@ export class ArticlesService {
     const status = dto.status ?? ContentStatus.DRAFT;
     const sanitizedData = {
       ...data,
-      content: sanitizeRichText(data.content),
+      content: sanitizeRichText(normalizeRichTextInput(data.content)),
     };
 
     const article = await this.prisma.article.create({
@@ -116,7 +117,7 @@ export class ArticlesService {
 
     const sanitizedData = {
       ...data,
-      content: data.content !== undefined ? sanitizeRichText(data.content) : undefined,
+      content: data.content !== undefined ? sanitizeRichText(normalizeRichTextInput(data.content)) : undefined,
     };
 
     const article = await this.prisma.article.update({

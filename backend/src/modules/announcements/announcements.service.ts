@@ -6,6 +6,7 @@ import { CreateAnnouncementDto, UpdateAnnouncementDto, QueryAnnouncementDto } fr
 import slugify from 'slugify';
 import { ActivityLogService } from '../activity-log/activity-log.service';
 import { sanitizeRichText } from '../../common/utils/sanitize-html.util';
+import { normalizeRichTextInput } from '../../common/utils/rich-text.util';
 
 @Injectable()
 export class AnnouncementsService {
@@ -63,7 +64,7 @@ export class AnnouncementsService {
     const status = dto.status ?? ContentStatus.DRAFT;
     const sanitizedData = {
       ...dto,
-      description: sanitizeRichText(dto.description),
+      description: sanitizeRichText(normalizeRichTextInput(dto.description)),
     };
     const announcement = await this.prisma.announcement.create({
       data: { ...sanitizedData, slug, authorId: user.id, status, publishedAt: status === ContentStatus.PUBLISHED ? new Date() : null },
@@ -95,7 +96,7 @@ export class AnnouncementsService {
     const status = dto.status ?? existing.status;
     const sanitizedData = {
       ...dto,
-      description: dto.description !== undefined ? sanitizeRichText(dto.description) : undefined,
+      description: dto.description !== undefined ? sanitizeRichText(normalizeRichTextInput(dto.description)) : undefined,
     };
     const announcement = await this.prisma.announcement.update({
       where: { id },

@@ -11,15 +11,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryAnnouncementDto = exports.UpdateAnnouncementDto = exports.CreateAnnouncementDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
 const client_1 = require("@prisma/client");
+function toText(value) {
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (value === undefined || value === null) {
+        return '';
+    }
+    return String(value);
+}
 class CreateAnnouncementDto {
 }
 exports.CreateAnnouncementDto = CreateAnnouncementDto;
 __decorate([
+    (0, class_transformer_1.Transform)(({ value }) => toText(value)),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateAnnouncementDto.prototype, "title", void 0);
 __decorate([
+    (0, class_transformer_1.Transform)(({ value }) => toText(value)),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateAnnouncementDto.prototype, "description", void 0);
@@ -29,6 +41,7 @@ __decorate([
 ], CreateAnnouncementDto.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateAnnouncementDto.prototype, "imageUrl", void 0);
@@ -47,11 +60,13 @@ class UpdateAnnouncementDto {
 exports.UpdateAnnouncementDto = UpdateAnnouncementDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateAnnouncementDto.prototype, "title", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateAnnouncementDto.prototype, "description", void 0);
@@ -62,6 +77,7 @@ __decorate([
 ], UpdateAnnouncementDto.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateAnnouncementDto.prototype, "imageUrl", void 0);
@@ -90,6 +106,7 @@ __decorate([
 ], QueryAnnouncementDto.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value === undefined || value === null ? undefined : toText(value))),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], QueryAnnouncementDto.prototype, "search", void 0);

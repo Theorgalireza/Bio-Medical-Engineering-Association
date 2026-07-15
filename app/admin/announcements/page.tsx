@@ -82,22 +82,25 @@ export default function AnnouncementsPage() {
     if (!form.title) return;
 
     const payload = {
-  title: form.title,
-  description: form.content,
-  type: toApiType(form.category),
-  isNew: true,
-  status: form.published ? "PUBLISHED" : "DRAFT",
-};
+      title: form.title,
+      description: form.content,
+      type: toApiType(form.category),
+      isNew: true,
+      status: form.published ? "PUBLISHED" : "DRAFT",
+    };
 
+    try {
+      if (modal.editing) {
+        await adminUpdateAnnouncement(modal.editing.id, payload);
+      } else {
+        await adminCreateAnnouncement(payload);
+      }
 
-    if (modal.editing) {
-      await adminUpdateAnnouncement(modal.editing.id, payload);
-    } else {
-      await adminCreateAnnouncement(payload);
+      close();
+      await load();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "ذخیره اطلاعیه ناموفق بود.");
     }
-
-    close();
-    await load();
   };
 
   return (

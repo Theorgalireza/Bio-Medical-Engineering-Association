@@ -93,8 +93,12 @@ async function apiFetch<T>(
   const headers = new Headers(rest.headers);
   const method = String(rest.method ?? "GET").toUpperCase();
 
-  if (rest.body) {
-    headers.set("Content-Type", "application/json");
+  const isFormData = typeof FormData !== "undefined" && rest.body instanceof FormData;
+  const isBlob = typeof Blob !== "undefined" && rest.body instanceof Blob;
+  const isArrayBuffer = typeof ArrayBuffer !== "undefined" && (rest.body instanceof ArrayBuffer || ArrayBuffer.isView(rest.body as ArrayBufferView));
+
+  if (rest.body && !isFormData && !isBlob && !isArrayBuffer) {
+    headers.set("Content-Type", "application/json; charset=utf-8");
   }
 
   if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
