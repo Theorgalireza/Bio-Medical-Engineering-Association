@@ -133,6 +133,7 @@ export interface ApiUser {
   id: string;
   email: string | null;
   phone: string | null;
+  avatarUrl?: string | null;
   role: Role;
   isActive: boolean;
   createdAt: string;
@@ -159,17 +160,17 @@ export interface CreateUserPayload {
 }
 
 export interface UpdateProfilePayload {
-  firstName?: string;
-  lastName?: string;
-  studentId?: string;
-  university?: string;
-  major?: string;
-  field?: string;
-  entryYear?: number;
-  github?: string;
-  linkedin?: string;
-  website?: string;
-  profileEmail?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  studentId?: string | null;
+  university?: string | null;
+  major?: string | null;
+  field?: string | null;
+  entryYear?: number | null;
+  github?: string | null;
+  linkedin?: string | null;
+  website?: string | null;
+  profileEmail?: string | null;
 }
 
 export interface AdminAnnouncement {
@@ -185,12 +186,12 @@ export interface AdminAnnouncement {
 export interface AdminArticle {
   id: string;
   title: string;
+  summary: string;
   authors: string[];
-  issue: string;
-  date: string;
+  category: string;
+  year: number;
   content: string;
   published: boolean;
-  category?: string;
   status?: ContentStatus;
   publishedAt?: string;
 }

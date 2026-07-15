@@ -82,13 +82,13 @@ export default function AnnouncementsPage() {
     if (!form.title) return;
 
     const payload = {
-      title: form.title,
-      description: form.content,
-      type: toApiType(form.category),
-      imageUrl: undefined,
-      isNew: false,
-      status: form.published ? "PUBLISHED" : "DRAFT",
-    };
+  title: form.title,
+  description: form.content,
+  type: toApiType(form.category),
+  isNew: true,
+  status: form.published ? "PUBLISHED" : "DRAFT",
+};
+
 
     if (modal.editing) {
       await adminUpdateAnnouncement(modal.editing.id, payload);

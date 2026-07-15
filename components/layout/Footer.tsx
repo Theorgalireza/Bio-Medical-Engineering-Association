@@ -1,20 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react"; // ← این رو اضافه کن
+import { Heart } from "lucide-react";
 
 const quickLinks = [
-  { label: "خانه", href: "#home" },
-  { label: "اعلامیه‌ها", href: "#announcements" },
-  { label: "نشریات", href: "#publications" },
-  { label: "هیئت علمی", href: "#faculty" },
-  { label: "ارتباط با ما", href: "#contact" },
+  { label: "خانه", href: "/#home" },
+  { label: "اعلامیه‌ها", href: "/#announcements" },
+  { label: "نشریات", href: "/#publications" },
+  { label: "هیئت علمی", href: "/#faculty" },
+  { label: "ارتباط با ما", href: "/#contact" },
 ];
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-  const persianYear = currentYear + 579;
-  
+  const currentYear = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    year: "numeric",
+  }).format(new Date());
+
   return (
     <footer className="relative bg-gradient-to-t from-primary/80 to-primary border-t border-accent/20 pt-20 pb-10 overflow-hidden">
       {/* Animated ECG line */}
@@ -42,27 +44,27 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
-            <h3 className="text-lg font-bold text-white mb-4">
-              Association <span className="text-accent">Bio Medical Engineer</span>
+            <h3 className="mb-4 text-lg font-bold text-white">
+              انجمن علمی <span className="text-accent">مهندسی پزشکی</span>
             </h3>
-            <p className="text-sm text-gray-400 leading-6">
+            <p className="text-sm leading-6 text-gray-400">
               انجمن علمی مهندسی پزشکی، گرایش بیوالکتریک، دانشگاه شهید بهشتی.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-sm font-bold text-white mb-4">لینک‌های سریع</h4>
+            <h4 className="mb-4 text-sm font-bold text-white">لینک‌های سریع</h4>
             <ul className="flex flex-col gap-3">
               {quickLinks.map((link) => (
                 <li key={link.href}>
-                  <a
+                  <Link
                     href={link.href}
-                    className="text-sm text-gray-400 hover:text-accent transition-colors duration-200 flex items-center gap-2"
+                    className="flex items-center gap-2 text-sm text-gray-400 transition-colors duration-200 hover:text-accent"
                   >
-                    <span className="w-1 h-1 bg-accent rounded-full" />
+                    <span className="h-1 w-1 rounded-full bg-accent" />
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -70,7 +72,7 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h4 className="text-sm font-bold text-white mb-4">فعالیت‌ها</h4>
+            <h4 className="mb-4 text-sm font-bold text-white">فعالیت‌ها</h4>
             <ul className="flex flex-col gap-3 text-sm text-gray-400">
               <li className="flex items-center gap-2">
                 <span className="w-1 h-1 bg-signal rounded-full" />
@@ -81,8 +83,8 @@ export default function Footer() {
                 کارگاه‌های آموزشی
               </li>
               <li className="flex items-center gap-2">
-                <span className="w-1 h-1 bg-signal rounded-full" />
-                منتشر مقالات
+                <span className="h-1 w-1 rounded-full bg-signal" />
+                انتشار مقالات
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-1 h-1 bg-signal rounded-full" />
@@ -93,7 +95,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm font-bold text-white mb-4">تماس با ما</h4>
+            <h4 className="mb-4 text-sm font-bold text-white">تماس با ما</h4>
             <ul className="flex flex-col gap-3 text-sm text-gray-400">
               <li>
                 <span className="block text-xs text-gray-500 mb-1">آدرس</span>
@@ -111,14 +113,11 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-borderSoft text-center">
 <p className="text-xs text-gray-500">
-  © 2026-2027 Alireza Jafary
+  © {currentYear}
   <br />
   <span className="inline-flex items-center gap-1">
     طراحی و توسعه با
-    <Heart
-      className="h-3 w-3 text-cyan-400"
-      aria-label="love"
-    />
+    <Heart className="h-3 w-3 text-cyan-400" aria-label="love" />
     برای انجمن
   </span>
 </p>

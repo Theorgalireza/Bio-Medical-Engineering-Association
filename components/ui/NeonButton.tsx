@@ -63,17 +63,19 @@ export default function NeonButton(props: NeonButtonProps) {
       );
     }
 
-    return (
-      <Link href={href} className={styles}>
-        <motion.span
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          className="inline-flex items-center justify-center gap-2"
-        >
-          {children}
-        </motion.span>
-      </Link>
-    );
+return (
+  <Link href={href} className={styles} {...(linkProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
+    <motion.span
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.97 }}
+      className="inline-flex items-center justify-center gap-2"
+    >
+      {children}
+    </motion.span>
+  </Link>
+);
+
+
   }
 
   const {

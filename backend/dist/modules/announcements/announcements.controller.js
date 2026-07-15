@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AnnouncementsController = void 0;
 const common_1 = require("@nestjs/common");
@@ -67,7 +66,7 @@ __decorate([
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [announcement_dto_1.CreateAnnouncementDto, typeof (_a = typeof client_1.User !== "undefined" && client_1.User) === "function" ? _a : Object, Object]),
+    __metadata("design:paramtypes", [announcement_dto_1.CreateAnnouncementDto, Object, Object]),
     __metadata("design:returntype", void 0)
 ], AnnouncementsController.prototype, "create", null);
 __decorate([

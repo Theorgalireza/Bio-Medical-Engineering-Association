@@ -11,6 +11,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryFacultyDto = exports.UpdateFacultyDto = exports.CreateFacultyDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
+function toBoolean(value) {
+    if (value === undefined || value === null || value === '')
+        return undefined;
+    if (typeof value === 'boolean')
+        return value;
+    if (typeof value === 'number')
+        return value !== 0;
+    const normalized = String(value).trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized))
+        return true;
+    if (['false', '0', 'no', 'off'].includes(normalized))
+        return false;
+    return undefined;
+}
 class CreateFacultyDto {
 }
 exports.CreateFacultyDto = CreateFacultyDto;
@@ -37,6 +52,7 @@ __decorate([
 ], CreateFacultyDto.prototype, "color", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => toBoolean(value)),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateFacultyDto.prototype, "isActive", void 0);
@@ -71,6 +87,7 @@ __decorate([
 ], UpdateFacultyDto.prototype, "color", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => toBoolean(value)),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UpdateFacultyDto.prototype, "isActive", void 0);
@@ -79,6 +96,7 @@ class QueryFacultyDto {
 exports.QueryFacultyDto = QueryFacultyDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => toBoolean(value)),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], QueryFacultyDto.prototype, "isActive", void 0);

@@ -8,7 +8,9 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { getCurrentUser, logout as apiLogout, type CurrentUser } from "@/lib/api";
+
+import { getCurrentUser, logout as apiLogout } from "@/lib/api";
+import type { CurrentUser } from "@/types";
 
 interface AuthContextValue {
   user: CurrentUser | null;

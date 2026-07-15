@@ -10,8 +10,8 @@ export declare class FacultyController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        monogram: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
         color: string;
     }[]>;
     findOne(id: string): Promise<{
@@ -21,8 +21,8 @@ export declare class FacultyController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        monogram: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
         color: string;
     }>;
     create(req: any, dto: CreateFacultyDto): Promise<{
@@ -32,8 +32,8 @@ export declare class FacultyController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        monogram: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
         color: string;
     }>;
     update(req: any, id: string, dto: UpdateFacultyDto): Promise<{
@@ -43,8 +43,8 @@ export declare class FacultyController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        monogram: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
         color: string;
     }>;
     remove(req: any, id: string): Promise<{

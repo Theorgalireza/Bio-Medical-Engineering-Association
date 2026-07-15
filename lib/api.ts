@@ -4,7 +4,6 @@ import type {
   FacultyMember,
   GalleryItem,
   Feedback,
-  ContactInfoItem,
   Role,
   ApiUser,
   CreateUserPayload,
@@ -23,6 +22,25 @@ import type {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 type ApiEnvelope<T> = { success?: boolean; data?: T };
+
+function extractErrorMessage(errorBody: unknown, fallback: string): string {
+  if (!errorBody || typeof errorBody !== 'object') {
+    return fallback;
+  }
+
+  const message = (errorBody as { message?: unknown }).message;
+
+  if (Array.isArray(message)) {
+    const joined = message.map((item) => String(item)).filter(Boolean).join('، ');
+    return joined || fallback;
+  }
+
+  if (typeof message === 'string' && message.trim()) {
+    return message;
+  }
+
+  return fallback;
+}
 
 let cachedCsrfToken: string | null = null;
 let csrfTokenPromise: Promise<string | null> | null = null;
@@ -95,10 +113,14 @@ async function apiFetch<T>(
     cache: "no-store",
   });
 
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => null);
-    throw new Error(errorBody?.message || `درخواست ناموفق: ${res.status}`);
+if (!res.ok) {
+  let errorBody: unknown = null;
+  const ct = res.headers.get("content-type") ?? "";
+  if (ct.includes("application/json")) {
+    errorBody = await res.json().catch(() => null);
   }
+  throw new Error(extractErrorMessage(errorBody, `درخواست ناموفق: ${res.status}`));
+}
 
   if (res.status === 204) return undefined as T;
 
@@ -267,6 +289,7 @@ function toUser(item: any): ApiUser {
     isActive: Boolean(item.isActive),
     createdAt: item.createdAt ? String(item.createdAt) : new Date().toISOString(),
     updatedAt: item.updatedAt ? String(item.updatedAt) : new Date().toISOString(),
+    avatarUrl: item.avatarUrl ?? null,
     profile: profile ? toProfile(profile, item.id) : null,
   };
 }
@@ -476,14 +499,18 @@ export async function adminGetArticles(): Promise<AdminArticle[]> {
   return results.reduce<any[]>((acc, cur) => acc.concat(cur), []).map((item) => ({
     id: String(item.id),
     title: String(item.title ?? ""),
+    summary: String(item.summary ?? ""),
     authors: asStringArray(item.authors),
-    issue: String(item.category ?? ""),
-    date: String(item.year ?? new Date(item.createdAt ?? Date.now()).getFullYear()),
-    content: String(item.content ?? item.summary ?? ""),
+    category: String(item.category ?? ""),
+    year: Number(item.year ?? new Date(item.createdAt ?? Date.now()).getFullYear()),
+    content: String(item.content ?? ""),
     published: String(item.status ?? "").toUpperCase() === "PUBLISHED",
+    status: item.status,
     slug: item.slug ?? undefined,
   }));
 }
+
+
 
 export async function adminCreateArticle(body: object) {
   return apiFetch<any>("/articles", {

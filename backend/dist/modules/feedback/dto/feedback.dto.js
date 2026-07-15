@@ -11,6 +11,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryFeedbackDto = exports.UpdateFeedbackDto = exports.CreateFeedbackDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
+function toBoolean(value) {
+    if (value === undefined || value === null || value === '')
+        return undefined;
+    if (typeof value === 'boolean')
+        return value;
+    if (typeof value === 'number')
+        return value !== 0;
+    const normalized = String(value).trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized))
+        return true;
+    if (['false', '0', 'no', 'off'].includes(normalized))
+        return false;
+    return undefined;
+}
 class CreateFeedbackDto {
 }
 exports.CreateFeedbackDto = CreateFeedbackDto;
@@ -34,6 +49,7 @@ class UpdateFeedbackDto {
 exports.UpdateFeedbackDto = UpdateFeedbackDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => toBoolean(value)),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UpdateFeedbackDto.prototype, "approved", void 0);
@@ -42,6 +58,7 @@ class QueryFeedbackDto {
 exports.QueryFeedbackDto = QueryFeedbackDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => toBoolean(value)),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], QueryFeedbackDto.prototype, "approved", void 0);

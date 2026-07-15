@@ -8,9 +8,9 @@ export declare class UsersController {
     constructor(usersService: UsersService);
     getMe(req: any): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -23,9 +23,9 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -33,9 +33,9 @@ export declare class UsersController {
     }>;
     updateMyProfile(req: any, dto: UpdateProfileDto): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -48,9 +48,9 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -58,9 +58,9 @@ export declare class UsersController {
     }>;
     findAll(): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -73,9 +73,9 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -83,9 +83,9 @@ export declare class UsersController {
     }[]>;
     create(req: any, dto: CreateUserDto): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -98,9 +98,9 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -112,9 +112,9 @@ export declare class UsersController {
     }[]>;
     findOne(id: string): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -127,9 +127,9 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -137,9 +137,9 @@ export declare class UsersController {
     }>;
     updateProfile(req: any, id: string, dto: UpdateProfileDto): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -152,9 +152,9 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -162,9 +162,9 @@ export declare class UsersController {
     }>;
     updateStatus(req: any, id: string, dto: UpdateUserStatusDto): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -177,9 +177,9 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -187,9 +187,9 @@ export declare class UsersController {
     }>;
     updateRole(req: any, id: string, dto: UpdateUserRoleDto): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -202,9 +202,9 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;

@@ -14,9 +14,9 @@ export declare class UsersService {
     private logActivity;
     findAll(): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -29,9 +29,9 @@ export declare class UsersService {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -39,9 +39,9 @@ export declare class UsersService {
     }[]>;
     findById(id: string): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -54,9 +54,9 @@ export declare class UsersService {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -64,9 +64,9 @@ export declare class UsersService {
     }>;
     create(dto: CreateUserDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -79,9 +79,9 @@ export declare class UsersService {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -89,9 +89,9 @@ export declare class UsersService {
     }>;
     getProfile(userId: string): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -104,9 +104,9 @@ export declare class UsersService {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -114,9 +114,9 @@ export declare class UsersService {
     }>;
     updateProfile(userId: string, dto: UpdateProfileDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -129,9 +129,9 @@ export declare class UsersService {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -139,9 +139,9 @@ export declare class UsersService {
     }>;
     updateStatus(id: string, isActive: boolean, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -154,9 +154,9 @@ export declare class UsersService {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;
@@ -164,9 +164,9 @@ export declare class UsersService {
     }>;
     updateRole(id: string, dto: UpdateUserRoleDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -179,9 +179,9 @@ export declare class UsersService {
             profileEmail: string | null;
         } | null;
         email: string | null;
+        phone: string | null;
         id: string;
         createdAt: Date;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         updatedAt: Date;

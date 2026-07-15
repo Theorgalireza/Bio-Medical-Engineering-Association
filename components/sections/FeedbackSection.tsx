@@ -44,8 +44,8 @@ export default function Feedback() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.email || !form.message) {
-      setError("ایمیل و پیام الزامی است.");
+    if (!form.message) {
+      setError("پیام الزامی است.");
       setStatus("error");
       return;
     }
@@ -53,10 +53,20 @@ export default function Feedback() {
     setStatus("submitting");
     setError("");
 
+    const messageParts = [] as string[];
+    if (form.email.trim()) {
+      messageParts.push(`ایمیل: ${form.email.trim()}`);
+    }
+    if (form.topic.trim()) {
+      messageParts.push(`موضوع: ${form.topic.trim()}`);
+    }
+    messageParts.push("");
+    messageParts.push(form.message.trim());
+
     try {
       await submitFeedback({
         name: form.name || "ناشناس",
-        message: form.message,
+        message: messageParts.join("\n"),
         rating: form.rating || 1,
       });
       setStatus("success");
@@ -141,12 +151,11 @@ export default function Feedback() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-400 mb-2">
-                      ایمیل <span className="text-accent">*</span>
+                    <label className="mb-2 block text-xs text-gray-400">
+                      ایمیل (اختیاری)
                     </label>
                     <input
                       type="email"
-                      required
                       value={form.email}
                       onChange={(e) => update("email", e.target.value)}
                       placeholder="you@example.com"

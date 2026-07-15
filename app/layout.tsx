@@ -10,8 +10,20 @@ const vazirmatn = Vazirmatn({
   variable: "--font-vazir",
 });
 
+function getSiteUrl() {
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.VERCEL_URL ||
+    process.env.FRONTEND_URL ||
+    "http://localhost:3000";
+
+  return base.startsWith("http") ? base : `https://${base}`;
+}
+
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "انجمن علمی مهندسی پزشکی | دانشگاه شهید بهشتی",
     template: "%s | انجمن علمی مهندسی پزشکی",
@@ -33,7 +45,7 @@ export const metadata: Metadata = {
     title: "انجمن علمی مهندسی پزشکی | دانشگاه شهید بهشتی",
     description:
       "اخبار، مقالات، رویدادها و مسیرهای ارتباطی انجمن علمی مهندسی پزشکی دانشگاه شهید بهشتی.",
-    url: "http://localhost:3000/",
+    url: siteUrl,
     siteName: "انجمن علمی مهندسی پزشکی",
     locale: "fa_IR",
     type: "website",
@@ -52,7 +64,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body
-        className={`${vazirmatn.variable} font-vazir bg-surface text-white antialiased`}
+        className={`${vazirmatn.variable} min-h-screen font-vazir bg-surface text-white antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
       </body>

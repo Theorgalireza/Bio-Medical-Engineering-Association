@@ -11,7 +11,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryArticleDto = exports.UpdateArticleDto = exports.CreateArticleDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
 const client_1 = require("@prisma/client");
+function toBoolean(value) {
+    if (value === undefined || value === null || value === '')
+        return undefined;
+    if (typeof value === 'boolean')
+        return value;
+    if (typeof value === 'number')
+        return value !== 0;
+    const normalized = String(value).trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized))
+        return true;
+    if (['false', '0', 'no', 'off'].includes(normalized))
+        return false;
+    return undefined;
+}
 class CreateArticleDto {
 }
 exports.CreateArticleDto = CreateArticleDto;
@@ -47,6 +62,7 @@ __decorate([
 ], CreateArticleDto.prototype, "readingTime", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => toBoolean(value)),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateArticleDto.prototype, "featured", void 0);
@@ -102,6 +118,7 @@ __decorate([
 ], UpdateArticleDto.prototype, "readingTime", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => toBoolean(value)),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UpdateArticleDto.prototype, "featured", void 0);
@@ -131,6 +148,7 @@ __decorate([
 ], QueryArticleDto.prototype, "category", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => toBoolean(value)),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], QueryArticleDto.prototype, "featured", void 0);

@@ -31,6 +31,7 @@ import { ROLE_LABELS, ROLE_COLORS } from "@/lib/roles";
 import NeonButton from "@/components/ui/NeonButton";
 import ProfileGuard from "@/components/profile/ProfileGuard";
 import Spinner from "@/components/ui/Spinner";
+import type { Role } from "@/types";
 
 type ProfileForm = {
   firstName: string;
@@ -95,8 +96,9 @@ function ProfilePageContent() {
       ? `${user?.profile?.firstName ?? ""} ${user?.profile?.lastName ?? ""}`.trim()
       : "کاربر بدون نام";
 
-  const roleLabel = user?.role ? ROLE_LABELS[user.role] ?? user.role : "";
-  const roleColor = user?.role ? ROLE_COLORS[user.role] ?? "" : "";
+  const roleLabel = user?.role ? ROLE_LABELS[user.role as Role] ?? user.role : "";
+  const roleColor = user?.role ? ROLE_COLORS[user.role as Role] ?? "" : "";
+
 
   const handleChange = (key: keyof ProfileForm) => (
     e: ChangeEvent<HTMLInputElement>

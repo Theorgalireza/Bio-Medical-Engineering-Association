@@ -18,12 +18,12 @@ export default function Navbar() {
   const { user, loading, isAuthenticated, logout } = useAuth();
 
   const navLinks = [
-    { label: "خانه", href: "#home" },
-    { label: "اعلامیه‌ها", href: "#announcements" },
+    { label: "خانه", href: "/#home" },
+    { label: "اعلامیه‌ها", href: "/#announcements" },
     { label: "مقالات", href: "/articles" },
-    { label: "هیئت علمی", href: "#faculty" },
-    { label: "نظرسنجی", href: "#survey" },
-    { label: "ارتباط با ما", href: "#contact" },
+    { label: "هیئت علمی", href: "/#faculty" },
+    { label: "نظرسنجی", href: "/#survey" },
+    { label: "ارتباط با ما", href: "/#contact" },
   ];
 
   const authLink = { label: "ورود / ثبت‌نام", href: "/login" };
