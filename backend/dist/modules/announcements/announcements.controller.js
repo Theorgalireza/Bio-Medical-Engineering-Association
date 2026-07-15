@@ -79,7 +79,7 @@ __decorate([
 ], AnnouncementsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER, client_1.Role.CONTENT_EDITOR),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

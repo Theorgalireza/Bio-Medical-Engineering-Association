@@ -11,20 +11,20 @@ export declare class ArticlesController {
                 name: string;
             };
         } & {
-            tagId: string;
             articleId: string;
+            tagId: string;
         })[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        content: string;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
@@ -38,20 +38,20 @@ export declare class ArticlesController {
                 name: string;
             };
         } & {
-            tagId: string;
             articleId: string;
+            tagId: string;
         })[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        content: string;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
@@ -65,20 +65,20 @@ export declare class ArticlesController {
                 name: string;
             };
         } & {
-            tagId: string;
             articleId: string;
+            tagId: string;
         })[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        content: string;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
@@ -92,20 +92,20 @@ export declare class ArticlesController {
                 name: string;
             };
         } & {
-            tagId: string;
             articleId: string;
+            tagId: string;
         })[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        content: string;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;

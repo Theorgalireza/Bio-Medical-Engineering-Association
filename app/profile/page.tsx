@@ -146,14 +146,13 @@ function ProfilePageContent() {
     key: keyof ProfileForm;
     placeholder: string;
   }[] = [
-    { icon: <User size={16} />, label: "نام", key: "firstName", placeholder: "مثلاً علی" },
-    { icon: <User size={16} />, label: "نام‌خانوادگی", key: "lastName", placeholder: "مثلاً محمدی" },
+    { icon: <User size={16} />, label: "نام", key: "firstName", placeholder: "" },
+    { icon: <User size={16} />, label: "نام‌خانوادگی", key: "lastName", placeholder: "" },
     { icon: <Hash size={16} />, label: "شماره دانشجویی", key: "studentId", placeholder: "۹۹۱۲۳۴۵۶" },
-    { icon: <Building2 size={16} />, label: "دانشگاه", key: "university", placeholder: "دانشگاه صنعتی..." },
+    { icon: <Building2 size={16} />, label: "دانشگاه", key: "university", placeholder: "شهید بهشتی" },
     { icon: <GraduationCap size={16} />, label: "رشته", key: "major", placeholder: "مهندسی پزشکی" },
     { icon: <BookOpen size={16} />, label: "گرایش", key: "field", placeholder: "بیوالکتریک" },
     { icon: <CalendarDays size={16} />, label: "سال ورود", key: "entryYear", placeholder: "۱۴۰۲" },
-    { icon: <Mail size={16} />, label: "ایمیل نمایشی", key: "profileEmail", placeholder: "email@example.com" },
     { icon: <FaGithub size={16} />, label: "گیت‌هاب", key: "github", placeholder: "https://github.com/username" },
     { icon: <FaLinkedinIn size={16} />, label: "لینکدین", key: "linkedin", placeholder: "https://linkedin.com/in/username" },
     { icon: <Globe size={16} />, label: "وب‌سایت", key: "website", placeholder: "https://example.com" },

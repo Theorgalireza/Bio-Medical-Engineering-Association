@@ -6,11 +6,11 @@ export declare class AnnouncementsController {
     constructor(service: AnnouncementsService);
     findAll(query: QueryAnnouncementDto): import(".prisma/client").Prisma.PrismaPromise<({
         author: {
+            id: string;
             profile: {
                 firstName: string | null;
                 lastName: string | null;
             } | null;
-            id: string;
         } | null;
     } & {
         id: string;

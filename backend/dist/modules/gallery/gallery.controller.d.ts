@@ -5,11 +5,11 @@ export declare class GalleryController {
     constructor(service: GalleryService);
     findAll(query: QueryGalleryDto): import(".prisma/client").Prisma.PrismaPromise<({
         uploadedBy: {
+            id: string;
             profile: {
                 firstName: string | null;
                 lastName: string | null;
             } | null;
-            id: string;
         } | null;
     } & {
         id: string;
@@ -22,11 +22,11 @@ export declare class GalleryController {
     })[]>;
     findOne(id: string): Promise<{
         uploadedBy: {
+            id: string;
             profile: {
                 firstName: string | null;
                 lastName: string | null;
             } | null;
-            id: string;
         } | null;
     } & {
         id: string;

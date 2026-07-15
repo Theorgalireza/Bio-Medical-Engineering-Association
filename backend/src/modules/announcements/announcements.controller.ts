@@ -39,7 +39,7 @@ export class AnnouncementsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.OWNER)
+  @Roles(Role.ADMIN, Role.OWNER, Role.CONTENT_EDITOR)
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.remove(id);
   }

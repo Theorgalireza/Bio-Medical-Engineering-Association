@@ -24,6 +24,6 @@ export class GalleryController {
   @Patch(':id') @Roles('ADMIN', 'OWNER', 'CONTENT_EDITOR')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateGalleryDto) { return this.service.update(id, dto); }
 
-  @Delete(':id') @Roles('ADMIN', 'OWNER')
+  @Delete(':id') @Roles('ADMIN', 'OWNER','CONTENT_EDITOR')
   remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
 }

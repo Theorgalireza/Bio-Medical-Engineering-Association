@@ -72,7 +72,7 @@ export class UsersController {
   }
 
   @Patch(':id/role')
-  @Roles(Role.OWNER)
+  @Roles(Role.OWNER, Role.ADMIN)
   updateRole(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserRoleDto) {
     return this.usersService.updateRole(id, dto);
   }

@@ -63,6 +63,7 @@ const navItems: AdminNavItem[] = [
     href: "/admin/contacts",
     label: "تماس‌ها",
     icon: Mail,
+    roles: ["OWNER", "ADMIN"],
   },
 ];
 

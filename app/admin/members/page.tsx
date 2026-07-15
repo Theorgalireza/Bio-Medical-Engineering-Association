@@ -36,7 +36,7 @@ const EMPTY_FORM: FormState = {
 export default function MembersPage() {
   const { user: currentUser, loading: authLoading } = useAuth();
   const canManageUsers = currentUser?.role === "OWNER" || currentUser?.role === "ADMIN";
-  const canManageRoles = currentUser?.role === "OWNER";
+  const canManageRoles = currentUser?.role === "OWNER" || currentUser?.role === "ADMIN";
   const canManageStatus = canManageUsers;
 
   const [users, setUsers] = useState<ApiUser[]>([]);

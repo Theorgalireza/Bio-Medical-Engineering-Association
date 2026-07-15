@@ -27,12 +27,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     let mounted = true;
+
     Promise.all([
-      adminGetAnnouncements(),
-      adminGetArticles(),
-      adminGetFaculty(),
-      adminGetFeedback(),
-      adminGetContacts(),
+      adminGetAnnouncements().catch(() => []),
+      adminGetArticles().catch(() => []),
+      adminGetFaculty().catch(() => []),
+      adminGetFeedback().catch(() => []),
+      adminGetContacts().catch(() => []),
     ])
       .then(([announcements, articles, faculty, feedback, contacts]) => {
         if (!mounted) return;
@@ -63,10 +64,6 @@ export default function AdminDashboard() {
             published: contacts.filter((item) => item.read).length,
           },
         ]);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setStats(baseStats);
       });
 
     return () => {
