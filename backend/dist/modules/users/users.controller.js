@@ -31,13 +31,13 @@ let UsersController = class UsersController {
         return this.usersService.getProfile(req.user.id);
     }
     updateMyProfile(req, dto) {
-        return this.usersService.updateProfile(req.user.id, dto);
+        return this.usersService.updateProfile(req.user.id, dto, req.user.id, req.user?.email ?? null, req.ip);
     }
     findAll() {
         return this.usersService.findAll();
     }
-    create(dto) {
-        return this.usersService.create(dto);
+    create(req, dto) {
+        return this.usersService.create(dto, req.user.id, req.user?.email ?? null, req.ip);
     }
     countByRole() {
         return this.usersService.countByRole();
@@ -45,17 +45,17 @@ let UsersController = class UsersController {
     findOne(id) {
         return this.usersService.findById(id);
     }
-    updateProfile(id, dto) {
-        return this.usersService.updateProfile(id, dto);
+    updateProfile(req, id, dto) {
+        return this.usersService.updateProfile(id, dto, req.user.id, req.user?.email ?? null, req.ip);
     }
-    updateStatus(id, dto) {
-        return this.usersService.updateStatus(id, dto.isActive);
+    updateStatus(req, id, dto) {
+        return this.usersService.updateStatus(id, dto.isActive, req.user.id, req.user?.email ?? null, req.ip);
     }
-    updateRole(id, dto) {
-        return this.usersService.updateRole(id, dto);
+    updateRole(req, id, dto) {
+        return this.usersService.updateRole(id, dto, req.user.id, req.user?.email ?? null, req.ip);
     }
-    remove(id) {
-        return this.usersService.remove(id);
+    remove(req, id) {
+        return this.usersService.remove(id, req.user.id, req.user?.email ?? null, req.ip);
     }
 };
 exports.UsersController = UsersController;
@@ -84,9 +84,10 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(client_1.Role.OWNER, client_1.Role.ADMIN),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
+    __metadata("design:paramtypes", [Object, create_user_dto_1.CreateUserDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "create", null);
 __decorate([
@@ -107,36 +108,40 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(':id/profile'),
     (0, roles_decorator_1.Roles)(client_1.Role.OWNER, client_1.Role.ADMIN),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_profile_dto_1.UpdateProfileDto]),
+    __metadata("design:paramtypes", [Object, String, update_profile_dto_1.UpdateProfileDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateProfile", null);
 __decorate([
     (0, common_1.Patch)(':id/status'),
     (0, roles_decorator_1.Roles)(client_1.Role.OWNER, client_1.Role.ADMIN),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_user_status_dto_1.UpdateUserStatusDto]),
+    __metadata("design:paramtypes", [Object, String, update_user_status_dto_1.UpdateUserStatusDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Patch)(':id/role'),
     (0, roles_decorator_1.Roles)(client_1.Role.OWNER, client_1.Role.ADMIN),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_user_role_dto_1.UpdateUserRoleDto]),
+    __metadata("design:paramtypes", [Object, String, update_user_role_dto_1.UpdateUserRoleDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateRole", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)(client_1.Role.OWNER),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
 exports.UsersController = UsersController = __decorate([

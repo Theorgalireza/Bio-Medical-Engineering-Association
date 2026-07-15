@@ -1,5 +1,5 @@
 // articles.controller.ts
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, ParseUUIDPipe, Req } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto, UpdateArticleDto, QueryArticleDto } from './dto/article.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -28,19 +28,19 @@ export class ArticlesController {
 
   @Post()
   @Roles(Role.ADMIN, Role.OWNER, Role.CONTENT_EDITOR)
-  create(@Body() dto: CreateArticleDto, @CurrentUser() user: User) {
-    return this.service.create(dto, user);
+  create(@Body() dto: CreateArticleDto, @CurrentUser() user: User, @Req() req: any) {
+    return this.service.create(dto, user, req.user?.id ?? null, req.user?.email ?? null, req.ip);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.OWNER, Role.CONTENT_EDITOR)
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateArticleDto) {
-    return this.service.update(id, dto);
+  update(@Req() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateArticleDto) {
+    return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.OWNER,Role.CONTENT_EDITOR)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.remove(id);
+  @Roles(Role.ADMIN, Role.OWNER, Role.CONTENT_EDITOR)
+  remove(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip);
   }
 }

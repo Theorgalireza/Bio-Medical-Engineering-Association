@@ -7,18 +7,18 @@ export declare class ArticlesController {
     findAll(query: QueryArticleDto): import(".prisma/client").Prisma.PrismaPromise<({
         tags: ({
             tag: {
-                id: string;
                 name: string;
+                id: string;
             };
         } & {
-            articleId: string;
             tagId: string;
+            articleId: string;
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
-        content: string;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
@@ -34,18 +34,18 @@ export declare class ArticlesController {
     findBySlug(slug: string): Promise<{
         tags: ({
             tag: {
-                id: string;
                 name: string;
+                id: string;
             };
         } & {
-            articleId: string;
             tagId: string;
+            articleId: string;
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
-        content: string;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
@@ -58,21 +58,21 @@ export declare class ArticlesController {
         readingTime: number | null;
         featured: boolean;
     }>;
-    create(dto: CreateArticleDto, user: User): Promise<{
+    create(dto: CreateArticleDto, user: User, req: any): Promise<{
         tags: ({
             tag: {
-                id: string;
                 name: string;
+                id: string;
             };
         } & {
-            articleId: string;
             tagId: string;
+            articleId: string;
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
-        content: string;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
@@ -85,21 +85,21 @@ export declare class ArticlesController {
         readingTime: number | null;
         featured: boolean;
     }>;
-    update(id: string, dto: UpdateArticleDto): Promise<{
+    update(req: any, id: string, dto: UpdateArticleDto): Promise<{
         tags: ({
             tag: {
-                id: string;
                 name: string;
+                id: string;
             };
         } & {
-            articleId: string;
             tagId: string;
+            articleId: string;
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
-        content: string;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
@@ -112,7 +112,7 @@ export declare class ArticlesController {
         readingTime: number | null;
         featured: boolean;
     }>;
-    remove(id: string): Promise<{
+    remove(req: any, id: string): Promise<{
         message: string;
     }>;
 }

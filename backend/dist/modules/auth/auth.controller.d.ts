@@ -13,15 +13,15 @@ export declare class AuthController {
     constructor(auth: AuthService, config: ConfigService);
     private setAuthCookie;
     private redirectToFrontend;
-    register(dto: RegisterDto, reply: any): Promise<any>;
-    login(dto: LoginDto, reply: any): Promise<any>;
-    sendOtp(dto: SendOtpDto): Promise<{
+    register(dto: RegisterDto, req: any, reply: any): Promise<any>;
+    login(dto: LoginDto, req: any, reply: any): Promise<any>;
+    sendOtp(dto: SendOtpDto, req: any): Promise<{
         message: string;
     }>;
-    forgot(dto: ForgotPasswordDto): Promise<{
+    forgot(dto: ForgotPasswordDto, req: any): Promise<{
         message: string;
     }>;
-    reset(dto: ResetPasswordDto): Promise<{
+    reset(dto: ResetPasswordDto, req: any): Promise<{
         message: string;
     }>;
     logout(reply: any): any;

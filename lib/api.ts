@@ -16,11 +16,54 @@ import type {
   AdminContact,
   CurrentUser,
   Profile,
+  ActivityLog,
+  ActivityLogsResponse,
 } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 type ApiEnvelope<T> = { success?: boolean; data?: T };
+
+let cachedCsrfToken: string | null = null;
+let csrfTokenPromise: Promise<string | null> | null = null;
+
+async function fetchCsrfToken(): Promise<string | null> {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  if (cachedCsrfToken) {
+    return cachedCsrfToken;
+  }
+
+  if (!csrfTokenPromise) {
+    csrfTokenPromise = fetch(`${API_BASE_URL}/csrf-token`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          return null;
+        }
+
+        const json = await res.json().catch(() => null);
+        const token = json?.csrfToken;
+        if (typeof token === "string" && token.length > 0) {
+          cachedCsrfToken = token;
+          return token;
+        }
+
+        return null;
+      })
+      .catch(() => null)
+      .finally(() => {
+        csrfTokenPromise = null;
+      });
+  }
+
+  return csrfTokenPromise;
+}
 
 async function apiFetch<T>(
   path: string,
@@ -30,9 +73,17 @@ async function apiFetch<T>(
   const { auth: authFromOptions, ...rest } = options;
   const needsAuth = auth || Boolean(authFromOptions);
   const headers = new Headers(rest.headers);
+  const method = String(rest.method ?? "GET").toUpperCase();
 
   if (rest.body) {
     headers.set("Content-Type", "application/json");
+  }
+
+  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+    const csrfToken = await fetchCsrfToken();
+    if (csrfToken) {
+      headers.set("X-CSRF-Token", csrfToken);
+    }
   }
   // هدر Authorization حذف شد؛ کوکی httpOnly به‌طور خودکار ارسال می‌شود
   void needsAuth;
@@ -57,7 +108,7 @@ async function apiFetch<T>(
   }
 
   const json = await res.json();
-  return (json?.data !== undefined ? json.data : json) as T;
+  return (json?.data !== undefined && json?.meta === undefined ? json.data : json) as T;
 }
 
 function formatDate(value?: string | Date | null): string {
@@ -256,6 +307,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   }
 }
 
+
 export async function getArticles(): Promise<Article[]> {
   return (
     await apiFetch<any[]>("/articles?status=PUBLISHED")
@@ -305,11 +357,34 @@ export async function loginWithPassword(payload: { email: string; password: stri
     },
   );
 }
-export async function getActivityLogs(limit = 200): Promise<ActivityLog[]> {
-  const res = await fetchWithAuth(`/activity-logs?limit=${limit}`);
-  if (!res.ok) throw new Error('خطا در دریافت لاگ‌ها');
-  const data = await res.json();
-  return data.data ?? data;
+export async function getActivityLogs(params: {
+  page?: number;
+  limit?: number;
+  action?: string;
+  targetType?: string;
+} = {}): Promise<ActivityLogsResponse> {
+  const searchParams = new URLSearchParams();
+
+  searchParams.set("page", String(params.page ?? 1));
+  searchParams.set("limit", String(params.limit ?? 20));
+
+  if (params.action) {
+    searchParams.set("action", String(params.action));
+  }
+
+  if (params.targetType) {
+    searchParams.set("targetType", String(params.targetType));
+  }
+
+  const response = await apiFetch<ActivityLogsResponse>(`/activity-logs?${searchParams.toString()}`, {
+    auth: true,
+  });
+
+  const data: ActivityLog[] = response.data;
+  return {
+    ...response,
+    data,
+  };
 }
 
 export async function register(payload: {
@@ -404,9 +479,7 @@ export async function adminGetArticles(): Promise<AdminArticle[]> {
     date: item.date ? String(item.date) : getPublishedDate(item),
     content: String(item.content ?? item.summary ?? ""),
     published: String(item.status ?? "").toUpperCase() === "PUBLISHED",
-    category: String(item.category ?? ""),
-    status: item.status,
-    publishedAt: item.publishedAt ?? undefined,
+    slug: item.slug ?? undefined,
   }));
 }
 
@@ -430,20 +503,18 @@ export async function adminDeleteArticle(id: string) {
 
 // ─── Admin: Faculty ────────────────────────────────────────
 export async function adminGetFaculty(): Promise<AdminFacultyMember[]> {
-  return (await apiFetch<any[]>("/faculty", {}, true)).map((item) => {
-    const specialties = asStringArray(item.specialties);
-    return {
+  return apiFetch<any[]>("/faculty", {}, true).then((items) =>
+    items.map((item) => ({
       id: String(item.id),
       name: String(item.name ?? ""),
-      role: String(item.title ?? ""),
-      field: item.field ?? specialties.join("، "),
-      monogram: String(item.monogram ?? String(item.name ?? "").charAt(0)),
-      color: String(item.color ?? "#00d4ff"),
       title: String(item.title ?? ""),
-      specialties,
-      isActive: Boolean(item.isActive),
-    };
-  });
+      specialties: asStringArray(item.specialties),
+      role: item.role ?? "",
+      field: item.field ?? "",
+      monogram: item.monogram ?? String(item.name ?? "").charAt(0),
+      color: item.color ?? "#00d4ff",
+    })),
+  );
 }
 
 export async function adminCreateFaculty(body: object) {
@@ -451,9 +522,6 @@ export async function adminCreateFaculty(body: object) {
     method: "POST",
     body: JSON.stringify(body),
   }, true);
-}
-export async function getCurrentUser() {
-  return apiFetch<CurrentUser>("/users/me", { method: "GET" });
 }
 
 export async function adminUpdateFaculty(id: string, body: object) {
@@ -465,6 +533,22 @@ export async function adminUpdateFaculty(id: string, body: object) {
 
 export async function adminDeleteFaculty(id: string) {
   return apiFetch<void>(`/faculty/${id}`, { method: "DELETE" }, true);
+}
+
+// ─── Admin: Gallery ────────────────────────────────────────
+export async function adminGetGallery(): Promise<GalleryItem[]> {
+  return apiFetch<any[]>("/gallery", {}, true).then((items) => items.map(toGalleryItem));
+}
+
+export async function adminCreateGallery(body: object) {
+  return apiFetch<any>("/gallery", {
+    method: "POST",
+    body: JSON.stringify(body),
+  }, true);
+}
+
+export async function adminDeleteGallery(id: string) {
+  return apiFetch<void>(`/gallery/${id}`, { method: "DELETE" }, true);
 }
 
 // ─── Admin: Feedback ───────────────────────────────────────
@@ -479,15 +563,11 @@ export async function adminGetFeedback(): Promise<AdminFeedback[]> {
   }));
 }
 
-export async function adminUpdateFeedback(id: string, approved: boolean) {
-  return apiFetch<any>(
-    `/feedback/${id}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ approved }),
-    },
-    true,
-  );
+export async function adminUpdateFeedback(id: string, body: object) {
+  return apiFetch<any>(`/feedback/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  }, true);
 }
 
 export async function adminDeleteFeedback(id: string) {
@@ -495,95 +575,105 @@ export async function adminDeleteFeedback(id: string) {
 }
 
 // ─── Admin: Contact ────────────────────────────────────────
-export async function adminGetContacts(): Promise<AdminContact[]> {
-  return (await apiFetch<any[]>("/contact", {}, true)).map(toContact);
+export async function adminGetContact(): Promise<AdminContact[]> {
+  return apiFetch<any[]>("/contact", {}, true).then((items) => items.map(toContact));
 }
 
-export async function adminMarkContactRead(id: string) {
-  return apiFetch<any>(
-    `/contact/${id}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ read: true }),
-    },
-    true,
-  );
+export async function adminUpdateContact(id: string, body: object) {
+  return apiFetch<any>(`/contact/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  }, true);
 }
 
 export async function adminDeleteContact(id: string) {
   return apiFetch<void>(`/contact/${id}`, { method: "DELETE" }, true);
 }
 
-// ─── Admin: Users ──────────────────────────────────────────
-export async function getUsers(): Promise<ApiUser[]> {
-  return (await apiFetch<any[]>("/users", {}, true)).map(toUser);
+// ─── Auth / Profile ───────────────────────────────────────
+export async function getCurrentUser(): Promise<CurrentUser | null> {
+  try {
+    const response = await apiFetch<ApiEnvelope<ApiUser>>("/users/me", { auth: true }, true);
+    const payload = (response as any)?.data ?? response;
+    return toUser(payload);
+  } catch {
+    return null;
+  }
 }
 
-export async function createUser(body: CreateUserPayload) {
-  return apiFetch<ApiUser>(
-    "/users",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        email: body.email || undefined,
-        phone: body.phone || undefined,
-        password: body.password,
-        role: normalizeRole(body.role),
-        firstName: body.firstName || undefined,
-        lastName: body.lastName || undefined,
-        studentId: body.studentId || undefined,
-        university: body.university || undefined,
-        major: body.major || undefined,
-        field: body.field || undefined,
-        entryYear: body.entryYear ?? undefined,
-        github: body.github || undefined,
-        linkedin: body.linkedin || undefined,
-        website: body.website || undefined,
-        profileEmail: body.profileEmail || undefined,
-      }),
-    },
-    true,
-  ).then(toUser);
+export async function getProfile(): Promise<Profile | null> {
+  try {
+    const response = await apiFetch<any>("/users/profile", { auth: true }, true);
+    return response?.profile ? response.profile : response ?? null;
+  } catch {
+    return null;
+  }
 }
 
-export async function updateMyProfile(payload: UpdateProfilePayload) {
-  return apiFetch<CurrentUser>("/users/me/profile", {
+export async function updateProfile(payload: UpdateProfilePayload): Promise<Profile> {
+  const response = await apiFetch<any>("/users/profile", {
     method: "PATCH",
     body: JSON.stringify(payload),
-  });
+  }, true);
+  return response?.profile ? response.profile : response;
 }
 
-export async function updateUserProfile(id: string, payload: UpdateProfilePayload) {
-  return apiFetch<ApiUser>(`/users/${id}/profile`, {
+export async function updateUserRole(userId: string, role: Role) {
+  return apiFetch(`/users/${userId}/role`, {
     method: "PATCH",
-    body: JSON.stringify(payload),
-  }, true).then(toUser);
+    body: JSON.stringify({ role: normalizeRole(role) }),
+  }, true);
 }
 
-export async function updateUserRole(id: string, role: Role) {
-  return apiFetch<ApiUser>(
-    `/users/${id}/role`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ role: normalizeRole(role) }),
-    },
-    true,
-  ).then(toUser);
+export async function updateUserStatus(userId: string, isActive: boolean) {
+  return apiFetch(`/users/${userId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ isActive }),
+  }, true);
 }
 
-export async function updateUserStatus(id: string, isActive: boolean) {
-  return apiFetch<ApiUser>(
-    `/users/${id}/status`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ isActive }),
-    },
-    true,
-  ).then(toUser);
+export async function adminGetUsers(): Promise<ApiUser[]> {
+  return apiFetch<any[]>("/users", {}, true).then((items) => items.map(toUser));
 }
 
-export async function deleteUser(id: string) {
-  return apiFetch<void>(`/users/${id}`, { method: "DELETE" }, true);
+export async function adminDeleteUser(userId: string) {
+  return apiFetch<void>(`/users/${userId}`, { method: "DELETE" }, true);
 }
 
-export type { Profile, CurrentUser } from "@/types";
+export async function adminCreateUser(payload: CreateUserPayload) {
+  return apiFetch<{ user: ApiUser }>("/users", {
+    method: "POST",
+    body: JSON.stringify({
+      ...payload,
+      role: normalizeRole(payload.role),
+    }),
+  }, true);
+}
+
+export async function getAuthStatus(): Promise<{ authenticated: boolean; role: string | null }> {
+  try {
+    const me = await getCurrentUser();
+    return { authenticated: Boolean(me), role: me?.role ?? null };
+  } catch {
+    return { authenticated: false, role: null };
+  }
+}
+
+export async function getActivityLogsCount(): Promise<number> {
+  const response = await getActivityLogs({ page: 1, limit: 1 });
+  return response.meta?.total ?? response.data.length;
+}
+
+export async function getPublications() {
+  return apiFetch("/publications");
+}
+export const adminGetContacts = adminGetContact;
+export const adminMarkContactRead = (id: string) => adminUpdateContact(id, { read: true });
+export const getUsers = adminGetUsers;
+export const updateUserProfile = (userId: string, payload: UpdateProfilePayload) =>
+  apiFetch(`/users/${userId}`, { method: "PATCH", body: JSON.stringify(payload) }, true);
+export const createUser = adminCreateUser;
+export const deleteUser = adminDeleteUser;
+export const updateMyProfile = updateProfile;
+// re-export type چون فقط import شده بود، نه export
+export type { Profile };

@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SmsService } from './sms/sms.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 type OAuthProvider = 'google' | 'github' | 'linkedin';
 interface OAuthProfilePayload {
     provider: OAuthProvider;
@@ -25,21 +26,23 @@ export declare class AuthService {
     private readonly prisma;
     private readonly jwt;
     private readonly smsService;
-    constructor(prisma: PrismaService, jwt: JwtService, smsService: SmsService);
-    register(dto: RegisterDto): Promise<AuthResult>;
-    login(dto: LoginDto): Promise<AuthResult>;
+    private readonly activityLog;
+    constructor(prisma: PrismaService, jwt: JwtService, smsService: SmsService, activityLog: ActivityLogService);
+    private logAuthAction;
+    register(dto: RegisterDto, actorId?: string | null, ip?: string | null): Promise<AuthResult>;
+    login(dto: LoginDto, actorId?: string | null, ip?: string | null): Promise<AuthResult>;
     private loginWithPassword;
     private loginWithOtp;
-    sendOtp(phone: string): Promise<{
+    sendOtp(phone: string, actorId?: string | null, ip?: string | null): Promise<{
         message: string;
     }>;
-    forgotPassword(identifier: string): Promise<{
+    forgotPassword(identifier: string, actorId?: string | null, ip?: string | null): Promise<{
         message: string;
     }>;
-    resetPassword(token: string, newPassword: string): Promise<{
+    resetPassword(token: string, newPassword: string, actorId?: string | null, ip?: string | null): Promise<{
         message: string;
     }>;
-    oauthLogin(profile: OAuthProfilePayload): Promise<AuthResult>;
+    oauthLogin(profile: OAuthProfilePayload, actorId?: string | null, ip?: string | null): Promise<AuthResult>;
     private signToken;
 }
 export {};

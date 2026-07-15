@@ -20,15 +20,16 @@ const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 const public_decorator_1 = require("../../common/decorators/public.decorator");
+const skip_csrf_decorator_1 = require("../../common/decorators/skip-csrf.decorator");
 let ContactController = class ContactController {
     constructor(service) {
         this.service = service;
     }
     findAll(query) { return this.service.findAll(query); }
     findOne(id) { return this.service.findOne(id); }
-    create(dto) { return this.service.create(dto); }
-    update(id, dto) { return this.service.update(id, dto); }
-    remove(id) { return this.service.remove(id); }
+    create(req, dto) { return this.service.create(dto, null, dto.email, req.ip); }
+    update(req, id, dto) { return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip); }
+    remove(req, id) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
 };
 exports.ContactController = ContactController;
 __decorate([
@@ -50,26 +51,30 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, public_decorator_1.Public)(),
-    __param(0, (0, common_1.Body)()),
+    (0, skip_csrf_decorator_1.SkipCsrf)(),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [contact_dto_1.CreateContactDto]),
+    __metadata("design:paramtypes", [Object, contact_dto_1.CreateContactDto]),
     __metadata("design:returntype", void 0)
 ], ContactController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, contact_dto_1.UpdateContactDto]),
+    __metadata("design:paramtypes", [Object, String, contact_dto_1.UpdateContactDto]),
     __metadata("design:returntype", void 0)
 ], ContactController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], ContactController.prototype, "remove", null);
 exports.ContactController = ContactController = __decorate([

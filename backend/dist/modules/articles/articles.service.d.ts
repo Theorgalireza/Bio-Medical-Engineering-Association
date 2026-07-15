@@ -1,14 +1,17 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { CreateArticleDto, UpdateArticleDto, QueryArticleDto } from './dto/article.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 export declare class ArticlesService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly activityLog;
+    constructor(prisma: PrismaService, activityLog: ActivityLogService);
+    private logActivity;
     findAll(query: QueryArticleDto): import(".prisma/client").Prisma.PrismaPromise<({
         tags: ({
             tag: {
-                id: string;
                 name: string;
+                id: string;
             };
         } & {
             tagId: string;
@@ -16,6 +19,7 @@ export declare class ArticlesService {
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
         slug: string;
@@ -24,7 +28,6 @@ export declare class ArticlesService {
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
@@ -34,8 +37,8 @@ export declare class ArticlesService {
     findBySlug(slug: string): Promise<{
         tags: ({
             tag: {
-                id: string;
                 name: string;
+                id: string;
             };
         } & {
             tagId: string;
@@ -43,6 +46,7 @@ export declare class ArticlesService {
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
         slug: string;
@@ -51,18 +55,17 @@ export declare class ArticlesService {
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
         readingTime: number | null;
         featured: boolean;
     }>;
-    create(dto: CreateArticleDto, user: User): Promise<{
+    create(dto: CreateArticleDto, user: User, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         tags: ({
             tag: {
-                id: string;
                 name: string;
+                id: string;
             };
         } & {
             tagId: string;
@@ -70,6 +73,7 @@ export declare class ArticlesService {
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
         slug: string;
@@ -78,18 +82,17 @@ export declare class ArticlesService {
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
         readingTime: number | null;
         featured: boolean;
     }>;
-    update(id: string, dto: UpdateArticleDto): Promise<{
+    update(id: string, dto: UpdateArticleDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         tags: ({
             tag: {
-                id: string;
                 name: string;
+                id: string;
             };
         } & {
             tagId: string;
@@ -97,6 +100,7 @@ export declare class ArticlesService {
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
         slug: string;
@@ -105,14 +109,13 @@ export declare class ArticlesService {
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
         readingTime: number | null;
         featured: boolean;
     }>;
-    remove(id: string): Promise<{
+    remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         message: string;
     }>;
     private resolveTagConnects;

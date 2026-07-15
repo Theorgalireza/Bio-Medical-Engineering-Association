@@ -12,9 +12,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FacultyService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const activity_log_service_1 = require("../activity-log/activity-log.service");
 let FacultyService = class FacultyService {
-    constructor(prisma) {
+    constructor(prisma, activityLog) {
         this.prisma = prisma;
+        this.activityLog = activityLog;
+    }
+    async logActivity(params) {
+        await this.activityLog.log({
+            actorId: params.actorId ?? null,
+            actorEmail: params.actorEmail ?? null,
+            action: params.action,
+            targetType: 'Faculty',
+            targetId: params.targetId,
+            detail: params.detail,
+            ip: params.ip ?? null,
+        });
     }
     findAll(query) {
         const where = {};
@@ -35,22 +48,49 @@ let FacultyService = class FacultyService {
             throw new common_1.NotFoundException('Faculty member not found');
         return item;
     }
-    create(dto) {
-        return this.prisma.facultyMember.create({ data: { ...dto, specialties: dto.specialties } });
+    async create(dto, actorId, actorEmail, ip) {
+        const item = await this.prisma.facultyMember.create({ data: { ...dto, specialties: dto.specialties } });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'CREATE_FACULTY',
+            targetId: item.id,
+            detail: `Created faculty member ${item.name}`,
+            ip,
+        });
+        return item;
     }
-    async update(id, dto) {
-        await this.findOne(id);
-        return this.prisma.facultyMember.update({ where: { id }, data: dto });
+    async update(id, dto, actorId, actorEmail, ip) {
+        const existing = await this.findOne(id);
+        const item = await this.prisma.facultyMember.update({ where: { id }, data: dto });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'UPDATE_FACULTY',
+            targetId: id,
+            detail: `Updated faculty member ${existing.name}`,
+            ip,
+        });
+        return item;
     }
-    async remove(id) {
-        await this.findOne(id);
+    async remove(id, actorId, actorEmail, ip) {
+        const existing = await this.findOne(id);
         await this.prisma.facultyMember.delete({ where: { id } });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'DELETE_FACULTY',
+            targetId: id,
+            detail: `Deleted faculty member ${existing.name}`,
+            ip,
+        });
         return { message: 'Deleted successfully' };
     }
 };
 exports.FacultyService = FacultyService;
 exports.FacultyService = FacultyService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        activity_log_service_1.ActivityLogService])
 ], FacultyService);
 //# sourceMappingURL=faculty.service.js.map

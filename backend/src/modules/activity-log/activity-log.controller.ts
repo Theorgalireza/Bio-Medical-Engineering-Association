@@ -11,7 +11,17 @@ export class ActivityLogController {
   constructor(private readonly service: ActivityLogService) {}
 
   @Get()
-  findAll(@Query('limit') limit?: string) {
-    return this.service.findAll(limit ? parseInt(limit) : 200);
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('action') action?: string,
+    @Query('targetType') targetType?: string,
+  ) {
+    return this.service.findAll({
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 20,
+      action,
+      targetType,
+    });
   }
 }

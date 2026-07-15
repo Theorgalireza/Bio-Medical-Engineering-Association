@@ -22,28 +22,37 @@ export interface Article {
   content?: string;
   category: string;
   authors: string[];
-    date: string;
+  date: string;
   year: number;
   readingTime: number;
   featured?: boolean;
   status?: ContentStatus;
   publishedAt?: string;
   issue?: string;
-    downloadUrl?: string;
-    description?: string;
+  downloadUrl?: string;
+  description?: string;
 }
-
 
 export interface ActivityLog {
   id: string;
-  actorId?: string;
-  actorEmail?: string;
+  actorId: string | null;
+  actorEmail: string | null;
   action: string;
-  targetType?: string;
-  targetId?: string;
-  detail?: string;
-  ip?: string;
+  targetType: string | null;
+  targetId: string | null;
+  detail: string | null;
+  ip: string | null;
   createdAt: string;
+}
+
+export interface ActivityLogsResponse {
+  data: ActivityLog[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface FacultyMember {
@@ -82,15 +91,16 @@ export interface ContactInfoItem {
   value: string;
   icon: "mail" | "phone" | "pin";
 }
+
 export type Role =
-  | 'OWNER'
-  | 'ADMIN'
-  | 'CONTENT_EDITOR'
-  | 'STUDENT_MEMBER'
-  | 'STUDENT_ACTIVE_MEMBER'
-  | 'STUDENT_INACTIVE_MEMBER'
-  | 'FACULTY_MEMBER'
-  | 'GUEST';
+  | "OWNER"
+  | "ADMIN"
+  | "CONTENT_EDITOR"
+  | "STUDENT_MEMBER"
+  | "STUDENT_ACTIVE_MEMBER"
+  | "STUDENT_INACTIVE_MEMBER"
+  | "FACULTY_MEMBER"
+  | "GUEST";
 
 export interface Profile {
   id: string;
@@ -118,6 +128,7 @@ export interface CurrentUser {
   avatarUrl?: string | null;
   profile: Profile | null;
 }
+
 export interface ApiUser {
   id: string;
   email: string | null;
@@ -148,19 +159,18 @@ export interface CreateUserPayload {
 }
 
 export interface UpdateProfilePayload {
-  firstName?: string | null;
-  lastName?: string | null;
-  studentId?: string | null;
-  university?: string | null;
-  major?: string | null;
-  field?: string | null;
-  entryYear?: number | null;
-  github?: string | null;
-  linkedin?: string | null;
-  website?: string | null;
-  profileEmail?: string | null;
+  firstName?: string;
+  lastName?: string;
+  studentId?: string;
+  university?: string;
+  major?: string;
+  field?: string;
+  entryYear?: number;
+  github?: string;
+  linkedin?: string;
+  website?: string;
+  profileEmail?: string;
 }
-
 
 export interface AdminAnnouncement {
   id: string;

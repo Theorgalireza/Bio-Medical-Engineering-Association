@@ -32,7 +32,7 @@ export class UsersController {
 
   @Patch('me/profile')
   updateMyProfile(@Req() req: any, @Body() dto: UpdateProfileDto) {
-    return this.usersService.updateProfile(req.user.id, dto);
+    return this.usersService.updateProfile(req.user.id, dto, req.user.id, req.user?.email ?? null, req.ip);
   }
 
   @Get()
@@ -43,8 +43,8 @@ export class UsersController {
 
   @Post()
   @Roles(Role.OWNER, Role.ADMIN)
-  create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  create(@Req() req: any, @Body() dto: CreateUserDto) {
+    return this.usersService.create(dto, req.user.id, req.user?.email ?? null, req.ip);
   }
 
   @Get('stats/roles')
@@ -61,25 +61,25 @@ export class UsersController {
 
   @Patch(':id/profile')
   @Roles(Role.OWNER, Role.ADMIN)
-  updateProfile(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProfileDto) {
-    return this.usersService.updateProfile(id, dto);
+  updateProfile(@Req() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProfileDto) {
+    return this.usersService.updateProfile(id, dto, req.user.id, req.user?.email ?? null, req.ip);
   }
 
   @Patch(':id/status')
   @Roles(Role.OWNER, Role.ADMIN)
-  updateStatus(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserStatusDto) {
-    return this.usersService.updateStatus(id, dto.isActive);
+  updateStatus(@Req() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserStatusDto) {
+    return this.usersService.updateStatus(id, dto.isActive, req.user.id, req.user?.email ?? null, req.ip);
   }
 
   @Patch(':id/role')
   @Roles(Role.OWNER, Role.ADMIN)
-  updateRole(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserRoleDto) {
-    return this.usersService.updateRole(id, dto);
+  updateRole(@Req() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserRoleDto) {
+    return this.usersService.updateRole(id, dto, req.user.id, req.user?.email ?? null, req.ip);
   }
 
   @Delete(':id')
   @Roles(Role.OWNER)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.remove(id);
+  remove(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.remove(id, req.user.id, req.user?.email ?? null, req.ip);
   }
 }

@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArticlesController = void 0;
 const common_1 = require("@nestjs/common");
@@ -32,14 +33,14 @@ let ArticlesController = class ArticlesController {
     findBySlug(slug) {
         return this.service.findBySlug(slug);
     }
-    create(dto, user) {
-        return this.service.create(dto, user);
+    create(dto, user, req) {
+        return this.service.create(dto, user, req.user?.id ?? null, req.user?.email ?? null, req.ip);
     }
-    update(id, dto) {
-        return this.service.update(id, dto);
+    update(req, id, dto) {
+        return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip);
     }
-    remove(id) {
-        return this.service.remove(id);
+    remove(req, id) {
+        return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip);
     }
 };
 exports.ArticlesController = ArticlesController;
@@ -64,25 +65,28 @@ __decorate([
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER, client_1.Role.CONTENT_EDITOR),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [article_dto_1.CreateArticleDto, Object]),
+    __metadata("design:paramtypes", [article_dto_1.CreateArticleDto, typeof (_a = typeof client_1.User !== "undefined" && client_1.User) === "function" ? _a : Object, Object]),
     __metadata("design:returntype", void 0)
 ], ArticlesController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER, client_1.Role.CONTENT_EDITOR),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, article_dto_1.UpdateArticleDto]),
+    __metadata("design:paramtypes", [Object, String, article_dto_1.UpdateArticleDto]),
     __metadata("design:returntype", void 0)
 ], ArticlesController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER, client_1.Role.CONTENT_EDITOR),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], ArticlesController.prototype, "remove", null);
 exports.ArticlesController = ArticlesController = __decorate([

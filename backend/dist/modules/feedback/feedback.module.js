@@ -11,10 +11,11 @@ const common_1 = require("@nestjs/common");
 const feedback_service_1 = require("./feedback.service");
 const feedback_controller_1 = require("./feedback.controller");
 const prisma_module_1 = require("../../prisma/prisma.module");
+const activity_log_module_1 = require("../activity-log/activity-log.module");
 let FeedbackModule = class FeedbackModule {
 };
 exports.FeedbackModule = FeedbackModule;
 exports.FeedbackModule = FeedbackModule = __decorate([
-    (0, common_1.Module)({ imports: [prisma_module_1.PrismaModule], controllers: [feedback_controller_1.FeedbackController], providers: [feedback_service_1.FeedbackService] })
+    (0, common_1.Module)({ imports: [prisma_module_1.PrismaModule, activity_log_module_1.ActivityLogModule], controllers: [feedback_controller_1.FeedbackController], providers: [feedback_service_1.FeedbackService] })
 ], FeedbackModule);
 //# sourceMappingURL=feedback.module.js.map

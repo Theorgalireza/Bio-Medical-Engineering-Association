@@ -41,7 +41,8 @@ const [items, setItems] = useState<AdminFeedback[]>([]);
                 <p className="text-sm text-gray-400">{item.message}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <button onClick={async () => { await adminUpdateFeedback(item.id, !item.approved); await load(); }}
+                <button onClick={async () => { await adminUpdateFeedback(item.id, { approved: !item.approved }); await load(); }}
+
                   className={`px-2 py-0.5 rounded text-xs font-vazir transition-colors ${item.approved ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-gray-500/15 text-gray-400"}`}>
                   {item.approved ? "تأیید شده" : "در انتظار"}
                 </button>

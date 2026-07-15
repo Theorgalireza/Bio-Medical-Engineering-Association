@@ -26,9 +26,9 @@ let FacultyController = class FacultyController {
     }
     findAll(query) { return this.service.findAll(query); }
     findOne(id) { return this.service.findOne(id); }
-    create(dto) { return this.service.create(dto); }
-    update(id, dto) { return this.service.update(id, dto); }
-    remove(id) { return this.service.remove(id); }
+    create(req, dto) { return this.service.create(dto, req.user.id, req.user?.email ?? null, req.ip); }
+    update(req, id, dto) { return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip); }
+    remove(req, id) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
 };
 exports.FacultyController = FacultyController;
 __decorate([
@@ -50,26 +50,29 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [faculty_dto_1.CreateFacultyDto]),
+    __metadata("design:paramtypes", [Object, faculty_dto_1.CreateFacultyDto]),
     __metadata("design:returntype", void 0)
 ], FacultyController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, faculty_dto_1.UpdateFacultyDto]),
+    __metadata("design:paramtypes", [Object, String, faculty_dto_1.UpdateFacultyDto]),
     __metadata("design:returntype", void 0)
 ], FacultyController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], FacultyController.prototype, "remove", null);
 exports.FacultyController = FacultyController = __decorate([

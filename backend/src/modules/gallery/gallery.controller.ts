@@ -19,11 +19,11 @@ export class GalleryController {
   findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findOne(id); }
 
   @Post() @Roles('ADMIN', 'OWNER', 'CONTENT_EDITOR')
-  create(@Body() dto: CreateGalleryDto, @Request() req: any) { return this.service.create(dto, req.user?.id); }
+  create(@Body() dto: CreateGalleryDto, @Request() req: any) { return this.service.create(dto, req.user?.id, req.user?.id ?? null, req.user?.email ?? null, req.ip); }
 
   @Patch(':id') @Roles('ADMIN', 'OWNER', 'CONTENT_EDITOR')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateGalleryDto) { return this.service.update(id, dto); }
+  update(@Request() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateGalleryDto) { return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip); }
 
   @Delete(':id') @Roles('ADMIN', 'OWNER','CONTENT_EDITOR')
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
+  remove(@Request() req: any, @Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
 }

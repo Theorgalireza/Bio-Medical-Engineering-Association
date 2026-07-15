@@ -5,7 +5,7 @@ import { UsersService } from './users.service';
 import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
-  imports: [PrismaModule,ActivityLogModule],
+  imports: [PrismaModule, ActivityLogModule],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

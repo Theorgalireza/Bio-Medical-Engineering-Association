@@ -14,9 +14,23 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const slugify_1 = require("slugify");
+const activity_log_service_1 = require("../activity-log/activity-log.service");
+const sanitize_html_util_1 = require("../../common/utils/sanitize-html.util");
 let ArticlesService = class ArticlesService {
-    constructor(prisma) {
+    constructor(prisma, activityLog) {
         this.prisma = prisma;
+        this.activityLog = activityLog;
+    }
+    async logActivity(params) {
+        await this.activityLog.log({
+            actorId: params.actorId ?? null,
+            actorEmail: params.actorEmail ?? null,
+            action: params.action,
+            targetType: 'Article',
+            targetId: params.targetId,
+            detail: params.detail,
+            ip: params.ip ?? null,
+        });
     }
     findAll(query) {
         const where = { status: client_1.ContentStatus.PUBLISHED };
@@ -49,15 +63,19 @@ let ArticlesService = class ArticlesService {
             throw new common_1.NotFoundException('Article not found');
         return item;
     }
-    async create(dto, user) {
+    async create(dto, user, actorId, actorEmail, ip) {
         const { tags, ...data } = dto;
         const base = (0, slugify_1.default)(dto.title, { lower: true, strict: true });
         const exists = await this.prisma.article.findUnique({ where: { slug: base } });
         const slug = exists ? `${base}-${Date.now()}` : base;
         const status = dto.status ?? client_1.ContentStatus.DRAFT;
-        return this.prisma.article.create({
+        const sanitizedData = {
+            ...data,
+            content: (0, sanitize_html_util_1.sanitizeRichText)(data.content),
+        };
+        const article = await this.prisma.article.create({
             data: {
-                ...data,
+                ...sanitizedData,
                 slug,
                 authorId: user.id,
                 status,
@@ -66,8 +84,17 @@ let ArticlesService = class ArticlesService {
             },
             include: { tags: { include: { tag: true } } },
         });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'CREATE_ARTICLE',
+            targetId: article.id,
+            detail: `Created article '${article.title}' (${article.slug})`,
+            ip,
+        });
+        return article;
     }
-    async update(id, dto) {
+    async update(id, dto, actorId, actorEmail, ip) {
         const existing = await this.prisma.article.findUnique({ where: { id } });
         if (!existing)
             throw new common_1.NotFoundException('Article not found');
@@ -82,22 +109,49 @@ let ArticlesService = class ArticlesService {
         if (tags) {
             await this.prisma.articleTag.deleteMany({ where: { articleId: id } });
         }
-        return this.prisma.article.update({
+        const sanitizedData = {
+            ...data,
+            content: data.content !== undefined ? (0, sanitize_html_util_1.sanitizeRichText)(data.content) : undefined,
+        };
+        const article = await this.prisma.article.update({
             where: { id },
             data: {
-                ...data,
+                ...sanitizedData,
                 slug,
                 publishedAt: status === client_1.ContentStatus.PUBLISHED ? new Date() : existing.publishedAt,
                 tags: tags?.length ? { create: await this.resolveTagConnects(tags) } : undefined,
             },
             include: { tags: { include: { tag: true } } },
         });
+        const statusChanged = dto.status !== undefined && dto.status !== existing.status;
+        const action = statusChanged
+            ? status === client_1.ContentStatus.PUBLISHED
+                ? 'PUBLISH_ARTICLE'
+                : 'UNPUBLISH_ARTICLE'
+            : 'UPDATE_ARTICLE';
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action,
+            targetId: article.id,
+            detail: `${action === 'UPDATE_ARTICLE' ? 'Updated' : action === 'PUBLISH_ARTICLE' ? 'Published' : 'Unpublished'} article '${article.title}' (${article.slug})`,
+            ip,
+        });
+        return article;
     }
-    async remove(id) {
+    async remove(id, actorId, actorEmail, ip) {
         const item = await this.prisma.article.findUnique({ where: { id } });
         if (!item)
             throw new common_1.NotFoundException('Article not found');
         await this.prisma.article.delete({ where: { id } });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'DELETE_ARTICLE',
+            targetId: id,
+            detail: `Deleted article '${item.title}' (${item.slug})`,
+            ip,
+        });
         return { message: 'Deleted successfully' };
     }
     async resolveTagConnects(tagNames) {
@@ -114,6 +168,7 @@ let ArticlesService = class ArticlesService {
 exports.ArticlesService = ArticlesService;
 exports.ArticlesService = ArticlesService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        activity_log_service_1.ActivityLogService])
 ], ArticlesService);
 //# sourceMappingURL=articles.service.js.map

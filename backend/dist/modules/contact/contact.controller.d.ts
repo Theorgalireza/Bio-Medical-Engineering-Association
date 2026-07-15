@@ -5,41 +5,41 @@ export declare class ContactController {
     constructor(service: ContactService);
     findAll(query: QueryContactDto): import(".prisma/client").Prisma.PrismaPromise<{
         email: string;
-        message: string;
+        name: string;
         id: string;
         createdAt: Date;
-        name: string;
+        message: string;
         subject: string | null;
         read: boolean;
     }[]>;
     findOne(id: string): Promise<{
         email: string;
-        message: string;
+        name: string;
         id: string;
         createdAt: Date;
-        name: string;
+        message: string;
         subject: string | null;
         read: boolean;
     }>;
-    create(dto: CreateContactDto): import(".prisma/client").Prisma.Prisma__ContactClient<{
+    create(req: any, dto: CreateContactDto): Promise<{
         email: string;
-        message: string;
+        name: string;
         id: string;
         createdAt: Date;
-        name: string;
-        subject: string | null;
-        read: boolean;
-    }, never, import("@prisma/client/runtime/library").DefaultArgs>;
-    update(id: string, dto: UpdateContactDto): Promise<{
-        email: string;
         message: string;
-        id: string;
-        createdAt: Date;
-        name: string;
         subject: string | null;
         read: boolean;
     }>;
-    remove(id: string): Promise<{
+    update(req: any, id: string, dto: UpdateContactDto): Promise<{
+        email: string;
+        name: string;
+        id: string;
+        createdAt: Date;
+        message: string;
+        subject: string | null;
+        read: boolean;
+    }>;
+    remove(req: any, id: string): Promise<{
         message: string;
     }>;
 }

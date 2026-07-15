@@ -3,6 +3,7 @@ import {
 } from '@nestjs/common';
 import { IsString } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
+import { Throttle } from '@nestjs/throttler';
 
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -32,7 +33,7 @@ export class AuthController {
       secure: isProd,
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // ۷ روز — باید با انقضای JWT هماهنگ باشد
+      maxAge: 60 * 60 * 24 * 7,
     });
   }
 
@@ -42,38 +43,43 @@ export class AuthController {
     return reply.redirect(`${frontendUrl}/login?provider=${provider}`);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('register')
-  async register(@Body() dto: RegisterDto, @Res() reply: any) {
-    const result = await this.auth.register(dto);
+  async register(@Body() dto: RegisterDto, @Req() req: any, @Res() reply: any) {
+    const result = await this.auth.register(dto, null, req.ip);
     this.setAuthCookie(reply, result.access_token);
     return reply.send(result);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('login')
-  async login(@Body() dto: LoginDto, @Res() reply: any) {
-    const result = await this.auth.login(dto);
+  async login(@Body() dto: LoginDto, @Req() req: any, @Res() reply: any) {
+    const result = await this.auth.login(dto, null, req.ip);
     this.setAuthCookie(reply, result.access_token);
     return reply.send(result);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('send-otp')
-  sendOtp(@Body() dto: SendOtpDto) {
-    return this.auth.sendOtp(dto.phone);
+  sendOtp(@Body() dto: SendOtpDto, @Req() req: any) {
+    return this.auth.sendOtp(dto.phone, null, req.ip);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('forgot-password')
-  forgot(@Body() dto: ForgotPasswordDto) {
-    return this.auth.forgotPassword(dto.identifier);
+  forgot(@Body() dto: ForgotPasswordDto, @Req() req: any) {
+    return this.auth.forgotPassword(dto.identifier, null, req.ip);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('reset-password')
-  reset(@Body() dto: ResetPasswordDto) {
-    return this.auth.resetPassword(dto.token, dto.newPassword);
+  reset(@Body() dto: ResetPasswordDto, @Req() req: any) {
+    return this.auth.resetPassword(dto.token, dto.newPassword, null, req.ip);
   }
 
   @Public()
@@ -98,7 +104,7 @@ export class AuthController {
         `${this.config.get<string>('app.frontendUrl') || 'http://localhost:3000'}/login?error=google_auth_failed`,
       );
     }
-    const token = await this.auth.oauthLogin(req.user);
+    const token = await this.auth.oauthLogin(req.user, null, req.ip);
     return this.redirectToFrontend(reply, 'google', token.access_token);
   }
 
@@ -116,7 +122,7 @@ export class AuthController {
         `${this.config.get<string>('app.frontendUrl') || 'http://localhost:3000'}/login?error=github_auth_failed`,
       );
     }
-    const token = await this.auth.oauthLogin(req.user);
+    const token = await this.auth.oauthLogin(req.user, null, req.ip);
     return this.redirectToFrontend(reply, 'github', token.access_token);
   }
 
@@ -134,7 +140,7 @@ export class AuthController {
         `${this.config.get<string>('app.frontendUrl') || 'http://localhost:3000'}/login?error=linkedin_auth_failed`,
       );
     }
-    const token = await this.auth.oauthLogin(req.user);
+    const token = await this.auth.oauthLogin(req.user, null, req.ip);
     return this.redirectToFrontend(reply, 'linkedin', token.access_token);
   }
 }

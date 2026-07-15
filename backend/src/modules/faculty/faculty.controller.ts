@@ -1,5 +1,5 @@
 // faculty.controller.ts
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, ParseUUIDPipe, Req } from '@nestjs/common';
 import { FacultyService } from './faculty.service';
 import { CreateFacultyDto, UpdateFacultyDto, QueryFacultyDto } from './dto/faculty.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -19,11 +19,11 @@ export class FacultyController {
   findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findOne(id); }
 
   @Post() @Roles('ADMIN', 'OWNER')
-  create(@Body() dto: CreateFacultyDto) { return this.service.create(dto); }
+  create(@Req() req: any, @Body() dto: CreateFacultyDto) { return this.service.create(dto, req.user.id, req.user?.email ?? null, req.ip); }
 
   @Patch(':id') @Roles('ADMIN', 'OWNER')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateFacultyDto) { return this.service.update(id, dto); }
+  update(@Req() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateFacultyDto) { return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip); }
 
   @Delete(':id') @Roles('ADMIN', 'OWNER')
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
+  remove(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
 }

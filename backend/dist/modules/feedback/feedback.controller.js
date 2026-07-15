@@ -20,6 +20,7 @@ const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 const public_decorator_1 = require("../../common/decorators/public.decorator");
+const skip_csrf_decorator_1 = require("../../common/decorators/skip-csrf.decorator");
 let FeedbackController = class FeedbackController {
     constructor(service) {
         this.service = service;
@@ -27,9 +28,9 @@ let FeedbackController = class FeedbackController {
     findAll(query) { return this.service.findAll(query); }
     findApproved() { return this.service.findAll({ approved: true }); }
     findOne(id) { return this.service.findOne(id); }
-    create(dto) { return this.service.create(dto); }
-    update(id, dto) { return this.service.update(id, dto); }
-    remove(id) { return this.service.remove(id); }
+    create(req, dto) { return this.service.create(dto, null, null, req.ip); }
+    update(req, id, dto) { return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip); }
+    remove(req, id) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
 };
 exports.FeedbackController = FeedbackController;
 __decorate([
@@ -58,26 +59,30 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, public_decorator_1.Public)(),
-    __param(0, (0, common_1.Body)()),
+    (0, skip_csrf_decorator_1.SkipCsrf)(),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [feedback_dto_1.CreateFeedbackDto]),
+    __metadata("design:paramtypes", [Object, feedback_dto_1.CreateFeedbackDto]),
     __metadata("design:returntype", void 0)
 ], FeedbackController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, feedback_dto_1.UpdateFeedbackDto]),
+    __metadata("design:paramtypes", [Object, String, feedback_dto_1.UpdateFeedbackDto]),
     __metadata("design:returntype", void 0)
 ], FeedbackController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], FeedbackController.prototype, "remove", null);
 exports.FeedbackController = FeedbackController = __decorate([

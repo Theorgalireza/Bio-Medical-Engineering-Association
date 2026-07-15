@@ -11,10 +11,11 @@ const common_1 = require("@nestjs/common");
 const gallery_service_1 = require("./gallery.service");
 const gallery_controller_1 = require("./gallery.controller");
 const prisma_module_1 = require("../../prisma/prisma.module");
+const activity_log_module_1 = require("../activity-log/activity-log.module");
 let GalleryModule = class GalleryModule {
 };
 exports.GalleryModule = GalleryModule;
 exports.GalleryModule = GalleryModule = __decorate([
-    (0, common_1.Module)({ imports: [prisma_module_1.PrismaModule], controllers: [gallery_controller_1.GalleryController], providers: [gallery_service_1.GalleryService] })
+    (0, common_1.Module)({ imports: [prisma_module_1.PrismaModule, activity_log_module_1.ActivityLogModule], controllers: [gallery_controller_1.GalleryController], providers: [gallery_service_1.GalleryService] })
 ], GalleryModule);
 //# sourceMappingURL=gallery.module.js.map

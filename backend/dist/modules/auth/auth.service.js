@@ -16,13 +16,26 @@ const prisma_service_1 = require("../../prisma/prisma.service");
 const sms_service_1 = require("./sms/sms.service");
 const bcrypt = require("bcrypt");
 const crypto_1 = require("crypto");
+const activity_log_service_1 = require("../activity-log/activity-log.service");
 let AuthService = class AuthService {
-    constructor(prisma, jwt, smsService) {
+    constructor(prisma, jwt, smsService, activityLog) {
         this.prisma = prisma;
         this.jwt = jwt;
         this.smsService = smsService;
+        this.activityLog = activityLog;
     }
-    async register(dto) {
+    async logAuthAction(params) {
+        await this.activityLog.log({
+            actorId: params.actorId ?? null,
+            actorEmail: params.actorEmail ?? null,
+            action: params.action,
+            targetType: 'User',
+            targetId: params.targetId,
+            detail: params.detail,
+            ip: params.ip ?? null,
+        });
+    }
+    async register(dto, actorId, ip) {
         if (!dto.email && !dto.phone) {
             throw new common_1.BadRequestException('Email or phone required');
         }
@@ -40,16 +53,37 @@ let AuthService = class AuthService {
                 passwordHash,
             },
         });
-        return this.signToken(user);
+        const result = this.signToken(user);
+        await this.logAuthAction({
+            actorId,
+            actorEmail: null,
+            action: 'REGISTER',
+            targetId: user.id,
+            detail: `Registered user ${user.email ?? user.phone ?? user.id}`,
+            ip,
+        });
+        return result;
     }
-    async login(dto) {
+    async login(dto, actorId, ip) {
+        let result;
         if (dto.phone && dto.otp) {
-            return this.loginWithOtp(dto.phone, dto.otp);
+            result = await this.loginWithOtp(dto.phone, dto.otp);
         }
-        if (dto.email && dto.password) {
-            return this.loginWithPassword(dto.email, dto.password);
+        else if (dto.email && dto.password) {
+            result = await this.loginWithPassword(dto.email, dto.password);
         }
-        throw new common_1.BadRequestException('Invalid credentials');
+        else {
+            throw new common_1.BadRequestException('Invalid credentials');
+        }
+        await this.logAuthAction({
+            actorId,
+            actorEmail: result.user.email,
+            action: 'LOGIN',
+            targetId: result.user.id,
+            detail: `User ${result.user.email ?? result.user.id} logged in`,
+            ip,
+        });
+        return result;
     }
     async loginWithPassword(email, password) {
         const user = await this.prisma.user.findUnique({ where: { email } });
@@ -85,7 +119,7 @@ let AuthService = class AuthService {
         });
         return this.signToken(user);
     }
-    async sendOtp(phone) {
+    async sendOtp(phone, actorId, ip) {
         if (!/^09\d{9}$/.test(phone)) {
             throw new common_1.BadRequestException('Invalid phone number');
         }
@@ -110,9 +144,17 @@ let AuthService = class AuthService {
             },
         });
         await this.smsService.sendOtp(phone, code);
+        await this.logAuthAction({
+            actorId,
+            actorEmail: user.email,
+            action: 'SEND_OTP',
+            targetId: user.id,
+            detail: `Sent OTP to ${user.email ?? phone}`,
+            ip,
+        });
         return { message: 'OTP sent' };
     }
-    async forgotPassword(identifier) {
+    async forgotPassword(identifier, actorId, ip) {
         const user = await this.prisma.user.findFirst({
             where: { OR: [{ email: identifier }, { phone: identifier }] },
         });
@@ -126,9 +168,17 @@ let AuthService = class AuthService {
                 expiresAt: new Date(Date.now() + 60 * 60 * 1000),
             },
         });
+        await this.logAuthAction({
+            actorId,
+            actorEmail: user.email,
+            action: 'FORGOT_PASSWORD',
+            targetId: user.id,
+            detail: `Requested password reset for ${user.email ?? user.phone ?? user.id}`,
+            ip,
+        });
         return { message: 'If account exists, reset link sent' };
     }
-    async resetPassword(token, newPassword) {
+    async resetPassword(token, newPassword, actorId, ip) {
         const record = await this.prisma.passwordResetToken.findUnique({
             where: { token },
         });
@@ -144,9 +194,18 @@ let AuthService = class AuthService {
             where: { id: record.id },
             data: { used: true },
         });
+        const user = await this.prisma.user.findUnique({ where: { id: record.userId } });
+        await this.logAuthAction({
+            actorId,
+            actorEmail: user?.email ?? null,
+            action: 'RESET_PASSWORD',
+            targetId: record.userId,
+            detail: `Reset password for ${user?.email ?? record.userId}`,
+            ip,
+        });
         return { message: 'Password reset successful' };
     }
-    async oauthLogin(profile) {
+    async oauthLogin(profile, actorId, ip) {
         let user = await this.prisma.user.findFirst({
             where: {
                 OR: [
@@ -161,6 +220,7 @@ let AuthService = class AuthService {
                 profile: true,
             },
         });
+        const isNewUser = !user;
         if (!user) {
             user = await this.prisma.user.create({
                 data: {
@@ -222,6 +282,14 @@ let AuthService = class AuthService {
                 });
             }
         }
+        await this.logAuthAction({
+            actorId,
+            actorEmail: profile.email ?? user.email ?? null,
+            action: isNewUser ? 'OAUTH_REGISTER' : 'OAUTH_LOGIN',
+            targetId: user.id,
+            detail: `${isNewUser ? 'Registered' : 'Logged in'} with ${profile.provider}`,
+            ip,
+        });
         return this.signToken(user);
     }
     signToken(user) {
@@ -240,6 +308,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         jwt_1.JwtService,
-        sms_service_1.SmsService])
+        sms_service_1.SmsService,
+        activity_log_service_1.ActivityLogService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

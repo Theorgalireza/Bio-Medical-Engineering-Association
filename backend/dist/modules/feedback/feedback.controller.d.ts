@@ -4,46 +4,46 @@ export declare class FeedbackController {
     private readonly service;
     constructor(service: FeedbackService);
     findAll(query: QueryFeedbackDto): import(".prisma/client").Prisma.PrismaPromise<{
-        message: string;
+        name: string;
         id: string;
         createdAt: Date;
-        name: string;
+        message: string;
         rating: number | null;
         approved: boolean;
     }[]>;
     findApproved(): import(".prisma/client").Prisma.PrismaPromise<{
-        message: string;
+        name: string;
         id: string;
         createdAt: Date;
-        name: string;
+        message: string;
         rating: number | null;
         approved: boolean;
     }[]>;
     findOne(id: string): Promise<{
-        message: string;
+        name: string;
         id: string;
         createdAt: Date;
-        name: string;
+        message: string;
         rating: number | null;
         approved: boolean;
     }>;
-    create(dto: CreateFeedbackDto): import(".prisma/client").Prisma.Prisma__FeedbackClient<{
-        message: string;
+    create(req: any, dto: CreateFeedbackDto): Promise<{
+        name: string;
         id: string;
         createdAt: Date;
-        name: string;
-        rating: number | null;
-        approved: boolean;
-    }, never, import("@prisma/client/runtime/library").DefaultArgs>;
-    update(id: string, dto: UpdateFeedbackDto): Promise<{
         message: string;
-        id: string;
-        createdAt: Date;
-        name: string;
         rating: number | null;
         approved: boolean;
     }>;
-    remove(id: string): Promise<{
+    update(req: any, id: string, dto: UpdateFeedbackDto): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        message: string;
+        rating: number | null;
+        approved: boolean;
+    }>;
+    remove(req: any, id: string): Promise<{
         message: string;
     }>;
 }

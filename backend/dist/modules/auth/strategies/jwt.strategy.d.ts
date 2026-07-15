@@ -26,14 +26,14 @@ export declare class JwtStrategy extends JwtStrategy_base {
         } | null;
     } & {
         email: string | null;
-        phone: string | null;
         id: string;
+        createdAt: Date;
+        phone: string | null;
         passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
         provider: string | null;
         providerId: string | null;
         avatarUrl: string | null;
-        createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
     }>;

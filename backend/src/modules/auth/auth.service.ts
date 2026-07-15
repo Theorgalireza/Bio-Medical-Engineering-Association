@@ -11,6 +11,7 @@ import { randomInt, randomBytes } from 'crypto';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { Prisma } from '@prisma/client';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 type OAuthProvider = 'google' | 'github' | 'linkedin';
 
@@ -39,9 +40,29 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly smsService: SmsService,
+    private readonly activityLog: ActivityLogService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<AuthResult> {
+  private async logAuthAction(params: {
+    actorId?: string | null;
+    actorEmail?: string | null;
+    action: string;
+    targetId: string;
+    detail: string;
+    ip?: string | null;
+  }) {
+    await this.activityLog.log({
+      actorId: params.actorId ?? null,
+      actorEmail: params.actorEmail ?? null,
+      action: params.action,
+      targetType: 'User',
+      targetId: params.targetId,
+      detail: params.detail,
+      ip: params.ip ?? null,
+    });
+  }
+
+  async register(dto: RegisterDto, actorId?: string | null, ip?: string | null): Promise<AuthResult> {
     if (!dto.email && !dto.phone) {
       throw new BadRequestException('Email or phone required');
     }
@@ -64,19 +85,39 @@ export class AuthService {
       },
     });
 
-    return this.signToken(user);
+    const result = this.signToken(user);
+    await this.logAuthAction({
+      actorId,
+      actorEmail: null,
+      action: 'REGISTER',
+      targetId: user.id,
+      detail: `Registered user ${user.email ?? user.phone ?? user.id}`,
+      ip,
+    });
+    return result;
   }
 
-  async login(dto: LoginDto): Promise<AuthResult> {
+  async login(dto: LoginDto, actorId?: string | null, ip?: string | null): Promise<AuthResult> {
+    let result: AuthResult;
+
     if (dto.phone && dto.otp) {
-      return this.loginWithOtp(dto.phone, dto.otp);
+      result = await this.loginWithOtp(dto.phone, dto.otp);
+    } else if (dto.email && dto.password) {
+      result = await this.loginWithPassword(dto.email, dto.password);
+    } else {
+      throw new BadRequestException('Invalid credentials');
     }
 
-    if (dto.email && dto.password) {
-      return this.loginWithPassword(dto.email, dto.password);
-    }
+    await this.logAuthAction({
+      actorId,
+      actorEmail: result.user.email,
+      action: 'LOGIN',
+      targetId: result.user.id,
+      detail: `User ${result.user.email ?? result.user.id} logged in`,
+      ip,
+    });
 
-    throw new BadRequestException('Invalid credentials');
+    return result;
   }
 
   private async loginWithPassword(email: string, password: string): Promise<AuthResult> {
@@ -118,7 +159,7 @@ export class AuthService {
     return this.signToken(user);
   }
 
-  async sendOtp(phone: string) {
+  async sendOtp(phone: string, actorId?: string | null, ip?: string | null) {
     if (!/^09\d{9}$/.test(phone)) {
       throw new BadRequestException('Invalid phone number');
     }
@@ -150,10 +191,19 @@ export class AuthService {
 
     await this.smsService.sendOtp(phone, code);
 
+    await this.logAuthAction({
+      actorId,
+      actorEmail: user.email,
+      action: 'SEND_OTP',
+      targetId: user.id,
+      detail: `Sent OTP to ${user.email ?? phone}`,
+      ip,
+    });
+
     return { message: 'OTP sent' };
   }
 
-  async forgotPassword(identifier: string) {
+  async forgotPassword(identifier: string, actorId?: string | null, ip?: string | null) {
     const user = await this.prisma.user.findFirst({
       where: { OR: [{ email: identifier }, { phone: identifier }] },
     });
@@ -169,10 +219,19 @@ export class AuthService {
       },
     });
 
+    await this.logAuthAction({
+      actorId,
+      actorEmail: user.email,
+      action: 'FORGOT_PASSWORD',
+      targetId: user.id,
+      detail: `Requested password reset for ${user.email ?? user.phone ?? user.id}`,
+      ip,
+    });
+
     return { message: 'If account exists, reset link sent' };
   }
 
-  async resetPassword(token: string, newPassword: string) {
+  async resetPassword(token: string, newPassword: string, actorId?: string | null, ip?: string | null) {
     const record = await this.prisma.passwordResetToken.findUnique({
       where: { token },
     });
@@ -193,10 +252,21 @@ export class AuthService {
       data: { used: true },
     });
 
+    const user = await this.prisma.user.findUnique({ where: { id: record.userId } });
+
+    await this.logAuthAction({
+      actorId,
+      actorEmail: user?.email ?? null,
+      action: 'RESET_PASSWORD',
+      targetId: record.userId,
+      detail: `Reset password for ${user?.email ?? record.userId}`,
+      ip,
+    });
+
     return { message: 'Password reset successful' };
   }
 
-  async oauthLogin(profile: OAuthProfilePayload): Promise<AuthResult> {
+  async oauthLogin(profile: OAuthProfilePayload, actorId?: string | null, ip?: string | null): Promise<AuthResult> {
     let user = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -211,6 +281,8 @@ export class AuthService {
         profile: true,
       },
     });
+
+    const isNewUser = !user;
 
     if (!user) {
       user = await this.prisma.user.create({
@@ -270,6 +342,15 @@ export class AuthService {
         });
       }
     }
+
+    await this.logAuthAction({
+      actorId,
+      actorEmail: profile.email ?? user.email ?? null,
+      action: isNewUser ? 'OAUTH_REGISTER' : 'OAUTH_LOGIN',
+      targetId: user.id,
+      detail: `${isNewUser ? 'Registered' : 'Logged in'} with ${profile.provider}`,
+      ip,
+    });
 
     return this.signToken(user);
   }

@@ -4,50 +4,50 @@ export declare class FacultyController {
     private readonly service;
     constructor(service: FacultyService);
     findAll(query: QueryFacultyDto): import(".prisma/client").Prisma.PrismaPromise<{
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        name: string;
         title: string;
-        specialties: import("@prisma/client/runtime/library").JsonValue;
         monogram: string;
+        specialties: import("@prisma/client/runtime/library").JsonValue;
         color: string;
     }[]>;
     findOne(id: string): Promise<{
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        name: string;
         title: string;
-        specialties: import("@prisma/client/runtime/library").JsonValue;
         monogram: string;
+        specialties: import("@prisma/client/runtime/library").JsonValue;
         color: string;
     }>;
-    create(dto: CreateFacultyDto): import(".prisma/client").Prisma.Prisma__FacultyMemberClient<{
+    create(req: any, dto: CreateFacultyDto): Promise<{
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        name: string;
         title: string;
-        specialties: import("@prisma/client/runtime/library").JsonValue;
         monogram: string;
-        color: string;
-    }, never, import("@prisma/client/runtime/library").DefaultArgs>;
-    update(id: string, dto: UpdateFacultyDto): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        isActive: boolean;
-        name: string;
-        title: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;
-        monogram: string;
         color: string;
     }>;
-    remove(id: string): Promise<{
+    update(req: any, id: string, dto: UpdateFacultyDto): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        monogram: string;
+        specialties: import("@prisma/client/runtime/library").JsonValue;
+        color: string;
+    }>;
+    remove(req: any, id: string): Promise<{
         message: string;
     }>;
 }

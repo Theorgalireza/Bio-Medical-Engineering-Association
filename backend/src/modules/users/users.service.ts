@@ -10,6 +10,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 const profileSelect = {
   id: true,
@@ -29,7 +30,10 @@ const profileSelect = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLog: ActivityLogService,
+  ) {}
 
   private readonly userSelect = {
     id: true,
@@ -80,6 +84,25 @@ export class UsersService {
     });
   }
 
+  private async logActivity(params: {
+    actorId?: string | null;
+    actorEmail?: string | null;
+    action: string;
+    targetId: string;
+    detail: string;
+    ip?: string | null;
+  }) {
+    await this.activityLog.log({
+      actorId: params.actorId ?? null,
+      actorEmail: params.actorEmail ?? null,
+      action: params.action,
+      targetType: 'User',
+      targetId: params.targetId,
+      detail: params.detail,
+      ip: params.ip ?? null,
+    });
+  }
+
   async findAll() {
     return this.prisma.user.findMany({
       select: this.userSelect,
@@ -100,7 +123,7 @@ export class UsersService {
     return user;
   }
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
     if (!dto.email && !dto.phone) {
       throw new BadRequestException('حداقل ایمیل یا شماره موبایل الزامی است');
     }
@@ -138,6 +161,15 @@ export class UsersService {
       select: this.userSelect,
     });
 
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'CREATE_USER',
+      targetId: user.id,
+      detail: `Created user ${user.email ?? user.phone ?? user.id}`,
+      ip,
+    });
+
     return user;
   }
 
@@ -145,36 +177,96 @@ export class UsersService {
     return this.findById(userId);
   }
 
-  async updateProfile(userId: string, dto: UpdateProfileDto) {
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+    actorId?: string | null,
+    actorEmail?: string | null,
+    ip?: string | null,
+  ) {
     await this.findById(userId);
     await this.upsertProfile(userId, dto);
-    return this.findById(userId);
+    const user = await this.findById(userId);
+
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'UPDATE_USER_PROFILE',
+      targetId: userId,
+      detail: `Updated profile of user ${user.email ?? user.phone ?? userId}`,
+      ip,
+    });
+
+    return user;
   }
 
-  async updateStatus(id: string, isActive: boolean) {
-    await this.findById(id);
+  async updateStatus(
+    id: string,
+    isActive: boolean,
+    actorId?: string | null,
+    actorEmail?: string | null,
+    ip?: string | null,
+  ) {
+    const user = await this.findById(id);
 
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data: { isActive },
       select: this.userSelect,
     });
+
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'UPDATE_USER_STATUS',
+      targetId: id,
+      detail: `Updated status of user ${user.email ?? user.phone ?? id} to ${isActive ? 'ACTIVE' : 'INACTIVE'}`,
+      ip,
+    });
+
+    return updated;
   }
 
-  async updateRole(id: string, dto: UpdateUserRoleDto) {
-    await this.findById(id);
+  async updateRole(
+    id: string,
+    dto: UpdateUserRoleDto,
+    actorId?: string | null,
+    actorEmail?: string | null,
+    ip?: string | null,
+  ) {
+    const user = await this.findById(id);
 
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data: { role: dto.role },
       select: this.userSelect,
     });
+
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'UPDATE_USER_ROLE',
+      targetId: id,
+      detail: `Updated role of user ${user.email ?? user.phone ?? id} to ${dto.role}`,
+      ip,
+    });
+
+    return updated;
   }
 
-  async remove(id: string) {
-    await this.findById(id);
+  async remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const user = await this.findById(id);
 
     await this.prisma.user.delete({ where: { id } });
+
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'DELETE_USER',
+      targetId: id,
+      detail: `Deleted user ${user.email ?? user.phone ?? id}`,
+      ip,
+    });
 
     return { message: 'کاربر با موفقیت حذف شد' };
   }

@@ -6,13 +6,21 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const nestjs_pino_1 = require("nestjs-pino");
 const cookie_1 = require("@fastify/cookie");
+const helmet_1 = require("@fastify/helmet");
+const csrf_protection_1 = require("@fastify/csrf-protection");
 const app_module_1 = require("./app.module");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, new platform_fastify_1.FastifyAdapter(), { bufferLogs: true });
     app.useLogger(app.get(nestjs_pino_1.Logger));
     app.setGlobalPrefix('api/v1');
+    await app.register(helmet_1.default, {
+        contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+    });
     await app.register(cookie_1.default, {
         secret: process.env.COOKIE_SECRET,
+    });
+    await app.register(csrf_protection_1.default, {
+        cookieOpts: { signed: true },
     });
     app.enableCors({
         origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -28,7 +36,9 @@ async function bootstrap() {
         .setVersion('1.0')
         .addBearerAuth()
         .build();
-    swagger_1.SwaggerModule.setup('api/docs', app, swagger_1.SwaggerModule.createDocument(app, config));
+    if (process.env.NODE_ENV !== 'production') {
+        swagger_1.SwaggerModule.setup('api/docs', app, swagger_1.SwaggerModule.createDocument(app, config));
+    }
     await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }
 bootstrap();

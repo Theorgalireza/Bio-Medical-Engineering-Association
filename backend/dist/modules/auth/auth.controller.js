@@ -16,6 +16,7 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const class_validator_1 = require("class-validator");
 const config_1 = require("@nestjs/config");
+const throttler_1 = require("@nestjs/throttler");
 const auth_service_1 = require("./auth.service");
 const register_dto_1 = require("./dto/register.dto");
 const login_dto_1 = require("./dto/login.dto");
@@ -51,24 +52,24 @@ let AuthController = class AuthController {
         const frontendUrl = this.config.get('app.frontendUrl') || 'http://localhost:3000';
         return reply.redirect(`${frontendUrl}/login?provider=${provider}`);
     }
-    async register(dto, reply) {
-        const result = await this.auth.register(dto);
+    async register(dto, req, reply) {
+        const result = await this.auth.register(dto, null, req.ip);
         this.setAuthCookie(reply, result.access_token);
         return reply.send(result);
     }
-    async login(dto, reply) {
-        const result = await this.auth.login(dto);
+    async login(dto, req, reply) {
+        const result = await this.auth.login(dto, null, req.ip);
         this.setAuthCookie(reply, result.access_token);
         return reply.send(result);
     }
-    sendOtp(dto) {
-        return this.auth.sendOtp(dto.phone);
+    sendOtp(dto, req) {
+        return this.auth.sendOtp(dto.phone, null, req.ip);
     }
-    forgot(dto) {
-        return this.auth.forgotPassword(dto.identifier);
+    forgot(dto, req) {
+        return this.auth.forgotPassword(dto.identifier, null, req.ip);
     }
-    reset(dto) {
-        return this.auth.resetPassword(dto.token, dto.newPassword);
+    reset(dto, req) {
+        return this.auth.resetPassword(dto.token, dto.newPassword, null, req.ip);
     }
     logout(reply) {
         const isProd = this.config.get('NODE_ENV') === 'production';
@@ -80,7 +81,7 @@ let AuthController = class AuthController {
         if (!req.user) {
             return reply.redirect(`${this.config.get('app.frontendUrl') || 'http://localhost:3000'}/login?error=google_auth_failed`);
         }
-        const token = await this.auth.oauthLogin(req.user);
+        const token = await this.auth.oauthLogin(req.user, null, req.ip);
         return this.redirectToFrontend(reply, 'google', token.access_token);
     }
     githubAuth() { }
@@ -88,7 +89,7 @@ let AuthController = class AuthController {
         if (!req.user) {
             return reply.redirect(`${this.config.get('app.frontendUrl') || 'http://localhost:3000'}/login?error=github_auth_failed`);
         }
-        const token = await this.auth.oauthLogin(req.user);
+        const token = await this.auth.oauthLogin(req.user, null, req.ip);
         return this.redirectToFrontend(reply, 'github', token.access_token);
     }
     linkedinAuth() { }
@@ -96,51 +97,61 @@ let AuthController = class AuthController {
         if (!req.user) {
             return reply.redirect(`${this.config.get('app.frontendUrl') || 'http://localhost:3000'}/login?error=linkedin_auth_failed`);
         }
-        const token = await this.auth.oauthLogin(req.user);
+        const token = await this.auth.oauthLogin(req.user, null, req.ip);
         return this.redirectToFrontend(reply, 'linkedin', token.access_token);
     }
 };
 exports.AuthController = AuthController;
 __decorate([
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
     (0, public_decorator_1.Public)(),
     (0, common_1.Post)('register'),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Res)()),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [register_dto_1.RegisterDto, Object]),
+    __metadata("design:paramtypes", [register_dto_1.RegisterDto, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
 __decorate([
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
     (0, public_decorator_1.Public)(),
     (0, common_1.Post)('login'),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Res)()),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [login_dto_1.LoginDto, Object]),
+    __metadata("design:paramtypes", [login_dto_1.LoginDto, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
     (0, public_decorator_1.Public)(),
     (0, common_1.Post)('send-otp'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [otp_dto_1.SendOtpDto]),
+    __metadata("design:paramtypes", [otp_dto_1.SendOtpDto, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "sendOtp", null);
 __decorate([
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
     (0, public_decorator_1.Public)(),
     (0, common_1.Post)('forgot-password'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [ForgotPasswordDto]),
+    __metadata("design:paramtypes", [ForgotPasswordDto, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "forgot", null);
 __decorate([
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
     (0, public_decorator_1.Public)(),
     (0, common_1.Post)('reset-password'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [reset_password_dto_1.ResetPasswordDto]),
+    __metadata("design:paramtypes", [reset_password_dto_1.ResetPasswordDto, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "reset", null);
 __decorate([

@@ -1,9 +1,12 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { CreateAnnouncementDto, UpdateAnnouncementDto, QueryAnnouncementDto } from './dto/announcement.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 export declare class AnnouncementsService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly activityLog;
+    constructor(prisma: PrismaService, activityLog: ActivityLogService);
+    private logActivity;
     findAll(query: QueryAnnouncementDto): import(".prisma/client").Prisma.PrismaPromise<({
         author: {
             profile: {
@@ -40,7 +43,7 @@ export declare class AnnouncementsService {
         publishedAt: Date | null;
         authorId: string | null;
     }>;
-    create(dto: CreateAnnouncementDto, user: User): Promise<{
+    create(dto: CreateAnnouncementDto, user: User, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -54,7 +57,7 @@ export declare class AnnouncementsService {
         publishedAt: Date | null;
         authorId: string | null;
     }>;
-    update(id: string, dto: UpdateAnnouncementDto): Promise<{
+    update(id: string, dto: UpdateAnnouncementDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -68,7 +71,7 @@ export declare class AnnouncementsService {
         publishedAt: Date | null;
         authorId: string | null;
     }>;
-    remove(id: string): Promise<{
+    remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         message: string;
     }>;
 }

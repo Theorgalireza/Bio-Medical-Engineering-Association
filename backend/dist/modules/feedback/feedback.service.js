@@ -12,9 +12,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FeedbackService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const activity_log_service_1 = require("../activity-log/activity-log.service");
 let FeedbackService = class FeedbackService {
-    constructor(prisma) {
+    constructor(prisma, activityLog) {
         this.prisma = prisma;
+        this.activityLog = activityLog;
+    }
+    async logActivity(params) {
+        await this.activityLog.log({
+            actorId: params.actorId ?? null,
+            actorEmail: params.actorEmail ?? null,
+            action: params.action,
+            targetType: 'Feedback',
+            targetId: params.targetId,
+            detail: params.detail,
+            ip: params.ip ?? null,
+        });
     }
     findAll(query) {
         const where = {};
@@ -34,22 +47,51 @@ let FeedbackService = class FeedbackService {
             throw new common_1.NotFoundException('Feedback not found');
         return item;
     }
-    create(dto) {
-        return this.prisma.feedback.create({ data: dto });
+    async create(dto, actorId, actorEmail, ip) {
+        const item = await this.prisma.feedback.create({ data: dto });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'RECEIVE_FEEDBACK',
+            targetId: item.id,
+            detail: `Received feedback from ${item.name}`,
+            ip,
+        });
+        return item;
     }
-    async update(id, dto) {
-        await this.findOne(id);
-        return this.prisma.feedback.update({ where: { id }, data: dto });
+    async update(id, dto, actorId, actorEmail, ip) {
+        const existing = await this.findOne(id);
+        const item = await this.prisma.feedback.update({ where: { id }, data: dto });
+        if (dto.approved !== undefined && dto.approved !== existing.approved) {
+            await this.logActivity({
+                actorId,
+                actorEmail,
+                action: 'UPDATE_FEEDBACK',
+                targetId: id,
+                detail: `Updated feedback approval status for ${existing.name} to ${dto.approved ? 'approved' : 'unapproved'}`,
+                ip,
+            });
+        }
+        return item;
     }
-    async remove(id) {
-        await this.findOne(id);
+    async remove(id, actorId, actorEmail, ip) {
+        const existing = await this.findOne(id);
         await this.prisma.feedback.delete({ where: { id } });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'DELETE_FEEDBACK',
+            targetId: id,
+            detail: `Deleted feedback from ${existing.name}`,
+            ip,
+        });
         return { message: 'Deleted successfully' };
     }
 };
 exports.FeedbackService = FeedbackService;
 exports.FeedbackService = FeedbackService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        activity_log_service_1.ActivityLogService])
 ], FeedbackService);
 //# sourceMappingURL=feedback.service.js.map

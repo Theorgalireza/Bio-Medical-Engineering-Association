@@ -6,11 +6,11 @@ export declare class AnnouncementsController {
     constructor(service: AnnouncementsService);
     findAll(query: QueryAnnouncementDto): import(".prisma/client").Prisma.PrismaPromise<({
         author: {
-            id: string;
             profile: {
                 firstName: string | null;
                 lastName: string | null;
             } | null;
+            id: string;
         } | null;
     } & {
         id: string;
@@ -40,7 +40,7 @@ export declare class AnnouncementsController {
         publishedAt: Date | null;
         authorId: string | null;
     }>;
-    create(dto: CreateAnnouncementDto, user: User): Promise<{
+    create(dto: CreateAnnouncementDto, user: User, req: any): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -54,7 +54,7 @@ export declare class AnnouncementsController {
         publishedAt: Date | null;
         authorId: string | null;
     }>;
-    update(id: string, dto: UpdateAnnouncementDto): Promise<{
+    update(req: any, id: string, dto: UpdateAnnouncementDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -68,7 +68,7 @@ export declare class AnnouncementsController {
         publishedAt: Date | null;
         authorId: string | null;
     }>;
-    remove(id: string): Promise<{
+    remove(req: any, id: string): Promise<{
         message: string;
     }>;
 }

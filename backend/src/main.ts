@@ -7,6 +7,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import fastifyCookie from '@fastify/cookie';
+import fastifyHelmet from '@fastify/helmet';
+import fastifyCsrf from '@fastify/csrf-protection';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -19,9 +21,17 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api/v1');
 
+  await app.register(fastifyHelmet, {
+    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+  });
+
   // ثبت پلاگین کوکی روی نمونه Fastify زیرین
   await app.register(fastifyCookie, {
     secret: process.env.COOKIE_SECRET, // اختیاری؛ برای امضای کوکی
+  });
+
+  await app.register(fastifyCsrf, {
+    cookieOpts: { signed: true },
   });
 
   // credentials: true الزامی است تا مرورگر اجازه ارسال/دریافت
@@ -44,7 +54,10 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, config));
+
+  if (process.env.NODE_ENV !== 'production') {
+    SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, config));
+  }
 
   await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }

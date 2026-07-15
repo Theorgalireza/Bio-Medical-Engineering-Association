@@ -2,10 +2,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateGalleryDto, UpdateGalleryDto, QueryGalleryDto } from './dto/gallery.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Injectable()
 export class GalleryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLog: ActivityLogService,
+  ) {}
+
+  private async logActivity(params: {
+    actorId?: string | null;
+    actorEmail?: string | null;
+    action: string;
+    targetId: string;
+    detail: string;
+    ip?: string | null;
+  }) {
+    await this.activityLog.log({
+      actorId: params.actorId ?? null,
+      actorEmail: params.actorEmail ?? null,
+      action: params.action,
+      targetType: 'GalleryItem',
+      targetId: params.targetId,
+      detail: params.detail,
+      ip: params.ip ?? null,
+    });
+  }
 
   findAll(query: QueryGalleryDto) {
     const where: any = {};
@@ -32,18 +55,50 @@ export class GalleryService {
     return item;
   }
 
-  create(dto: CreateGalleryDto, uploadedById?: string) {
-    return this.prisma.galleryItem.create({ data: { ...dto, uploadedById } });
+  async create(dto: CreateGalleryDto, uploadedById?: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const item = await this.prisma.galleryItem.create({ data: { ...dto, uploadedById } });
+
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'CREATE_GALLERY_ITEM',
+      targetId: item.id,
+      detail: `Created gallery item '${item.title}'`,
+      ip,
+    });
+
+    return item;
   }
 
-  async update(id: string, dto: UpdateGalleryDto) {
-    await this.findOne(id);
-    return this.prisma.galleryItem.update({ where: { id }, data: dto });
+  async update(id: string, dto: UpdateGalleryDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const existing = await this.findOne(id);
+    const item = await this.prisma.galleryItem.update({ where: { id }, data: dto });
+
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'UPDATE_GALLERY_ITEM',
+      targetId: id,
+      detail: `Updated gallery item '${existing.title}'`,
+      ip,
+    });
+
+    return item;
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const existing = await this.findOne(id);
     await this.prisma.galleryItem.delete({ where: { id } });
+
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'DELETE_GALLERY_ITEM',
+      targetId: id,
+      detail: `Deleted gallery item '${existing.title}'`,
+      ip,
+    });
+
     return { message: 'Deleted successfully' };
   }
 }

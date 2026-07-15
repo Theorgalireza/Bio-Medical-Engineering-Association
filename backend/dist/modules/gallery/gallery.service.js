@@ -12,9 +12,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GalleryService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const activity_log_service_1 = require("../activity-log/activity-log.service");
 let GalleryService = class GalleryService {
-    constructor(prisma) {
+    constructor(prisma, activityLog) {
         this.prisma = prisma;
+        this.activityLog = activityLog;
+    }
+    async logActivity(params) {
+        await this.activityLog.log({
+            actorId: params.actorId ?? null,
+            actorEmail: params.actorEmail ?? null,
+            action: params.action,
+            targetType: 'GalleryItem',
+            targetId: params.targetId,
+            detail: params.detail,
+            ip: params.ip ?? null,
+        });
     }
     findAll(query) {
         const where = {};
@@ -41,22 +54,49 @@ let GalleryService = class GalleryService {
             throw new common_1.NotFoundException('Gallery item not found');
         return item;
     }
-    create(dto, uploadedById) {
-        return this.prisma.galleryItem.create({ data: { ...dto, uploadedById } });
+    async create(dto, uploadedById, actorId, actorEmail, ip) {
+        const item = await this.prisma.galleryItem.create({ data: { ...dto, uploadedById } });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'CREATE_GALLERY_ITEM',
+            targetId: item.id,
+            detail: `Created gallery item '${item.title}'`,
+            ip,
+        });
+        return item;
     }
-    async update(id, dto) {
-        await this.findOne(id);
-        return this.prisma.galleryItem.update({ where: { id }, data: dto });
+    async update(id, dto, actorId, actorEmail, ip) {
+        const existing = await this.findOne(id);
+        const item = await this.prisma.galleryItem.update({ where: { id }, data: dto });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'UPDATE_GALLERY_ITEM',
+            targetId: id,
+            detail: `Updated gallery item '${existing.title}'`,
+            ip,
+        });
+        return item;
     }
-    async remove(id) {
-        await this.findOne(id);
+    async remove(id, actorId, actorEmail, ip) {
+        const existing = await this.findOne(id);
         await this.prisma.galleryItem.delete({ where: { id } });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'DELETE_GALLERY_ITEM',
+            targetId: id,
+            detail: `Deleted gallery item '${existing.title}'`,
+            ip,
+        });
         return { message: 'Deleted successfully' };
     }
 };
 exports.GalleryService = GalleryService;
 exports.GalleryService = GalleryService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        activity_log_service_1.ActivityLogService])
 ], GalleryService);
 //# sourceMappingURL=gallery.service.js.map
