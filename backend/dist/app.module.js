@@ -17,7 +17,6 @@ const auth_module_1 = require("./modules/auth/auth.module");
 const users_module_1 = require("./modules/users/users.module");
 const announcements_module_1 = require("./modules/announcements/announcements.module");
 const articles_module_1 = require("./modules/articles/articles.module");
-const publications_module_1 = require("./modules/publications/publications.module");
 const faculty_module_1 = require("./modules/faculty/faculty.module");
 const gallery_module_1 = require("./modules/gallery/gallery.module");
 const feedback_module_1 = require("./modules/feedback/feedback.module");
@@ -29,6 +28,7 @@ const roles_guard_1 = require("./common/guards/roles.guard");
 const csrf_guard_1 = require("./common/guards/csrf.guard");
 const config_2 = require("./config/config");
 const activity_log_module_1 = require("./modules/activity-log/activity-log.module");
+const analytics_module_1 = require("./modules/analytics/analytics.module");
 function toSafePositiveInt(value, fallback) {
     const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : Number(value);
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
@@ -74,12 +74,12 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             announcements_module_1.AnnouncementsModule,
             articles_module_1.ArticlesModule,
-            publications_module_1.PublicationsModule,
             faculty_module_1.FacultyModule,
             gallery_module_1.GalleryModule,
             feedback_module_1.FeedbackModule,
             contact_module_1.ContactModule,
             activity_log_module_1.ActivityLogModule,
+            analytics_module_1.AnalyticsModule
         ],
         providers: [
             { provide: core_1.APP_FILTER, useClass: http_exception_filter_1.HttpExceptionFilter },

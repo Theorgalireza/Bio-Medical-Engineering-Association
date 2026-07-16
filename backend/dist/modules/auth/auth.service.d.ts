@@ -31,6 +31,7 @@ export declare class AuthService {
     private logAuthAction;
     register(dto: RegisterDto, actorId?: string | null, ip?: string | null): Promise<AuthResult>;
     login(dto: LoginDto, actorId?: string | null, ip?: string | null): Promise<AuthResult>;
+    private authenticateWithPassword;
     private loginWithPassword;
     private loginWithOtp;
     sendOtp(phone: string, actorId?: string | null, ip?: string | null): Promise<{

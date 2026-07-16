@@ -16,6 +16,7 @@ export declare class ArticlesController {
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
         slug: string;
@@ -24,7 +25,6 @@ export declare class ArticlesController {
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
@@ -43,6 +43,7 @@ export declare class ArticlesController {
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
         slug: string;
@@ -51,7 +52,6 @@ export declare class ArticlesController {
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
@@ -70,6 +70,7 @@ export declare class ArticlesController {
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
         slug: string;
@@ -78,7 +79,6 @@ export declare class ArticlesController {
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;
@@ -97,6 +97,7 @@ export declare class ArticlesController {
         })[];
     } & {
         id: string;
+        content: string;
         createdAt: Date;
         updatedAt: Date;
         slug: string;
@@ -105,7 +106,6 @@ export declare class ArticlesController {
         publishedAt: Date | null;
         authorId: string | null;
         summary: string;
-        content: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
         year: number;

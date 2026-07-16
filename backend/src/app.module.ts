@@ -8,7 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { ArticlesModule } from './modules/articles/articles.module';
-import { PublicationsModule } from './modules/publications/publications.module';
+// import { PublicationsModule } from './modules/publications/publications.module';
 import { FacultyModule } from './modules/faculty/faculty.module';
 import { GalleryModule } from './modules/gallery/gallery.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
@@ -20,6 +20,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { CsrfGuard } from './common/guards/csrf.guard';
 import appConfig from './config/config';
 import { ActivityLogModule } from './modules/activity-log/activity-log.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 function toSafePositiveInt(value: unknown, fallback: number) {
   const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : Number(value);
@@ -65,12 +66,13 @@ function toSafePositiveInt(value: unknown, fallback: number) {
     UsersModule,
     AnnouncementsModule,
     ArticlesModule,
-    PublicationsModule,
+    // PublicationsModule,
     FacultyModule,
     GalleryModule,
     FeedbackModule,
     ContactModule,
     ActivityLogModule,
+    AnalyticsModule
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

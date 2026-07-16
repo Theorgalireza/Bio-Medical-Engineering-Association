@@ -312,6 +312,18 @@ function normalizeRole(role: Role | string): Role {
 }
 
 // ─── Public ───────────────────────────────────────────────
+
+export async function trackPageView(path: string) {
+  return apiFetch<void>("/analytics/track", {
+    method: "POST",
+    body: JSON.stringify({ path }),
+  });
+}
+
+export async function adminGetAnalyticsStats() {
+  return apiFetch<AnalyticsStats>("/analytics/stats", { auth: true });
+}
+
 export async function getAnnouncements(): Promise<Announcement[]> {
   return (await apiFetch<any[]>("/announcements")).map(toAnnouncement);
 }
@@ -376,8 +388,11 @@ export async function submitFeedback(payload: {
     body: JSON.stringify(payload),
   });
 }
-export async function loginWithPassword(payload: { email: string; password: string }) {
-  // backend دیگر access_token را در body برنمی‌گرداند؛ آن را در httpOnly cookie ست می‌کند
+export async function loginWithPassword(payload: {
+  email?: string;
+  phone?: string;
+  password: string;
+}) {
   return apiFetch<{ user: { id: string; email: string; role: string } }>(
     "/auth/login",
     {
@@ -386,6 +401,15 @@ export async function loginWithPassword(payload: { email: string; password: stri
     },
   );
 }
+export type AnalyticsStats = {
+  totalViews: number;
+  todayViews: number;
+  monthViews: number;
+  uniqueTodayVisitors: number;
+  topPages: { path: string; count: number }[];
+  dailyViews: { date: string; count: number }[];
+};
+
 export async function getActivityLogs(params: {
   page?: number;
   limit?: number;

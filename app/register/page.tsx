@@ -18,7 +18,11 @@ export default function RegisterPage() {
   const router = useRouter();
   const { refreshUser } = useAuth();
 
-  const [form, setForm] = useState({ email: "", phone: "", password: "" });
+const [form, setForm] = useState({
+  email: "",
+  phone: "",
+  password: "",
+});
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,21 +32,41 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-    setLoading(true);
+  event.preventDefault();
+  setError("");
 
-    try {
-      const { user } = await register(form);
-      const currentUser = await refreshUser();
-      const role = currentUser?.role || user.role;
-      router.push(ADMIN_ROLES.has(role) ? "/admin" : "/");
-    } catch {
-      setError("ثبت‌نام انجام نشد. اطلاعات واردشده را بررسی کنید.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const email = form.email.trim();
+  const phone = form.phone.trim();
+  const password = form.password;
+
+  if (!email && !phone) {
+    setError("وارد کردن ایمیل یا شماره موبایل الزامی است.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const payload = {
+      ...(email && { email }),
+      ...(phone && { phone }),
+      ...(password && { password }),
+    };
+
+    const { user } = await register(payload);
+    const currentUser = await refreshUser();
+    const role = currentUser?.role || user.role;
+    router.push(ADMIN_ROLES.has(role) ? "/admin" : "/");
+  } catch (err) {
+    setError(
+      err instanceof Error && err.message
+        ? err.message
+        : "ثبت‌نام انجام نشد. اطلاعات واردشده را بررسی کنید."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#0a0f1e] px-4" dir="rtl">
@@ -130,8 +154,7 @@ export default function RegisterPage() {
         </div>
 
         <p className="text-xs text-gray-500 font-vazir">
-          حداقل یکی از ایمیل یا موبایل الزامی است. بدون رمز، ورود فقط از طریق OTP امکان‌پذیر است.
-        </p>
+حداقل یکی از ایمیل یا موبایل الزامی است.         </p>
 
         {error && <p className="text-center text-sm text-red-400 font-vazir">{error}</p>}
 

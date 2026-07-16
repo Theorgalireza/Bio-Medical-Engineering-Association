@@ -9,11 +9,11 @@ import {
 
 export class LoginDto {
   @IsOptional()
-  @IsEmail()
+  @IsEmail({}, { message: 'ایمیل واردشده معتبر نیست.' })
   email?: string;
 
   @IsOptional()
-  @IsMobilePhone('fa-IR')
+  @IsMobilePhone('fa-IR', {}, { message: 'شماره موبایل واردشده معتبر نیست.' })
   phone?: string;
 
   @IsOptional()
@@ -23,6 +23,6 @@ export class LoginDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(8)
+  @MinLength(8, { message: 'رمز عبور باید حداقل ۸ کاراکتر باشد.' })
   password?: string;
 }

@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sanitizeRichText = sanitizeRichText;
-const sanitize_html_1 = require("sanitize-html");
+const sanitizeHtmlModule = require("sanitize-html");
+const sanitizeHtml = sanitizeHtmlModule.default ?? sanitizeHtmlModule;
 const ALLOWED_TAGS = [
     'p',
     'br',
@@ -43,7 +44,7 @@ const ALLOWED_ATTRIBUTES = {
 function sanitizeRichText(html) {
     if (!html)
         return '';
-    return (0, sanitize_html_1.default)(html, {
+    return sanitizeHtml(html, {
         allowedTags: ALLOWED_TAGS,
         allowedAttributes: ALLOWED_ATTRIBUTES,
         allowedSchemes: ['http', 'https', 'mailto'],

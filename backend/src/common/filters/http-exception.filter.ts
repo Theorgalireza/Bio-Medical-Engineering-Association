@@ -1,12 +1,10 @@
-// src/common/filters/http-exception.filter.ts
-import {
-  ExceptionFilter, Catch, ArgumentsHost,
-  HttpException, HttpStatus,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const reply = ctx.getResponse<FastifyReply>();
@@ -15,15 +13,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message = exception instanceof HttpException
-      ? exception.getResponse()
+    // این خط قبلاً وجود نداشت — علت واقعی را چاپ می‌کند
+    this.logger.error(
+      exception instanceof Error ? exception.stack : String(exception),
+    );
+
+    const rawMessage = exception instanceof HttpException ? exception.getResponse() : null;
+    const message = rawMessage
+      ? (typeof rawMessage === 'object' ? (rawMessage as any).message : rawMessage)
       : 'Internal server error';
 
-    reply.status(status).send({
-      success: false,
-      statusCode: status,
-      message: typeof message === 'object' ? (message as any).message : message,
-      timestamp: new Date().toISOString(),
-    });
+    reply.status(status).send({ success: false, statusCode: status, message, timestamp: new Date().toISOString() });
   }
 }

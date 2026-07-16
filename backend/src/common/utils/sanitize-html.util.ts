@@ -1,5 +1,6 @@
-import sanitizeHtml from 'sanitize-html';
-
+import * as sanitizeHtmlModule from 'sanitize-html';
+const sanitizeHtml =
+  (sanitizeHtmlModule as any).default ?? sanitizeHtmlModule;
 const ALLOWED_TAGS = [
   'p',
   'br',

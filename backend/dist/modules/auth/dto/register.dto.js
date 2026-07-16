@@ -10,25 +10,29 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegisterDto = void 0;
+const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 class RegisterDto {
 }
 exports.RegisterDto = RegisterDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEmail)(),
+    (0, class_transformer_1.Transform)(({ value }) => typeof value === 'string' && value.trim() === '' ? undefined : value?.trim?.() ?? value),
+    (0, class_validator_1.IsEmail)({}, { message: 'ایمیل واردشده معتبر نیست.' }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsMobilePhone)('fa-IR'),
+    (0, class_transformer_1.Transform)(({ value }) => typeof value === 'string' && value.trim() === '' ? undefined : value?.trim?.() ?? value),
+    (0, class_validator_1.IsMobilePhone)('fa-IR', {}, { message: 'شماره موبایل واردشده معتبر نیست.' }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "phone", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.MinLength)(8),
+    (0, class_transformer_1.Transform)(({ value }) => typeof value === 'string' && value.trim() === '' ? undefined : value),
+    (0, class_validator_1.MinLength)(8, { message: 'رمز عبور باید حداقل ۸ کاراکتر باشد.' }),
     (0, class_validator_1.Matches)(/^(?=.*[A-Za-z])(?=.*\d).+$/, {
-        message: 'Password must contain letters and numbers',
+        message: 'رمز عبور باید ترکیبی از حروف و اعداد انگلیسی باشد.',
     }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);

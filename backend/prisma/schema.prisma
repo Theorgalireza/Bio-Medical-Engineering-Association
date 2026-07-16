@@ -53,6 +53,7 @@ model User {
   announcements        Announcement[]
   articles             Article[]
   galleryItems         GalleryItem[]
+  pageViews PageView[]
 
   @@index([provider, providerId])
 }
@@ -66,6 +67,19 @@ model ActivityLog {
   detail     String?
   ip         String?
   createdAt  DateTime @default(now())
+}
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  ip        String?
+  userAgent String?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+  @@index([userId])
 }
 
 model Profile {

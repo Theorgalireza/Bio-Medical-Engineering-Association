@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  ConflictException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -62,63 +63,107 @@ export class AuthService {
     });
   }
 
-  async register(dto: RegisterDto, actorId?: string | null, ip?: string | null): Promise<AuthResult> {
-    if (!dto.email && !dto.phone) {
-      throw new BadRequestException('Email or phone required');
-    }
-
-    const existing = await this.prisma.user.findFirst({
-      where: { OR: [{ email: dto.email }, { phone: dto.phone }] },
-    });
-
-    if (existing) {
-      throw new BadRequestException('User already exists');
-    }
-
-    const passwordHash = dto.password ? await bcrypt.hash(dto.password, 10) : undefined;
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        phone: dto.phone,
-        passwordHash,
-      },
-    });
-
-    const result = this.signToken(user);
-    await this.logAuthAction({
-      actorId,
-      actorEmail: null,
-      action: 'REGISTER',
-      targetId: user.id,
-      detail: `Registered user ${user.email ?? user.phone ?? user.id}`,
-      ip,
-    });
-    return result;
+async register(
+  dto: RegisterDto,
+  actorId?: string | null,
+  ip?: string | null,
+): Promise<AuthResult> {
+  if (!dto.email && !dto.phone) {
+    throw new BadRequestException('وارد کردن ایمیل یا شماره موبایل الزامی است.');
   }
+
+  const existing = await this.prisma.user.findFirst({
+    where: {
+      OR: [
+        ...(dto.email ? [{ email: dto.email }] : []),
+        ...(dto.phone ? [{ phone: dto.phone }] : []),
+      ],
+    },
+  });
+
+  if (existing) {
+    const duplicateField =
+      existing.email && existing.email === dto.email
+        ? 'ایمیل'
+        : existing.phone && existing.phone === dto.phone
+          ? 'شماره موبایل'
+          : 'اطلاعات وارد شده';
+    throw new ConflictException(`این ${duplicateField} قبلاً ثبت شده است.`);
+  }
+
+  const passwordHash = dto.password
+    ? await bcrypt.hash(dto.password, 10)
+    : undefined;
+
+  const user = await this.prisma.user.create({
+    data: {
+      email: dto.email,
+      phone: dto.phone,
+      passwordHash,
+    },
+  });
+
+  const result = this.signToken(user);
+
+  await this.logAuthAction({
+    actorId,
+    actorEmail: null,
+    action: 'REGISTER',
+    targetId: user.id,
+    detail: `Registered user ${user.email ?? user.phone ?? user.id}`,
+    ip,
+  });
+
+  return result;
+}
+
 
   async login(dto: LoginDto, actorId?: string | null, ip?: string | null): Promise<AuthResult> {
-    let result: AuthResult;
+  let result: AuthResult;
 
-    if (dto.phone && dto.otp) {
-      result = await this.loginWithOtp(dto.phone, dto.otp);
-    } else if (dto.email && dto.password) {
-      result = await this.loginWithPassword(dto.email, dto.password);
-    } else {
-      throw new BadRequestException('Invalid credentials');
-    }
-
-    await this.logAuthAction({
-      actorId,
-      actorEmail: result.user.email,
-      action: 'LOGIN',
-      targetId: result.user.id,
-      detail: `User ${result.user.email ?? result.user.id} logged in`,
-      ip,
-    });
-
-    return result;
+  if (dto.phone && dto.otp) {
+    result = await this.loginWithOtp(dto.phone, dto.otp);
+  } else if (dto.email && dto.password) {
+    result = await this.authenticateWithPassword({ email: dto.email }, dto.password);
+  } else if (dto.phone && dto.password) {
+    result = await this.authenticateWithPassword({ phone: dto.phone }, dto.password);
+  } else {
+    throw new BadRequestException('اطلاعات ورود نامعتبر است.');
   }
+
+  await this.logAuthAction({
+    actorId,
+    actorEmail: result.user.email,
+    action: 'LOGIN',
+    targetId: result.user.id,
+    detail: `User ${result.user.email ?? result.user.id} logged in`,
+    ip,
+  });
+
+  return result;
+}
+
+private async authenticateWithPassword(
+  where: { email: string } | { phone: string },
+  password: string,
+): Promise<AuthResult> {
+  const user = await this.prisma.user.findUnique({ where });
+
+  if (!user?.passwordHash) {
+    throw new UnauthorizedException('ایمیل/موبایل یا رمز عبور اشتباه است.');
+  }
+  if (!user.isActive) {
+    throw new UnauthorizedException('حساب کاربری شما غیرفعال است.');
+  }
+
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) {
+    throw new UnauthorizedException('ایمیل/موبایل یا رمز عبور اشتباه است.');
+  }
+
+  return this.signToken(user);
+}
+
 
   private async loginWithPassword(email: string, password: string): Promise<AuthResult> {
     const user = await this.prisma.user.findUnique({ where: { email } });

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useEffect, useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
-import { Mail, LockKeyhole, Eye, EyeOff } from "lucide-react";
+import { User, LockKeyhole, Eye, EyeOff } from "lucide-react";
 import { getOAuthLoginUrl, loginWithPassword, type OAuthProvider } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { FcGoogle } from "react-icons/fc";
@@ -19,7 +19,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
 
-  const [form, setForm] = useState({ email: "", password: "" });
+const [form, setForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,21 +51,33 @@ export default function LoginPage() {
   }, [router, refreshUser, searchParams]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-    setLoading(true);
+  event.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      const { user } = await loginWithPassword(form);
-      const currentUser = await refreshUser();
-      const role = currentUser?.role || user.role;
-      router.push(ADMIN_ROLES.has(role) ? "/admin" : "/");
-    } catch {
-      setError("ایمیل یا رمز عبور اشتباه است.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const identifier = form.identifier.trim();
+  const isEmail = identifier.includes("@");
+  const payload = isEmail
+    ? { email: identifier, password: form.password }
+    : { phone: identifier, password: form.password };
+
+  try {
+    const { user } = await loginWithPassword(payload);
+    const currentUser = await refreshUser();
+    const role = currentUser?.role || user.role;
+    router.push(ADMIN_ROLES.has(role) ? "/admin" : "/");
+  } catch (err) {
+    setError(
+      err instanceof Error && err.message
+        ? err.message
+        : "ایمیل/موبایل یا رمز عبور اشتباه است."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <main className="min-h-screen px-4 pb-16 pt-24">
@@ -159,16 +171,19 @@ export default function LoginPage() {
             </div>
 
             <div className="relative">
-              <Mail className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent" />
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="name@example.com"
-                className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pr-12 pl-4 text-white outline-none transition focus:border-accent"
-                required
-              />
-            </div>
+  <User className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent" />
+  <input
+    type="text"
+    inputMode="email"
+    value={form.identifier}
+    onChange={(e) => setForm({ ...form, identifier: e.target.value })}
+    placeholder="ایمیل یا شماره موبایل"
+    className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pr-12 pl-4 text-white outline-none transition focus:border-accent"
+    required
+  />
+</div>
+
+
 
             <div className="relative">
               <LockKeyhole className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent" />
