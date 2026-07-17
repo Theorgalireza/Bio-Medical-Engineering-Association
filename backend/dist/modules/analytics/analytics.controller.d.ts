@@ -10,9 +10,9 @@ export declare class AnalyticsController {
         id: string;
         path: string;
         ip: string | null;
-        userAgent: string | null;
         createdAt: Date;
         userId: string | null;
+        userAgent: string | null;
     }>;
     getStats(): Promise<{
         totalViews: number;

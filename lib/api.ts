@@ -401,14 +401,7 @@ export async function loginWithPassword(payload: {
     },
   );
 }
-export type AnalyticsStats = {
-  totalViews: number;
-  todayViews: number;
-  monthViews: number;
-  uniqueTodayVisitors: number;
-  topPages: { path: string; count: number }[];
-  dailyViews: { date: string; count: number }[];
-};
+
 
 export async function getActivityLogs(params: {
   page?: number;
@@ -597,6 +590,16 @@ export async function adminDeleteFaculty(id: string) {
 export async function adminGetGallery(): Promise<GalleryItem[]> {
   return apiFetch<any[]>("/gallery", {}, true).then((items) => items.map(toGalleryItem));
 }
+export async function adminUpdateGallery(id: string, body: object) {
+  return apiFetch<any>(
+    `/gallery/${id}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    },
+    true,
+  );
+}
 
 export async function adminCreateGallery(body: object) {
   return apiFetch<any>("/gallery", {
@@ -725,6 +728,35 @@ export async function getActivityLogsCount(): Promise<number> {
 export async function getPublications() {
   return apiFetch("/publications");
 }
+
+export interface SiteSetting { key: string; value: string; updatedAt: string; }
+
+export async function getSiteSettings(): Promise<SiteSetting[]> {
+  return apiFetch<SiteSetting[]>('/site-settings');
+}
+
+export async function updateSiteSetting(key: string, value: string): Promise<SiteSetting> {
+  return apiFetch<SiteSetting>(`/site-settings/${key}`, { method: 'PUT', body: JSON.stringify({ value }) }, true);
+}
+
+export async function bulkUpdateSiteSettings(settings: Record<string, string>): Promise<SiteSetting[]> {
+  return apiFetch<SiteSetting[]>('/site-settings', { method: 'PUT', body: JSON.stringify({ settings }) }, true);
+}
+
+
+import type { AnalyticsStats } from "@/types";
+
+export async function adminGetAnalytics() {
+  return apiFetch<AnalyticsStats>("/analytics/stats", {}, true);
+}
+
+export async function trackVisit(path: string) {
+  return apiFetch("/analytics/track", {
+    method: "POST",
+    body: JSON.stringify({ path }),
+  });
+}
+
 export const adminGetContacts = adminGetContact;
 export const adminMarkContactRead = (id: string) => adminUpdateContact(id, { read: true });
 export const getUsers = adminGetUsers;

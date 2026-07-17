@@ -1,311 +1,300 @@
+// app/admin/layout.tsx
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { Role } from "@/types";
+import Spinner from "@/components/ui/Spinner";
 import {
   Activity,
+  BarChart2,
   BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Image,
   LayoutDashboard,
   Logs,
   Mail,
   Megaphone,
   Menu,
   MessageSquare,
+  Settings,
+  Shield,
   Users,
   X,
+  Bell,
+  Calendar,
+  FileText,
+  Video,
+  Library,
 } from "lucide-react";
 
-import Spinner from "@/components/ui/Spinner";
-import { useAuth } from "@/context/AuthContext";
-import type { Role } from "@/types";
-
 type AdminNavItem = {
-  href: string;
+  href?: string;
   label: string;
   icon: typeof LayoutDashboard;
   roles?: Role[];
+  children?: AdminNavItem[];
 };
 
-const navItems: AdminNavItem[] = [
+const navGroups: AdminNavItem[] = [
   {
     href: "/admin",
     label: "داشبورد",
     icon: LayoutDashboard,
   },
   {
-    href: "/admin/announcements",
-    label: "اعلان‌ها",
-    icon: Megaphone,
-  },
-  {
-    href: "/admin/articles",
-    label: "مقالات",
+    label: "محتوا",
     icon: BookOpen,
+    children: [
+      { href: "/admin/articles", label: "مقالات و انتشارات", icon: FileText },
+      { href: "/admin/announcements", label: "اعلان‌ها", icon: Megaphone },
+    ],
   },
   {
-    href: "/admin/faculty",
-    label: "اعضای هیئت علمی",
+    label: "رسانه‌ها",
+    icon: Image,
+    children: [
+      { href: "/admin/gallery", label: "گالری تصاویر", icon: Image },
+      { href: "/admin/videos", label: "ویدئوها", icon: Video },
+      { href: "/admin/media", label: "آرشیو ها", icon: Library },
+    ],
+  },
+  {
+    label: "افراد",
     icon: Users,
+    children: [
+      { href: "/admin/faculty", label: "اعضای هیئت علمی", icon: Users },
+      {
+        href: "/admin/members",
+        label: "اعضای انجمن",
+        icon: Users,
+        roles: ["OWNER", "ADMIN"],
+      },
+      
+    ],
   },
   {
-    href: "/admin/members",
-    label: "اعضای انجمن",
-    icon: Users,
-    roles: ["OWNER", "ADMIN"],
-  },
-  {
-    href: "/admin/feedback",
-    label: "بازخوردها",
+    label: "ارتباطات",
     icon: MessageSquare,
+    children: [
+      { href: "/admin/feedback", label: "بازخوردها", icon: MessageSquare },
+      {
+        href: "/admin/contacts",
+        label: "تماس‌ها",
+        icon: Mail,
+        roles: ["OWNER", "ADMIN"],
+      },
+      { href: "/admin/newsletter", label: "خبرنامه", icon: Bell },
+    ],
   },
   {
-    href: "/admin/contacts",
-    label: "تماس‌ها",
-    icon: Mail,
+    label: "تحلیل",
+    icon: BarChart2,
+    children: [
+      { href: "/admin/analytics", label: "آمار بازدید", icon: BarChart2 },
+    ],
     roles: ["OWNER", "ADMIN"],
   },
   {
-    href: "/admin/logs",
-    label: "لاگ فعالیت‌ها",
-    icon: Logs,
-    roles: ["OWNER"],
+    label: "سیستم",
+    icon: Settings,
+    roles: ["OWNER", "ADMIN"],
+    children: [
+      { href: "/admin/logs", label: "لاگ فعالیت‌ها", icon: Logs, roles: ["OWNER"] },
+      {
+        href: "/admin/settings",
+        label: "تنظیمات سایت",
+        icon: Settings,
+        roles: ["OWNER", "ADMIN"],
+      },
+      {
+        href: "/admin/roles",
+        label: "مدیریت نقش‌ها",
+        icon: Shield,
+        roles: ["OWNER"],
+      },
+    ],
   },
 ];
 
-const ADMIN_ROLES = new Set<Role>([
-  "OWNER",
-  "ADMIN",
-  "CONTENT_EDITOR",
-]);
+const ADMIN_ROLES = new Set<Role>(["OWNER", "ADMIN", "CONTENT_EDITOR"]);
 
-export default function AdminLayout({
-  children,
+function canAccess(item: AdminNavItem, role: Role): boolean {
+  if (item.roles && !item.roles.includes(role)) return false;
+  return true;
+}
+
+function NavItem({
+  item,
+  role,
+  pathname,
+  onNavigate,
 }: {
-  children: ReactNode;
+  item: AdminNavItem;
+  role: Role;
+  pathname: string;
+  onNavigate?: () => void;
 }) {
-  const pathname = usePathname();
-  const router = useRouter();
+  const hasChildren = item.children && item.children.length > 0;
+  const visibleChildren = hasChildren
+    ? item.children!.filter((c) => canAccess(c, role))
+    : [];
 
+  const isChildActive = visibleChildren.some((c) => c.href === pathname);
+  const [open, setOpen] = useState(isChildActive);
+
+  if (!canAccess(item, role)) return null;
+  if (hasChildren && visibleChildren.length === 0) return null;
+
+  if (hasChildren) {
+    return (
+      <div>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors text-sm"
+        >
+          <item.icon size={16} />
+          <span className="flex-1 text-right">{item.label}</span>
+          {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        </button>
+        {open && (
+          <div className="mr-4 mt-1 border-r border-white/10 pr-2 space-y-1">
+            {visibleChildren.map((child) => (
+              <NavItem
+                key={child.href}
+                item={child}
+                role={role}
+                pathname={pathname}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const isActive = pathname === item.href;
+  return (
+    <Link
+      href={item.href!}
+      onClick={onNavigate}
+      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+        isActive
+          ? "bg-[#00d4ff]/10 border border-[#00d4ff]/20 text-[#00d4ff]"
+          : "text-gray-400 hover:text-white hover:bg-white/5"
+      }`}
+    >
+      <item.icon size={16} />
+      <span>{item.label}</span>
+    </Link>
+  );
+}
+
+function Sidebar({
+  role,
+  pathname,
+  onNavigate,
+}: {
+  role: Role;
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="flex flex-col h-full bg-gray-900 border-l border-white/10">
+      <div className="p-4 border-b border-white/10 flex items-center gap-2">
+        <Activity size={20} className="text-[#00d4ff]" />
+        <span className="font-bold text-white text-sm">پنل مدیریت</span>
+      </div>
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        {navGroups.map((group, i) => (
+          <NavItem
+            key={group.href ?? group.label ?? i}
+            item={group}
+            role={role}
+            pathname={pathname}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </nav>
+    </div>
+  );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-
+  const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const canAccessAdmin =
-    !!user && ADMIN_ROLES.has(user.role);
-
   useEffect(() => {
-    if (!loading && !canAccessAdmin) {
-      router.replace(user ? "/" : "/login");
-    }
-  }, [loading, canAccessAdmin, router, user]);
+    if (loading) return;
+    if (!user) { router.replace("/login"); return; }
+    if (!ADMIN_ROLES.has(user.role as Role)) router.replace("/");
+  }, [user, loading, router]);
 
-  if (loading || !canAccessAdmin) {
+  if (loading || !user || !ADMIN_ROLES.has(user.role as Role)) {
     return (
-      <div
-        dir="rtl"
-        className="flex min-h-screen items-center justify-center bg-[#0a0f1e]"
-      >
-        <Spinner size={40} />
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <Spinner />
       </div>
     );
   }
 
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen bg-[#0a0f1e] text-white"
-    >
+    <div className="min-h-screen bg-gray-950 text-white" dir="rtl">
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block fixed right-0 top-0 h-screen w-64 z-40">
+        <Sidebar role={user.role as Role} pathname={pathname} />
+      </div>
+
+      {/* Mobile sidebar */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
-      )}      {/* =========================
-            Desktop Sidebar
-      ========================== */}
-      <aside className="hidden lg:flex fixed right-0 top-0 z-30 h-screen w-64 flex-col border-l border-[#1e2d4a] bg-[#0d1526]">
-
-        <div className="flex h-16 items-center gap-2 border-b border-[#1e2d4a] px-5">
-          <Activity
-            size={20}
-            className="text-[#00d4ff]"
-          />
-
-          <span className="font-bold text-[#00d4ff]">
-            پنل مدیریت
-          </span>
-        </div>
-
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {navItems
-            .filter(
-              item =>
-                !item.roles ||
-                (user && item.roles.includes(user.role))
-            )
-            .map(({ href, label, icon: Icon }) => {
-              const active = pathname === href;
-
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`
-                    flex items-center gap-3
-                    rounded-xl
-                    px-4
-                    py-3
-                    transition-all
-
-                    ${
-                      active
-                        ? "bg-[#00d4ff]/10 border border-[#00d4ff]/20 text-[#00d4ff]"
-                        : "text-gray-400 hover:bg-white/5 hover:text-white"
-                    }
-                  `}
-                >
-                  <Icon size={18} />
-
-                  <span>{label}</span>
-                  
-                </Link>
-                
-              );
-            })}
-            
-        </nav>
-      </aside>
-
-      {/* =========================
-            Mobile Drawer
-      ========================== */}
-
-      <aside
-        className={`
-          fixed
-          top-0
-          right-0
-          z-50
-          h-screen
-          w-64
-          bg-[#0d1526]
-          border-l
-          border-[#1e2d4a]
-          flex
-          flex-col
-          transition-transform
-          duration-300
-          lg:hidden
-
-          ${
-            sidebarOpen
-              ? "translate-x-0"
-              : "translate-x-full"
-          }
-        `}
+      )}
+      <div
+        className={`fixed top-0 right-0 h-screen w-64 z-50 lg:hidden transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        <div className="flex h-16 items-center justify-between border-b border-[#1e2d4a] px-5">
+        <Sidebar
+          role={user.role as Role}
+          pathname={pathname}
+          onNavigate={() => setSidebarOpen(false)}
+        />
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="absolute top-4 left-4 text-gray-400 hover:text-white"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <Activity
-              size={20}
-              className="text-[#00d4ff]"
-            />
-
-            <span className="font-bold text-[#00d4ff]">
-              پنل مدیریت
-            </span>
-          </div>
-
+      {/* Main */}
+      <div className="lg:mr-64 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-30 bg-gray-900/80 backdrop-blur border-b border-white/10 px-4 py-3 flex items-center justify-between">
           <button
-            onClick={() => setSidebarOpen(false)}
-            className="text-gray-400 hover:text-white"
+            className="lg:hidden text-gray-400 hover:text-white"
+            onClick={() => setSidebarOpen(true)}
           >
-            <X size={20} />
+            <Menu size={22} />
           </button>
-        </div>
-
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {navItems
-            .filter(
-              item =>
-                !item.roles ||
-                (user && item.roles.includes(user.role))
-            )
-            .map(({ href, label, icon: Icon }) => {
-              const active = pathname === href;
-
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`
-                    flex items-center gap-3
-                    rounded-xl
-                    px-4
-                    py-3
-                    transition-all
-
-                    ${
-                      active
-                        ? "bg-[#00d4ff]/10 border border-[#00d4ff]/20 text-[#00d4ff]"
-                        : "text-gray-400 hover:bg-white/5 hover:text-white"
-                    }
-                  `}
-                >
-                  <Icon size={18} />
-
-                  <span>{label}</span>
-                </Link>
-              );
-            })}
-        </nav>
-      </aside>      {/* =========================
-            Main Content
-      ========================== */}
-
-      <div className="flex min-h-screen flex-col lg:mr-64">
-
-        {/* Header */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#1e2d4a] bg-[#0d1526]/95 px-6 backdrop-blur-md">
-
-          <div className="flex items-center gap-3">
-
-            {/* Mobile Menu */}
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 transition hover:bg-white/5 lg:hidden"
-            >
-              <Menu size={22} />
-            </button>
-
-            <h1 className="font-vazir text-sm font-semibold tracking-tight text-gray-300">
-              پنل مدیریت انجمن مهندسی پزشکی
-            </h1>
-
-          </div>
-
-          <div className="flex items-center gap-3">
-
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-
-            <span className="text-xs text-gray-400">
-              آنلاین
-            </span>
-
-          </div>
-
+          <span className="text-sm font-medium text-gray-200">
+            پنل مدیریت انجمن مهندسی پزشکی
+          </span>
+          <span className="flex items-center gap-2 text-xs text-green-400">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            آنلاین
+          </span>
         </header>
-
-        {/* Page */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {children}
-        </main>
-
-      </div>    </div>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+      </div>
+    </div>
   );
 }

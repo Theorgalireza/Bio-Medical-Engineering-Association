@@ -1,7 +1,7 @@
 import type { Role } from "@/types";
 
 export const ROLE_LABELS: Record<Role, string> = {
-  OWNER: "مالک انجمن",
+  OWNER: "Owner",
   ADMIN: "مدیر سیستم",
   CONTENT_EDITOR: "ویراستار محتوا",
   STUDENT_MEMBER: "عضو دانشجویی",

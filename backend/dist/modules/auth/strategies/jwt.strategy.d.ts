@@ -10,9 +10,9 @@ export declare class JwtStrategy extends JwtStrategy_base {
         role: string;
     }): Promise<{
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -25,8 +25,9 @@ export declare class JwtStrategy extends JwtStrategy_base {
             profileEmail: string | null;
         } | null;
     } & {
-        email: string | null;
+        updatedAt: Date;
         id: string;
+        email: string | null;
         createdAt: Date;
         phone: string | null;
         passwordHash: string | null;
@@ -34,7 +35,6 @@ export declare class JwtStrategy extends JwtStrategy_base {
         provider: string | null;
         providerId: string | null;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }>;
 }

@@ -7,36 +7,36 @@ export declare class ContactService {
     constructor(prisma: PrismaService, activityLog: ActivityLogService);
     private logActivity;
     findAll(query: QueryContactDto): import(".prisma/client").Prisma.PrismaPromise<{
-        email: string;
         name: string;
         id: string;
+        email: string;
         createdAt: Date;
         message: string;
         subject: string | null;
         read: boolean;
     }[]>;
     findOne(id: string): Promise<{
-        email: string;
         name: string;
         id: string;
+        email: string;
         createdAt: Date;
         message: string;
         subject: string | null;
         read: boolean;
     }>;
     create(dto: CreateContactDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
-        email: string;
         name: string;
         id: string;
+        email: string;
         createdAt: Date;
         message: string;
         subject: string | null;
         read: boolean;
     }>;
     update(id: string, dto: UpdateContactDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
-        email: string;
         name: string;
         id: string;
+        email: string;
         createdAt: Date;
         message: string;
         subject: string | null;

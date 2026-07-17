@@ -4,10 +4,10 @@ export declare class FacultyController {
     private readonly service;
     constructor(service: FacultyService);
     findAll(query: QueryFacultyDto): import(".prisma/client").Prisma.PrismaPromise<{
+        updatedAt: Date;
         name: string;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         isActive: boolean;
         title: string;
         monogram: string;
@@ -15,10 +15,10 @@ export declare class FacultyController {
         color: string;
     }[]>;
     findOne(id: string): Promise<{
+        updatedAt: Date;
         name: string;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         isActive: boolean;
         title: string;
         monogram: string;
@@ -26,10 +26,10 @@ export declare class FacultyController {
         color: string;
     }>;
     create(req: any, dto: CreateFacultyDto): Promise<{
+        updatedAt: Date;
         name: string;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         isActive: boolean;
         title: string;
         monogram: string;
@@ -37,10 +37,10 @@ export declare class FacultyController {
         color: string;
     }>;
     update(req: any, id: string, dto: UpdateFacultyDto): Promise<{
+        updatedAt: Date;
         name: string;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         isActive: boolean;
         title: string;
         monogram: string;

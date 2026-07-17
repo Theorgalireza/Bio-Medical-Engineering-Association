@@ -7,10 +7,12 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     getMe(req: any): Promise<{
+        updatedAt: Date;
+        id: string;
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -23,19 +25,19 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
-        id: string;
         createdAt: Date;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }>;
     updateMyProfile(req: any, dto: UpdateProfileDto): Promise<{
+        updatedAt: Date;
+        id: string;
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -48,19 +50,19 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
-        id: string;
         createdAt: Date;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }>;
     findAll(): Promise<{
+        updatedAt: Date;
+        id: string;
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -73,19 +75,19 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
-        id: string;
         createdAt: Date;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }[]>;
     create(req: any, dto: CreateUserDto): Promise<{
+        updatedAt: Date;
+        id: string;
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -98,12 +100,10 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
-        id: string;
         createdAt: Date;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }>;
     countByRole(): Promise<{
@@ -111,10 +111,12 @@ export declare class UsersController {
         count: number;
     }[]>;
     findOne(id: string): Promise<{
+        updatedAt: Date;
+        id: string;
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -127,19 +129,19 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
-        id: string;
         createdAt: Date;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }>;
     updateProfile(req: any, id: string, dto: UpdateProfileDto): Promise<{
+        updatedAt: Date;
+        id: string;
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -152,19 +154,19 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
-        id: string;
         createdAt: Date;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }>;
     updateStatus(req: any, id: string, dto: UpdateUserStatusDto): Promise<{
+        updatedAt: Date;
+        id: string;
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -177,19 +179,19 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
-        id: string;
         createdAt: Date;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }>;
     updateRole(req: any, id: string, dto: UpdateUserRoleDto): Promise<{
+        updatedAt: Date;
+        id: string;
         profile: {
+            id: string;
             github: string | null;
             linkedin: string | null;
-            id: string;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -202,12 +204,10 @@ export declare class UsersController {
             profileEmail: string | null;
         } | null;
         email: string | null;
-        id: string;
         createdAt: Date;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
-        updatedAt: Date;
         isActive: boolean;
     }>;
     remove(req: any, id: string): Promise<{

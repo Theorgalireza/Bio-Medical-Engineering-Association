@@ -7,10 +7,10 @@ export declare class FacultyService {
     constructor(prisma: PrismaService, activityLog: ActivityLogService);
     private logActivity;
     findAll(query: QueryFacultyDto): import(".prisma/client").Prisma.PrismaPromise<{
+        updatedAt: Date;
         name: string;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         isActive: boolean;
         title: string;
         monogram: string;
@@ -18,10 +18,10 @@ export declare class FacultyService {
         color: string;
     }[]>;
     findOne(id: string): Promise<{
+        updatedAt: Date;
         name: string;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         isActive: boolean;
         title: string;
         monogram: string;
@@ -29,10 +29,10 @@ export declare class FacultyService {
         color: string;
     }>;
     create(dto: CreateFacultyDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        updatedAt: Date;
         name: string;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         isActive: boolean;
         title: string;
         monogram: string;
@@ -40,10 +40,10 @@ export declare class FacultyService {
         color: string;
     }>;
     update(id: string, dto: UpdateFacultyDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        updatedAt: Date;
         name: string;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         isActive: boolean;
         title: string;
         monogram: string;

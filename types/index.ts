@@ -172,6 +172,24 @@ export interface UpdateProfilePayload {
   website?: string | null;
   profileEmail?: string | null;
 }
+export interface AnalyticsTopPage {
+  path: string;
+  count: number;
+}
+
+export interface AnalyticsDailyView {
+  date: string; // YYYY-MM-DD
+  count: number;
+}
+
+export interface AnalyticsStats {
+  totalViews: number;
+  todayViews: number;
+  monthViews: number;
+  uniqueTodayVisitors: number;
+  topPages: AnalyticsTopPage[];
+  dailyViews: AnalyticsDailyView[];
+}
 
 export interface AdminAnnouncement {
   id: string;

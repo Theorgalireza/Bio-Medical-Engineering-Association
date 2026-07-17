@@ -35,7 +35,7 @@ track(
   // آمار کلی داشبورد - فقط OWNER
   @Get('stats')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('OWNER')
+  @Roles('OWNER',"ADMIN")
   getStats() {
     return this.service.getStats();
   }

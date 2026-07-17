@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Eye,
   BarChart3,
+  ArrowLeft,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -116,9 +117,21 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6" dir="rtl">
-      <div className="flex items-center gap-3">
-        <TrendingUp size={22} className="text-[#00d4ff]" />
-        <h2 className="text-xl font-bold">داشبورد</h2>
+      {/* هدر اصلاح شده */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <TrendingUp size={22} className="text-[#00d4ff]" />
+          <h2 className="text-xl font-bold">داشبورد</h2>
+        </div>
+        
+        {/* دکمه بازگشت */}
+        <Link 
+          href="/" 
+          className="flex items-center gap-2 px-4 py-2 bg-[#0d1526] border border-[#1e2d4a] text-gray-300 hover:text-white hover:border-[#00d4ff] rounded-lg transition-all text-sm font-medium"
+        >
+          <ArrowLeft size={16} />
+          <span>بازگشت به سایت</span>
+        </Link>
       </div>
 
       {/* آمار بازدید سایت */}

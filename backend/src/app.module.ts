@@ -21,6 +21,7 @@ import { CsrfGuard } from './common/guards/csrf.guard';
 import appConfig from './config/config';
 import { ActivityLogModule } from './modules/activity-log/activity-log.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { SiteSettingsModule } from './modules/site-settings/site-settings.module';
 
 function toSafePositiveInt(value: unknown, fallback: number) {
   const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : Number(value);
@@ -72,7 +73,8 @@ function toSafePositiveInt(value: unknown, fallback: number) {
     FeedbackModule,
     ContactModule,
     ActivityLogModule,
-    AnalyticsModule
+    AnalyticsModule,
+    SiteSettingsModule
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

@@ -19,6 +19,7 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
+  ArrowLeft,
   
 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
@@ -206,42 +207,54 @@ function ProfilePageContent() {
               </div>
             </div>
 
-            <div className="flex gap-2">
-              {!editMode ? (
-                <NeonButton
-                  type="button"
-                  variant="outline"
-                  className="!px-5 !py-2 text-sm flex items-center gap-2"
-                  onClick={() => {
-                    setEditMode(true);
-                    setStatus(null);
-                  }}
-                >
-                  <Pencil size={16} />
-                  ویرایش پروفایل
-                </NeonButton>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditMode(false);
-                    setForm(toForm(user?.profile));
-                    setStatus(null);
-                  }}
-                  className="flex items-center gap-2 rounded-full border border-borderSoft bg-primary/40 px-5 py-2 text-sm text-gray-300 hover:bg-primary/60 transition-colors"
-                >
-                  <X size={16} />
-                  انصراف
-                </button>
-              )}
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-5 py-2 text-sm text-red-400 hover:bg-red-500/20 transition-colors"
-              >
-                <LogOut size={16} />
-                خروج
-              </button>
-            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
+  <button
+    type="button"
+    onClick={() => router.push("/")}
+    className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-borderSoft bg-primary/40 px-5 py-2 text-sm text-gray-300 transition-colors hover:bg-primary/60"
+  >
+    <ArrowLeft size={16} />
+    <span className="whitespace-nowrap">صفحه اصلی</span>
+  </button>
+
+  {!editMode ? (
+    <NeonButton
+      type="button"
+      variant="outline"
+      className="flex shrink-0 items-center gap-2 whitespace-nowrap !px-5 !py-2 text-sm"
+      onClick={() => {
+        setEditMode(true);
+        setStatus(null);
+      }}
+    >
+      <Pencil size={16} />
+      <span className="whitespace-nowrap">ویرایش پروفایل</span>
+    </NeonButton>
+  ) : (
+    <button
+      type="button"
+      onClick={() => {
+        setEditMode(false);
+        setForm(toForm(user?.profile));
+        setStatus(null);
+      }}
+      className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-borderSoft bg-primary/40 px-5 py-2 text-sm text-gray-300 transition-colors hover:bg-primary/60"
+    >
+      <X size={16} />
+      <span className="whitespace-nowrap">انصراف</span>
+    </button>
+  )}
+
+  <button
+    type="button"
+    onClick={handleLogout}
+    className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-red-500/40 bg-red-500/10 px-5 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/20"
+  >
+    <LogOut size={16} />
+    <span className="whitespace-nowrap">خروج از حساب کاربری</span>
+  </button>
+</div>
+
           </div>
         </motion.div>
 

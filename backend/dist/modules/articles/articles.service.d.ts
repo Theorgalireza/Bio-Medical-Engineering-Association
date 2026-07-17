@@ -18,10 +18,10 @@ export declare class ArticlesService {
             articleId: string;
         })[];
     } & {
+        updatedAt: Date;
         id: string;
         content: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
@@ -45,10 +45,10 @@ export declare class ArticlesService {
             articleId: string;
         })[];
     } & {
+        updatedAt: Date;
         id: string;
         content: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
@@ -72,10 +72,10 @@ export declare class ArticlesService {
             articleId: string;
         })[];
     } & {
+        updatedAt: Date;
         id: string;
         content: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
@@ -99,10 +99,10 @@ export declare class ArticlesService {
             articleId: string;
         })[];
     } & {
+        updatedAt: Date;
         id: string;
         content: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;

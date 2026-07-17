@@ -9,16 +9,16 @@ export declare class AnnouncementsService {
     private logActivity;
     findAll(query: QueryAnnouncementDto): import(".prisma/client").Prisma.PrismaPromise<({
         author: {
+            id: string;
             profile: {
                 firstName: string | null;
                 lastName: string | null;
             } | null;
-            id: string;
         } | null;
     } & {
+        updatedAt: Date;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         description: string;
@@ -30,9 +30,9 @@ export declare class AnnouncementsService {
         authorId: string | null;
     })[]>;
     findBySlug(slug: string): Promise<{
+        updatedAt: Date;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         description: string;
@@ -44,9 +44,9 @@ export declare class AnnouncementsService {
         authorId: string | null;
     }>;
     create(dto: CreateAnnouncementDto, user: User, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        updatedAt: Date;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         description: string;
@@ -58,9 +58,9 @@ export declare class AnnouncementsService {
         authorId: string | null;
     }>;
     update(id: string, dto: UpdateAnnouncementDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        updatedAt: Date;
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         description: string;
