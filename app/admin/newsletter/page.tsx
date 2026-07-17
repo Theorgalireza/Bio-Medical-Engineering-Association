@@ -8,6 +8,10 @@ import {
   adminGetCampaigns,
   adminSendCampaign,
 } from "@/lib/api";
+import type {
+  NewsletterSubscriber,
+  NewsletterCampaign,
+} from "@/types";
 import RichEditor from "@/components/admin/RichEditor";
 import NeonButton from "@/components/ui/NeonButton";
 import Spinner from "@/components/ui/Spinner";

@@ -151,4 +151,4 @@
 
 - The workspace does not have `node_modules` installed, so full type-check/build/lint validation could not complete locally.
 - The backend does not yet expose dedicated media/video management endpoints, so those routes remain informational only.
-- Some admin pages could still be polished further with pagination/search/bulk actions, but the core backend-to-frontend coverage is now aligned.
+- The main admin list pages now include search, pagination, and selected bulk actions. Remaining enhancements are limited to optional UX polish and the unsupported media/video placeholders.
