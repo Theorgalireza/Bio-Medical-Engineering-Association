@@ -30,6 +30,7 @@ const config_2 = require("./config/config");
 const activity_log_module_1 = require("./modules/activity-log/activity-log.module");
 const analytics_module_1 = require("./modules/analytics/analytics.module");
 const site_settings_module_1 = require("./modules/site-settings/site-settings.module");
+const newsletter_module_1 = require("./modules/newsletter/newsletter.module");
 function toSafePositiveInt(value, fallback) {
     const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : Number(value);
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
@@ -81,7 +82,8 @@ exports.AppModule = AppModule = __decorate([
             contact_module_1.ContactModule,
             activity_log_module_1.ActivityLogModule,
             analytics_module_1.AnalyticsModule,
-            site_settings_module_1.SiteSettingsModule
+            site_settings_module_1.SiteSettingsModule,
+            newsletter_module_1.NewsletterModule,
         ],
         providers: [
             { provide: core_1.APP_FILTER, useClass: http_exception_filter_1.HttpExceptionFilter },

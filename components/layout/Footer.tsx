@@ -1,4 +1,6 @@
 "use client";
+import type { SiteSettings } from "@/lib/site-settings";
+
 
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -12,7 +14,7 @@ const quickLinks = [
   { label: "ارتباط با ما", href: "/#contact" },
 ];
 
-export default function Footer() {
+export default function Footer({ settings }: { settings: SiteSettings }) {
   const currentYear = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
     year: "numeric",
   }).format(new Date());
@@ -42,33 +44,13 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {/* Brand */}
-          <div>
-            <h3 className="mb-4 text-lg font-bold text-white">
-              انجمن علمی <span className="text-accent">مهندسی پزشکی</span>
-            </h3>
-            <p className="text-sm leading-6 text-gray-400">
-              انجمن علمی مهندسی پزشکی، گرایش بیوالکتریک، دانشگاه شهید بهشتی.
-            </p>
-          </div>
+    {/* Brand */}
+  <div>
+    <h3 className="mb-4 text-lg font-bold text-white">{settings.site_name}</h3>
+    <p className="text-sm leading-6 text-gray-400">{settings.site_description}</p>
+  </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="mb-4 text-sm font-bold text-white">لینک‌های سریع</h4>
-            <ul className="flex flex-col gap-3">
-              {quickLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="flex items-center gap-2 text-sm text-gray-400 transition-colors duration-200 hover:text-accent"
-                  >
-                    <span className="h-1 w-1 rounded-full bg-accent" />
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+
 
           {/* Services */}
           <div>
@@ -97,23 +79,56 @@ export default function Footer() {
           <div>
             <h4 className="mb-4 text-sm font-bold text-white">تماس با ما</h4>
             <ul className="flex flex-col gap-3 text-sm text-gray-400">
-              <li>
-                <span className="block text-xs text-gray-500 mb-1">آدرس</span>
-                دانشگاه شهید بهشتی، دانشکده مهندسی پزشکی، تهران
-              </li>
-              <li>
-                <span className="block text-xs text-gray-500 mb-1">ایمیل</span>
-                <a href="mailto:bioelectric@sbu.ac.ir" className="hover:text-accent transition-colors">
-                  bioelectric@sbu.ac.ir
-                </a>
-              </li>
+              {settings.contact_address && (
+                <li>
+                  <span className="block text-xs text-gray-500 mb-1">آدرس</span>
+                  {settings.contact_address}
+                </li>
+              )}
+              {settings.contact_email && (
+                <li>
+                  <span className="block text-xs text-gray-500 mb-1">ایمیل</span>
+                  <a
+                    href={`mailto:${settings.contact_email}`}
+                    className="hover:text-accent transition-colors"
+                  >
+                    {settings.contact_email}
+                  </a>
+                </li>
+              )}
+              {settings.telegram_url && (
+                <li>
+                  <span className="block text-xs text-gray-500 mb-1">تلگرام</span>
+                  <a
+                    href={settings.telegram_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-accent transition-colors"
+                  >
+                    کانال تلگرام
+                  </a>
+                </li>
+              )}
+              {settings.instagram_url && (
+                <li>
+                  <span className="block text-xs text-gray-500 mb-1">اینستاگرام</span>
+                  <a
+                    href={settings.instagram_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-accent transition-colors"
+                  >
+                    صفحه اینستاگرام
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-borderSoft text-center">
 <p className="text-xs text-gray-500">
-  © {currentYear}
+  © 2026 Alireza Jafary
   <br />
   <span className="inline-flex items-center gap-1">
     طراحی و توسعه با

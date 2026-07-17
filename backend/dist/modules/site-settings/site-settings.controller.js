@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SiteSettingsController = void 0;
 const common_1 = require("@nestjs/common");
 const site_settings_service_1 = require("./site-settings.service");
-const site_setting_dto_1 = require("./dto/site-setting.dto");
+const site_settings_dto_1 = require("./dto/site-settings.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
@@ -46,7 +46,7 @@ __decorate([
     __param(0, (0, common_1.Param)('key')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, site_setting_dto_1.UpsertSettingDto]),
+    __metadata("design:paramtypes", [String, site_settings_dto_1.UpsertSettingDto]),
     __metadata("design:returntype", void 0)
 ], SiteSettingsController.prototype, "upsert", null);
 __decorate([
@@ -54,7 +54,7 @@ __decorate([
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [site_setting_dto_1.BulkUpsertDto]),
+    __metadata("design:paramtypes", [site_settings_dto_1.BulkUpsertDto]),
     __metadata("design:returntype", void 0)
 ], SiteSettingsController.prototype, "bulkUpsert", null);
 exports.SiteSettingsController = SiteSettingsController = __decorate([

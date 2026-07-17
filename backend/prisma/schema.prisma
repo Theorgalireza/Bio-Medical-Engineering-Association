@@ -37,6 +37,25 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
+// اضافه کردن به انتهای schema.prisma
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  token     String   @unique @default(uuid())
+  createdAt DateTime @default(now())
+}
+
+model NewsletterCampaign {
+  id             String    @id @default(uuid())
+  subject        String
+  body           String    @db.LongText
+  sentAt         DateTime?
+  recipientCount Int       @default(0)
+  createdAt      DateTime  @default(now())
+}
 
 model User {
   id            String   @id @default(uuid())

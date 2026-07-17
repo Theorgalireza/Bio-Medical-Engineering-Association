@@ -8,8 +8,8 @@ export declare class ContactController {
         id: string;
         email: string;
         createdAt: Date;
-        message: string;
         subject: string | null;
+        message: string;
         read: boolean;
     }[]>;
     findOne(id: string): Promise<{
@@ -17,8 +17,8 @@ export declare class ContactController {
         id: string;
         email: string;
         createdAt: Date;
-        message: string;
         subject: string | null;
+        message: string;
         read: boolean;
     }>;
     create(req: any, dto: CreateContactDto): Promise<{
@@ -26,8 +26,8 @@ export declare class ContactController {
         id: string;
         email: string;
         createdAt: Date;
-        message: string;
         subject: string | null;
+        message: string;
         read: boolean;
     }>;
     update(req: any, id: string, dto: UpdateContactDto): Promise<{
@@ -35,8 +35,8 @@ export declare class ContactController {
         id: string;
         email: string;
         createdAt: Date;
-        message: string;
         subject: string | null;
+        message: string;
         read: boolean;
     }>;
     remove(req: any, id: string): Promise<{

@@ -25,9 +25,9 @@ export declare class JwtStrategy extends JwtStrategy_base {
             profileEmail: string | null;
         } | null;
     } & {
-        updatedAt: Date;
         id: string;
         email: string | null;
+        isActive: boolean;
         createdAt: Date;
         phone: string | null;
         passwordHash: string | null;
@@ -35,7 +35,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         provider: string | null;
         providerId: string | null;
         avatarUrl: string | null;
-        isActive: boolean;
+        updatedAt: Date;
     }>;
 }
 export {};

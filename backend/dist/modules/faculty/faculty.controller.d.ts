@@ -4,44 +4,44 @@ export declare class FacultyController {
     private readonly service;
     constructor(service: FacultyService);
     findAll(query: QueryFacultyDto): import(".prisma/client").Prisma.PrismaPromise<{
-        updatedAt: Date;
         name: string;
         id: string;
-        createdAt: Date;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         title: string;
         monogram: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;
         color: string;
     }[]>;
     findOne(id: string): Promise<{
-        updatedAt: Date;
         name: string;
         id: string;
-        createdAt: Date;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         title: string;
         monogram: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;
         color: string;
     }>;
     create(req: any, dto: CreateFacultyDto): Promise<{
-        updatedAt: Date;
         name: string;
         id: string;
-        createdAt: Date;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         title: string;
         monogram: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;
         color: string;
     }>;
     update(req: any, id: string, dto: UpdateFacultyDto): Promise<{
-        updatedAt: Date;
         name: string;
         id: string;
-        createdAt: Date;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         title: string;
         monogram: string;
         specialties: import("@prisma/client/runtime/library").JsonValue;

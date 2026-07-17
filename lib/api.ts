@@ -739,8 +739,37 @@ export async function updateSiteSetting(key: string, value: string): Promise<Sit
   return apiFetch<SiteSetting>(`/site-settings/${key}`, { method: 'PUT', body: JSON.stringify({ value }) }, true);
 }
 
-export async function bulkUpdateSiteSettings(settings: Record<string, string>): Promise<SiteSetting[]> {
+export async function bulkUpdateSiteSettings(settings: Record<string, string>) {
   return apiFetch<SiteSetting[]>('/site-settings', { method: 'PUT', body: JSON.stringify({ settings }) }, true);
+}
+
+// اضافه کردن به انتهای lib/api.ts
+
+// --- Newsletter ---
+export async function adminGetSubscribers(all = false) {
+  return apiFetch(`/newsletter/subscribers${all ? '?all=true' : ''}`);
+}
+
+export async function adminDeleteSubscriber(id: string) {
+  return apiFetch(`/newsletter/subscribers/${id}`, { method: 'DELETE' });
+}
+
+export async function adminGetCampaigns() {
+  return apiFetch('/newsletter/campaigns');
+}
+
+export async function adminSendCampaign(data: { subject: string; body: string }) {
+  return apiFetch('/newsletter/campaigns/send', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function publicSubscribe(data: { email: string; name?: string }) {
+  return apiFetch('/newsletter/subscribe', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
 

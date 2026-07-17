@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BulkUpsertDto = exports.UpsertSettingDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
 class UpsertSettingDto {
 }
 exports.UpsertSettingDto = UpsertSettingDto;
@@ -22,4 +23,13 @@ __decorate([
 class BulkUpsertDto {
 }
 exports.BulkUpsertDto = BulkUpsertDto;
+__decorate([
+    (0, class_validator_1.IsObject)(),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (typeof value !== "object" || value === null)
+            return value;
+        return Object.fromEntries(Object.entries(value).filter(([k, v]) => typeof k === "string" && typeof v === "string"));
+    }),
+    __metadata("design:type", Object)
+], BulkUpsertDto.prototype, "settings", void 0);
 //# sourceMappingURL=site-settings.dto.js.map

@@ -4,9 +4,9 @@ export declare class AnalyticsService {
     constructor(prisma: PrismaService);
     track(path: string, ip?: string, userAgent?: string, userId?: string): Promise<{
         id: string;
+        createdAt: Date;
         path: string;
         ip: string | null;
-        createdAt: Date;
         userId: string | null;
         userAgent: string | null;
     }>;

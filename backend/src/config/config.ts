@@ -21,4 +21,9 @@ export default registerAs('app', () => ({
 
   linkedinClientId: process.env.LINKEDIN_CLIENT_ID || '',
   linkedinClientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
+  mailHost: process.env.MAIL_HOST || 'smtp.gmail.com',
+  mailPort: parseInt(process.env.MAIL_PORT || '587'),
+  mailUser: process.env.MAIL_USER || '',
+  mailPass: process.env.MAIL_PASS || '',
+  mailFrom: process.env.MAIL_FROM || 'no-reply@biomedical.ir',
 }));

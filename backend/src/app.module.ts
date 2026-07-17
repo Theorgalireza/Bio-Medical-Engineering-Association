@@ -22,6 +22,7 @@ import appConfig from './config/config';
 import { ActivityLogModule } from './modules/activity-log/activity-log.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SiteSettingsModule } from './modules/site-settings/site-settings.module';
+import { NewsletterModule } from './modules/newsletter/newsletter.module';
 
 function toSafePositiveInt(value: unknown, fallback: number) {
   const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : Number(value);
@@ -74,7 +75,9 @@ function toSafePositiveInt(value: unknown, fallback: number) {
     ContactModule,
     ActivityLogModule,
     AnalyticsModule,
-    SiteSettingsModule
+    SiteSettingsModule,
+    NewsletterModule,
+
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

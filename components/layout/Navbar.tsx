@@ -7,8 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import type { SiteSettings } from "@/lib/site-settings";
 
-export default function Navbar() {
+export default function Navbar({ settings }: { settings: SiteSettings }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -71,7 +72,7 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8">
         <Link href="/" className="flex items-center gap-2">
           <WaveformIcon />
-          <span className="text-lg font-bold text-white">انجمن مهندسی پزشکی</span>
+<span className="text-lg font-bold text-white">{settings.site_name}</span>
         </Link>
 
         {/* منوی دسکتاپ */}

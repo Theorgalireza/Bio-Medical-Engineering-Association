@@ -1,6 +1,6 @@
 import { Controller, Get, Put, Body, Param, UseGuards } from '@nestjs/common';
 import { SiteSettingsService } from './site-settings.service';
-import { UpsertSettingDto, BulkUpsertDto } from './dto/site-setting.dto';
+import { UpsertSettingDto, BulkUpsertDto } from './dto/site-settings.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';

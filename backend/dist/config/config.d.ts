@@ -13,6 +13,11 @@ declare const _default: (() => {
     githubClientSecret: string;
     linkedinClientId: string;
     linkedinClientSecret: string;
+    mailHost: string;
+    mailPort: number;
+    mailUser: string;
+    mailPass: string;
+    mailFrom: string;
 }) & import("@nestjs/config").ConfigFactoryKeyHost<{
     port: number;
     backendUrl: string;
@@ -28,5 +33,10 @@ declare const _default: (() => {
     githubClientSecret: string;
     linkedinClientId: string;
     linkedinClientSecret: string;
+    mailHost: string;
+    mailPort: number;
+    mailUser: string;
+    mailPass: string;
+    mailFrom: string;
 }>;
 export default _default;

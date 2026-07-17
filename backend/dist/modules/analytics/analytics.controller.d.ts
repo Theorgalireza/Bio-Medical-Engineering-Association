@@ -8,9 +8,9 @@ export declare class AnalyticsController {
         id: string;
     }): Promise<{
         id: string;
+        createdAt: Date;
         path: string;
         ip: string | null;
-        createdAt: Date;
         userId: string | null;
         userAgent: string | null;
     }>;

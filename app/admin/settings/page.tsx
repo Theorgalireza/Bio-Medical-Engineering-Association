@@ -1,16 +1,20 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getSiteSettings, bulkUpdateSiteSettings, SiteSetting } from '@/lib/api';
 
 const SETTING_KEYS = [
   { key: 'site_name', label: 'نام سایت' },
   { key: 'site_description', label: 'توضیحات سایت' },
   { key: 'contact_email', label: 'ایمیل تماس' },
+  { key: 'contact_phone', label: 'شماره تماس' },
+  { key: 'contact_address', label: 'آدرس' },
   { key: 'telegram_url', label: 'لینک تلگرام' },
   { key: 'instagram_url', label: 'لینک اینستاگرام' },
 ];
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -29,8 +33,10 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaving(true);
     await bulkUpdateSiteSettings(values);
+    await fetch('/api/revalidate-settings', { method: 'POST' });
     setSaving(false);
     setSaved(true);
+    router.refresh();
     setTimeout(() => setSaved(false), 2000);
   }
 

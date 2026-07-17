@@ -16,5 +16,10 @@ exports.default = (0, config_1.registerAs)('app', () => ({
     githubClientSecret: process.env.GITHUB_CLIENT_SECRET || '',
     linkedinClientId: process.env.LINKEDIN_CLIENT_ID || '',
     linkedinClientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
+    mailHost: process.env.MAIL_HOST || 'smtp.gmail.com',
+    mailPort: parseInt(process.env.MAIL_PORT || '587'),
+    mailUser: process.env.MAIL_USER || '',
+    mailPass: process.env.MAIL_PASS || '',
+    mailFrom: process.env.MAIL_FROM || 'no-reply@biomedical.ir',
 }));
 //# sourceMappingURL=config.js.map

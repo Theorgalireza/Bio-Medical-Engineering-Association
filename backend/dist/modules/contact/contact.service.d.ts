@@ -11,8 +11,8 @@ export declare class ContactService {
         id: string;
         email: string;
         createdAt: Date;
-        message: string;
         subject: string | null;
+        message: string;
         read: boolean;
     }[]>;
     findOne(id: string): Promise<{
@@ -20,8 +20,8 @@ export declare class ContactService {
         id: string;
         email: string;
         createdAt: Date;
-        message: string;
         subject: string | null;
+        message: string;
         read: boolean;
     }>;
     create(dto: CreateContactDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
@@ -29,8 +29,8 @@ export declare class ContactService {
         id: string;
         email: string;
         createdAt: Date;
-        message: string;
         subject: string | null;
+        message: string;
         read: boolean;
     }>;
     update(id: string, dto: UpdateContactDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
@@ -38,8 +38,8 @@ export declare class ContactService {
         id: string;
         email: string;
         createdAt: Date;
-        message: string;
         subject: string | null;
+        message: string;
         read: boolean;
     }>;
     remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{

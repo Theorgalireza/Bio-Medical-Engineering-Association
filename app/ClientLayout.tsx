@@ -5,8 +5,15 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { trackPageView } from "@/lib/api";
+import type { SiteSettings } from "@/lib/site-settings";
 
-export default function ClientLayout({ children }: { children: ReactNode }) {
+export default function ClientLayout({
+  children,
+  settings,
+}: {
+  children: ReactNode;
+  settings: SiteSettings;
+}) {
   const pathname = usePathname();
   const trackedPath = useRef<string | null>(null);
 
@@ -20,9 +27,9 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <Navbar />
+      <Navbar settings={settings} />
       {children}
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }
