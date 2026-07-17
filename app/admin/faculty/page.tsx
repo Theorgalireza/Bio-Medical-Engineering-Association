@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
 import { adminCreateFaculty, adminDeleteFaculty, adminGetFaculty, adminUpdateFaculty } from "@/lib/api";
 import type { AdminFacultyMember } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 const empty: Omit<AdminFacultyMember, "id"> = { name: "", role: "", field: "", monogram: "", color: "#00d4ff" };
 
 export default function FacultyPage() {
+  const { user, loading: authLoading } = useAuth();
+  const canManage = user?.role === "OWNER" || user?.role === "ADMIN";
   const [items, setItems] = useState<AdminFacultyMember[]>([]);
   const [modal, setModal] = useState<{ open: boolean; editing: AdminFacultyMember | null }>({ open: false, editing: null });
   const [form, setForm] = useState(empty);
@@ -22,8 +25,14 @@ export default function FacultyPage() {
   };
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!canManage) {
+      setLoading(false);
+      return;
+    }
+
     load().catch(() => setLoading(false));
-  }, []);
+  }, [authLoading, canManage]);
 
   const openAdd = () => { setForm(empty); setModal({ open: true, editing: null }); };
   const openEdit = (item: AdminFacultyMember) => { setForm({ name: item.name, role: item.role, field: item.field, monogram: item.monogram, color: item.color }); setModal({ open: true, editing: item }); };
@@ -47,6 +56,18 @@ export default function FacultyPage() {
     close();
     await load();
   };
+
+  if (authLoading) {
+    return <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/50">در حال بارگذاری...</div>;
+  }
+
+  if (!canManage) {
+    return (
+      <div dir="rtl" className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
+        این بخش فقط برای مدیران سیستم در دسترس است.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5" dir="rtl">

@@ -43,9 +43,9 @@ export default function NeonButton(props: NeonButtonProps) {
   if (isLink(props)) {
     const {
       children,
-      variant,
-      className,
       href,
+      variant: _variant,
+      className: _className,
       ...linkProps
     } = props;
 
@@ -63,8 +63,8 @@ export default function NeonButton(props: NeonButtonProps) {
       );
     }
 
-return (
-  <Link href={href} className={styles} {...(linkProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
+    return (
+  <Link href={href} className={styles}>
     <motion.span
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.97 }}
@@ -74,14 +74,12 @@ return (
     </motion.span>
   </Link>
 );
-
-
   }
 
   const {
     children,
-    variant,
-    className,
+    variant: _variant,
+    className: _className,
     ...buttonProps
   } = props;
 

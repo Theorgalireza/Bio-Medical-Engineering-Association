@@ -1,168 +1,304 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { Trash2, Send, Users, Mail } from 'lucide-react';
+"use client";
+
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Trash2, Send, Users, Mail, RefreshCw, Search } from "lucide-react";
 import {
   adminGetSubscribers,
   adminDeleteSubscriber,
   adminGetCampaigns,
   adminSendCampaign,
-} from '@/lib/api';
-import RichEditor from '@/components/admin/RichEditor';
-import NeonButton from '@/components/ui/NeonButton';
-import Spinner from '@/components/ui/Spinner';
+} from "@/lib/api";
 
-type Subscriber = { id: string; email: string; name?: string; createdAt: string; isActive: boolean };
-type Campaign = { id: string; subject: string; sentAt: string; recipientCount: number };
+import type {
+  NewsletterSubscriber,
+  NewsletterCampaign,
+} from "@/types";
+import RichEditor from "@/components/admin/RichEditor";
+import NeonButton from "@/components/ui/NeonButton";
+import Spinner from "@/components/ui/Spinner";
+import { useAuth } from "@/context/AuthContext";
 
-type Tab = 'subscribers' | 'send' | 'history';
+type Tab = "subscribers" | "send" | "history";
+type Message = { type: "ok" | "err"; text: string } | null;
+
+const tabs: { key: Tab; label: string; icon: ReactNode }[] = [
+  { key: "subscribers", label: "مشترکین", icon: <Users size={15} /> },
+  { key: "send", label: "ارسال خبرنامه", icon: <Send size={15} /> },
+  { key: "history", label: "تاریخچه", icon: <Mail size={15} /> },
+];
+
+function formatDate(value?: string | null) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(value));
+}
 
 export default function NewsletterPage() {
-  const [tab, setTab] = useState<Tab>('subscribers');
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  
-  const [subs, camps] = await Promise.all([adminGetSubscribers(), adminGetCampaigns()]);
-setSubscribers(subs as Subscriber[]);
-setCampaigns(camps as Campaign[]);
-
+  const { user, loading: authLoading } = useAuth();
+  const canManage = user?.role === "OWNER" || user?.role === "ADMIN";
+  const [tab, setTab] = useState<Tab>("subscribers");
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
+  const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
-  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [msg, setMsg] = useState<Message>(null);
+  const [query, setQuery] = useState("");
+  const [showAll, setShowAll] = useState(true);
 
   const load = async () => {
     setLoading(true);
     try {
-      const [subs, camps] = await Promise.all([adminGetSubscribers(), adminGetCampaigns()]);
+      const [subs, camps] = await Promise.all([
+        adminGetSubscribers(showAll),
+        adminGetCampaigns(),
+      ]);
       setSubscribers(subs);
       setCampaigns(camps);
+    } catch (error) {
+      setMsg({
+        type: "err",
+        text: error instanceof Error ? error.message : "بارگذاری خبرنامه با خطا مواجه شد.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (authLoading) return;
+    if (!canManage) {
+      setLoading(false);
+      return;
+    }
+
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, canManage, showAll]);
+
+  const filteredSubscribers = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return subscribers;
+    return subscribers.filter((subscriber) =>
+      [subscriber.email, subscriber.name ?? "", subscriber.token]
+        .join(" ")
+        .toLowerCase()
+        .includes(term)
+    );
+  }, [query, subscribers]);
 
   const handleDelete = async (id: string) => {
-    await adminDeleteSubscriber(id);
-    setSubscribers((p) => p.filter((s) => s.id !== id));
+    if (!confirm("آیا از حذف این مشترک مطمئن هستید؟")) return;
+    try {
+      await adminDeleteSubscriber(id);
+      setSubscribers((prev) => prev.filter((s) => s.id !== id));
+    } catch (error) {
+      setMsg({
+        type: "err",
+        text: error instanceof Error ? error.message : "حذف مشترک با خطا مواجه شد.",
+      });
+    }
   };
 
   const handleSend = async () => {
     if (!subject.trim() || !body.trim()) {
-      setMsg({ type: 'err', text: 'موضوع و متن خبرنامه الزامی است.' });
+      setMsg({ type: "err", text: "موضوع و متن خبرنامه الزامی است." });
       return;
     }
     setSending(true);
     setMsg(null);
     try {
-const res = await adminSendCampaign({ subject, body }) as { recipientCount: number };
-      setMsg({ type: 'ok', text: `خبرنامه با موفقیت به ${res.recipientCount} نفر ارسال شد.` });
-      setSubject('');
-      setBody('');
+      const res = await adminSendCampaign({ subject, body });
+      setMsg({
+        type: "ok",
+        text: `خبرنامه با موفقیت به ${res.recipientCount} نفر ارسال شد.`,
+      });
+      setSubject("");
+      setBody("");
       await load();
-      setTab('history');
-    } catch {
-      setMsg({ type: 'err', text: 'ارسال خبرنامه با خطا مواجه شد.' });
+      setTab("history");
+    } catch (error) {
+      setMsg({
+        type: "err",
+        text: error instanceof Error ? error.message : "ارسال خبرنامه با خطا مواجه شد.",
+      });
     } finally {
       setSending(false);
     }
   };
 
-  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: 'subscribers', label: `مشترکین (${subscribers.length})`, icon: <Users size={15} /> },
-    { key: 'send', label: 'ارسال خبرنامه', icon: <Send size={15} /> },
-    { key: 'history', label: 'تاریخچه', icon: <Mail size={15} /> },
-  ];
+  const activeCount = subscribers.filter((subscriber) => subscriber.isActive).length;
+
+  if (authLoading) {
+    return <div className="flex justify-center py-20"><Spinner size={40} /></div>;
+  }
+
+  if (!canManage) {
+    return (
+      <div dir="rtl" className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
+        این بخش فقط برای مدیران سیستم در دسترس است.
+      </div>
+    );
+  }
 
   return (
-    <div dir="rtl" className="max-w-5xl mx-auto py-10 px-4">
-      <h1 className="text-2xl font-bold text-accent mb-6">مدیریت خبرنامه</h1>
+    <div dir="rtl" className="max-w-6xl mx-auto py-10 px-4 space-y-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-accent">مدیریت خبرنامه</h1>
+          <p className="mt-1 text-sm text-white/50">
+            مشترکان، لغو اشتراک و ارسال کمپین‌ها از اینجا مدیریت می‌شود.
+          </p>
+        </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-accent/20 pb-2">
-        {tabs.map((t) => (
+        <button
+          type="button"
+          onClick={load}
+          className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-sm text-accent transition hover:bg-accent/15"
+        >
+          <RefreshCw size={15} />
+          تازه‌سازی
+        </button>
+      </div>
+
+      <div className="flex flex-wrap gap-2 border-b border-accent/20 pb-2">
+        {tabs.map((item) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
-              tab === t.key
-                ? 'bg-accent/20 text-accent border border-accent/30 border-b-0'
-                : 'text-white/50 hover:text-white/80'
+            key={item.key}
+            onClick={() => setTab(item.key)}
+            className={`inline-flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-sm font-medium transition-colors ${
+              tab === item.key
+                ? "border border-accent/30 border-b-0 bg-accent/20 text-accent"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
-            {t.icon} {t.label}
+            {item.icon}
+            {item.label}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Spinner size={36} /></div>
+        <div className="flex justify-center py-20">
+          <Spinner size={40} />
+        </div>
       ) : (
         <>
-          {/* Subscribers Tab */}
-          {tab === 'subscribers' && (
-            <div className="bg-surface/60 border border-accent/20 rounded-2xl overflow-hidden">
-              {subscribers.length === 0 ? (
-                <p className="text-white/40 text-center py-12">هیچ مشترکی وجود ندارد.</p>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs text-white/50">کل مشترکین</p>
+              <p className="mt-2 text-2xl font-bold text-white">{subscribers.length.toLocaleString("fa-IR")}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs text-white/50">مشترکین فعال</p>
+              <p className="mt-2 text-2xl font-bold text-emerald-400">{activeCount.toLocaleString("fa-IR")}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs text-white/50">کمپین‌های ارسال شده</p>
+              <p className="mt-2 text-2xl font-bold text-cyan-300">{campaigns.length.toLocaleString("fa-IR")}</p>
+            </div>
+          </div>
+
+          {msg && (
+            <div
+              className={`rounded-xl border px-4 py-3 text-sm ${
+                msg.type === "ok"
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                  : "border-red-500/30 bg-red-500/10 text-red-400"
+              }`}
+            >
+              {msg.text}
+            </div>
+          )}
+
+          {tab === "subscribers" && (
+            <div className="space-y-4 rounded-2xl border border-accent/20 bg-surface/60 p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <label className="inline-flex items-center gap-2 text-sm text-white/70">
+                  <input
+                    type="checkbox"
+                    checked={showAll}
+                    onChange={(e) => setShowAll(e.target.checked)}
+                    className="accent-accent"
+                  />
+                  همه مشترکین را نشان بده
+                </label>
+
+                <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
+                  <Search size={15} />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="جستجو در ایمیل، نام یا توکن..."
+                    className="w-full bg-transparent outline-none placeholder:text-white/30"
+                  />
+                </label>
+              </div>
+
+              {filteredSubscribers.length === 0 ? (
+                <p className="py-12 text-center text-white/40">هیچ مشترکی پیدا نشد.</p>
               ) : (
-                <table className="w-full text-sm">
-                  <thead className="bg-accent/10 text-white/60">
-                    <tr>
-                      <th className="text-right px-4 py-3">ایمیل</th>
-                      <th className="text-right px-4 py-3">نام</th>
-                      <th className="text-right px-4 py-3">تاریخ عضویت</th>
-                      <th className="text-right px-4 py-3">وضعیت</th>
-                      <th className="px-4 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {subscribers.map((s) => (
-                      <tr key={s.id} className="border-t border-accent/10 hover:bg-accent/5">
-                        <td className="px-4 py-3 text-white">{s.email}</td>
-                        <td className="px-4 py-3 text-white/70">{s.name || '—'}</td>
-                        <td className="px-4 py-3 text-white/50">
-                          {new Date(s.createdAt).toLocaleDateString('fa-IR')}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            s.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
-                          }`}>
-                            {s.isActive ? 'فعال' : 'لغو شده'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleDelete(s.id)}
-                            className="text-red-400 hover:text-red-300 transition-colors"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </td>
+                <div className="overflow-hidden rounded-2xl border border-white/10">
+                  <table className="w-full text-sm">
+                    <thead className="bg-white/5 text-white/60">
+                      <tr>
+                        <th className="px-4 py-3 text-right">ایمیل</th>
+                        <th className="px-4 py-3 text-right">نام</th>
+                        <th className="px-4 py-3 text-right">وضعیت</th>
+                        <th className="px-4 py-3 text-right">تاریخ عضویت</th>
+                        <th className="px-4 py-3" />
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredSubscribers.map((subscriber) => (
+                        <tr key={subscriber.id} className="border-t border-white/5 hover:bg-white/5">
+                          <td className="px-4 py-3 text-white">{subscriber.email}</td>
+                          <td className="px-4 py-3 text-white/70">{subscriber.name || "—"}</td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs ${
+                                subscriber.isActive
+                                  ? "bg-emerald-500/20 text-emerald-400"
+                                  : "bg-red-500/20 text-red-400"
+                              }`}
+                            >
+                              {subscriber.isActive ? "فعال" : "لغو شده"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-white/50">{formatDate(subscriber.createdAt)}</td>
+                          <td className="px-4 py-3 text-left">
+                            <button
+                              onClick={() => handleDelete(subscriber.id)}
+                              className="text-red-400 transition hover:text-red-300"
+                              aria-label="حذف مشترک"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
 
-          {/* Send Tab */}
-          {tab === 'send' && (
+          {tab === "send" && (
             <div className="space-y-4">
-              <div className="bg-surface/60 border border-accent/20 rounded-2xl p-6 space-y-4">
+              <div className="rounded-2xl border border-accent/20 bg-surface/60 p-6 space-y-4">
                 <div>
-                  <label className="text-sm text-white/70 mb-1 block">موضوع ایمیل</label>
+                  <label className="mb-1 block text-sm text-white/70">موضوع ایمیل</label>
                   <input
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="موضوع خبرنامه..."
-                    className="w-full rounded-xl bg-primary/60 border border-accent/20 px-4 py-2.5 text-sm text-white outline-none focus:border-accent transition-colors"
+                    className="w-full rounded-xl border border-accent/20 bg-primary/60 px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-accent"
                   />
                 </div>
+
                 <div>
-                  <label className="text-sm text-white/70 mb-1 block">متن خبرنامه</label>
+                  <label className="mb-1 block text-sm text-white/70">متن خبرنامه</label>
                   <RichEditor
                     value={body}
                     onChange={setBody}
@@ -172,19 +308,9 @@ const res = await adminSendCampaign({ subject, body }) as { recipientCount: numb
                 </div>
               </div>
 
-              {msg && (
-                <div className={`text-sm px-4 py-3 rounded-xl border ${
-                  msg.type === 'ok'
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                    : 'bg-red-500/10 border-red-500/30 text-red-400'
-                }`}>
-                  {msg.text}
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-white/40">
-                  ارسال به {subscribers.filter((s) => s.isActive).length} مشترک فعال
+                  ارسال به {activeCount.toLocaleString("fa-IR")} مشترک فعال
                 </p>
                 <NeonButton onClick={handleSend} disabled={sending} variant="primary">
                   {sending ? <Spinner size={18} /> : <><Send size={15} /> ارسال خبرنامه</>}
@@ -193,32 +319,33 @@ const res = await adminSendCampaign({ subject, body }) as { recipientCount: numb
             </div>
           )}
 
-          {/* History Tab */}
-          {tab === 'history' && (
-            <div className="bg-surface/60 border border-accent/20 rounded-2xl overflow-hidden">
+          {tab === "history" && (
+            <div className="space-y-3 rounded-2xl border border-accent/20 bg-surface/60 p-4">
               {campaigns.length === 0 ? (
-                <p className="text-white/40 text-center py-12">هنوز خبرنامه‌ای ارسال نشده.</p>
+                <p className="py-12 text-center text-white/40">هنوز خبرنامه‌ای ارسال نشده است.</p>
               ) : (
-                <table className="w-full text-sm">
-                  <thead className="bg-accent/10 text-white/60">
-                    <tr>
-                      <th className="text-right px-4 py-3">موضوع</th>
-                      <th className="text-right px-4 py-3">تاریخ ارسال</th>
-                      <th className="text-right px-4 py-3">تعداد دریافت‌کنندگان</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {campaigns.map((c) => (
-                      <tr key={c.id} className="border-t border-accent/10 hover:bg-accent/5">
-                        <td className="px-4 py-3 text-white">{c.subject}</td>
-                        <td className="px-4 py-3 text-white/50">
-                          {c.sentAt ? new Date(c.sentAt).toLocaleDateString('fa-IR') : '—'}
-                        </td>
-                        <td className="px-4 py-3 text-accent font-medium">{c.recipientCount}</td>
+                <div className="overflow-hidden rounded-2xl border border-white/10">
+                  <table className="w-full text-sm">
+                    <thead className="bg-white/5 text-white/60">
+                      <tr>
+                        <th className="px-4 py-3 text-right">موضوع</th>
+                        <th className="px-4 py-3 text-right">تاریخ ارسال</th>
+                        <th className="px-4 py-3 text-right">تعداد دریافت‌کنندگان</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {campaigns.map((campaign) => (
+                        <tr key={campaign.id} className="border-t border-white/5 hover:bg-white/5">
+                          <td className="px-4 py-3 text-white">{campaign.subject}</td>
+                          <td className="px-4 py-3 text-white/50">{formatDate(campaign.sentAt)}</td>
+                          <td className="px-4 py-3 text-cyan-300">
+                            {campaign.recipientCount.toLocaleString("fa-IR")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}

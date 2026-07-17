@@ -1,7 +1,7 @@
 // app/admin/layout.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -25,10 +25,7 @@ import {
   Users,
   X,
   Bell,
-  Calendar,
   FileText,
-  Video,
-  Library,
 } from "lucide-react";
 
 type AdminNavItem = {
@@ -58,8 +55,6 @@ const navGroups: AdminNavItem[] = [
     icon: Image,
     children: [
       { href: "/admin/gallery", label: "گالری تصاویر", icon: Image },
-      { href: "/admin/videos", label: "ویدئوها", icon: Video },
-      { href: "/admin/media", label: "آرشیو ها", icon: Library },
     ],
   },
   {
@@ -80,14 +75,14 @@ const navGroups: AdminNavItem[] = [
     label: "ارتباطات",
     icon: MessageSquare,
     children: [
-      { href: "/admin/feedback", label: "بازخوردها", icon: MessageSquare },
+      { href: "/admin/feedback", label: "بازخوردها", icon: MessageSquare, roles: ["OWNER", "ADMIN"] },
       {
         href: "/admin/contacts",
         label: "تماس‌ها",
         icon: Mail,
         roles: ["OWNER", "ADMIN"],
       },
-      { href: "/admin/newsletter", label: "خبرنامه", icon: Bell },
+      { href: "/admin/newsletter", label: "خبرنامه", icon: Bell, roles: ["OWNER", "ADMIN"] },
     ],
   },
   {
@@ -224,7 +219,7 @@ function Sidebar({
   );
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();

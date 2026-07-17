@@ -17,6 +17,10 @@ import type {
   Profile,
   ActivityLog,
   ActivityLogsResponse,
+  RoleStat,
+  NewsletterSubscriber,
+  NewsletterCampaign,
+  AnalyticsStats,
 } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
@@ -725,8 +729,8 @@ export async function getActivityLogsCount(): Promise<number> {
   return response.meta?.total ?? response.data.length;
 }
 
-export async function getPublications() {
-  return apiFetch("/publications");
+export async function getPublications(): Promise<Article[]> {
+  return getArticles();
 }
 
 export interface SiteSetting { key: string; value: string; updatedAt: string; }
@@ -746,20 +750,20 @@ export async function bulkUpdateSiteSettings(settings: Record<string, string>) {
 // اضافه کردن به انتهای lib/api.ts
 
 // --- Newsletter ---
-export async function adminGetSubscribers(all = false) {
-  return apiFetch(`/newsletter/subscribers${all ? '?all=true' : ''}`);
+export async function adminGetSubscribers(all = false): Promise<NewsletterSubscriber[]> {
+  return apiFetch<NewsletterSubscriber[]>(`/newsletter/subscribers${all ? '?all=true' : ''}`);
 }
 
 export async function adminDeleteSubscriber(id: string) {
   return apiFetch(`/newsletter/subscribers/${id}`, { method: 'DELETE' });
 }
 
-export async function adminGetCampaigns() {
-  return apiFetch('/newsletter/campaigns');
+export async function adminGetCampaigns(): Promise<NewsletterCampaign[]> {
+  return apiFetch<NewsletterCampaign[]>('/newsletter/campaigns');
 }
 
 export async function adminSendCampaign(data: { subject: string; body: string }) {
-  return apiFetch('/newsletter/campaigns/send', {
+  return apiFetch<NewsletterCampaign>('/newsletter/campaigns/send', {
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -772,8 +776,10 @@ export async function publicSubscribe(data: { email: string; name?: string }) {
   });
 }
 
+export async function adminGetRoleStats(): Promise<RoleStat[]> {
+  return apiFetch<RoleStat[]>('/users/stats/roles', { auth: true });
+}
 
-import type { AnalyticsStats } from "@/types";
 
 export async function adminGetAnalytics() {
   return apiFetch<AnalyticsStats>("/analytics/stats", {}, true);

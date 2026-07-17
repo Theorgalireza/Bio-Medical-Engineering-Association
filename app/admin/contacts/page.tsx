@@ -3,8 +3,11 @@ import { useEffect, useState } from "react";
 import { Trash2, Mail, MailOpen } from "lucide-react";
 import { adminDeleteContact, adminGetContacts, adminMarkContactRead } from "@/lib/api";
 import type { AdminContact } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ContactsPage() {
+  const { user, loading: authLoading } = useAuth();
+  const canManage = user?.role === "OWNER" || user?.role === "ADMIN";
   const [items, setItems] = useState<AdminContact[]>([]);
   const [selected, setSelected] = useState<AdminContact | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,13 +22,31 @@ export default function ContactsPage() {
   };
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!canManage) {
+      setLoading(false);
+      return;
+    }
+
     load().catch(() => setLoading(false));
-  }, []);
+  }, [authLoading, canManage]);
 
   const markRead = async (id: string) => {
     await adminMarkContactRead(id);
     await load();
   };
+
+  if (authLoading) {
+    return <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/50">در حال بارگذاری...</div>;
+  }
+
+  if (!canManage) {
+    return (
+      <div dir="rtl" className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
+        این بخش فقط برای مدیران سیستم در دسترس است.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5" dir="rtl">

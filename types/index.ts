@@ -244,3 +244,27 @@ export interface AdminContact {
   date: string;
   read: boolean;
 }
+
+
+export interface RoleStat {
+  role: Role;
+  count: number;
+}
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  name?: string | null;
+  isActive: boolean;
+  token: string;
+  createdAt: string;
+}
+
+export interface NewsletterCampaign {
+  id: string;
+  subject: string;
+  body: string;
+  sentAt?: string | null;
+  recipientCount: number;
+  createdAt: string;
+}

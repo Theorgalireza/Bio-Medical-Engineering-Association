@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import { Trash2, Star } from "lucide-react";
 import { adminDeleteFeedback, adminGetFeedback, adminUpdateFeedback } from "@/lib/api";
 import type { AdminFeedback } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 export default function FeedbackPage() {
-const [items, setItems] = useState<AdminFeedback[]>([]);
+  const { user, loading: authLoading } = useAuth();
+  const canManage = user?.role === "OWNER" || user?.role === "ADMIN";
+  const [items, setItems] = useState<AdminFeedback[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -18,8 +21,26 @@ const [items, setItems] = useState<AdminFeedback[]>([]);
   };
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!canManage) {
+      setLoading(false);
+      return;
+    }
+
     load().catch(() => setLoading(false));
-  }, []);
+  }, [authLoading, canManage]);
+  if (authLoading) {
+    return <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/50">در حال بارگذاری...</div>;
+  }
+
+  if (!canManage) {
+    return (
+      <div dir="rtl" className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
+        این بخش فقط برای مدیران سیستم در دسترس است.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5" dir="rtl">
       <h2 className="text-xl font-bold">بازخوردها</h2>

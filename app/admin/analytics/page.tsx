@@ -17,6 +17,7 @@ import { Eye, Users, TrendingUp, CalendarDays } from "lucide-react";
 import { adminGetAnalytics } from "@/lib/api";
 import type { AnalyticsStats } from "@/types";
 import Spinner from "@/components/ui/Spinner";
+import { useAuth } from "@/context/AuthContext";
 
 ChartJS.register(
   CategoryScale,
@@ -30,18 +31,33 @@ ChartJS.register(
 );
 
 export default function AnalyticsPage() {
+  const { user, loading: authLoading } = useAuth();
+  const canView = user?.role === "OWNER" || user?.role === "ADMIN";
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!canView) {
+      setLoading(false);
+      return;
+    }
+
     adminGetAnalytics()
       .then((res: any) => setStats(res?.data ?? res))
       .catch(() => setError("خطا در دریافت آمار بازدید"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [authLoading, canView]);
 
-  if (loading) return <Spinner />;
+  if (authLoading || loading) return <Spinner />;
+  if (!canView) {
+    return (
+      <div dir="rtl" className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
+        این بخش فقط برای مدیران سیستم در دسترس است.
+      </div>
+    );
+  }
   if (error || !stats) return <p className="text-red-500">{error}</p>;
 
   const cards = [
