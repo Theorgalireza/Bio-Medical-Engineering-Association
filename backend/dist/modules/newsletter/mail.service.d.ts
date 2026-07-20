@@ -5,4 +5,5 @@ export declare class MailService {
     private transporter;
     constructor(config: ConfigService);
     sendMail(to: string, subject: string, html: string): Promise<boolean>;
+    private wrapEmailTemplate;
 }

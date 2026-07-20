@@ -8,34 +8,62 @@ export declare class NewsletterService {
     private config;
     constructor(prisma: PrismaService, mail: MailService, config: ConfigService);
     subscribe(dto: SubscribeDto): Promise<{
-        name: string | null;
         id: string;
         email: string;
         token: string;
+        name: string | null;
         isActive: boolean;
         createdAt: Date;
     }>;
     unsubscribe(token: string): Promise<{
-        name: string | null;
         id: string;
         email: string;
         token: string;
+        name: string | null;
         isActive: boolean;
         createdAt: Date;
     }>;
-    getSubscribers(onlyActive?: boolean): Promise<{
-        name: string | null;
+    getMySubscription(email: string): Promise<{
+        subscribed: boolean;
+    }>;
+    unsubscribeMe(email: string): Promise<{
         id: string;
         email: string;
         token: string;
+        name: string | null;
         isActive: boolean;
         createdAt: Date;
-    }[]>;
-    deleteSubscriber(id: string): Promise<{
-        name: string | null;
+    }>;
+    resubscribeMe(email: string): Promise<{
         id: string;
         email: string;
         token: string;
+        name: string | null;
+        isActive: boolean;
+        createdAt: Date;
+    }>;
+    getSubscribers(onlyActive?: boolean): Promise<({
+        id: string;
+        email: string;
+        name: string | null;
+        isActive: boolean;
+        createdAt: Date;
+        token: string | null;
+        source: "user";
+    } | {
+        id: string;
+        email: string;
+        name: string | null;
+        isActive: boolean;
+        createdAt: Date;
+        token: string;
+        source: "guest";
+    })[]>;
+    deleteSubscriber(id: string): Promise<{
+        id: string;
+        email: string;
+        token: string;
+        name: string | null;
         isActive: boolean;
         createdAt: Date;
     }>;

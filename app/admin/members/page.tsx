@@ -8,7 +8,7 @@ import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/l
 import type { ApiUser, Role, CreateUserPayload, UpdateProfilePayload } from "@/types";
 
 const fullName = (u: ApiUser) => [u.profile?.firstName, u.profile?.lastName].filter(Boolean).join(" ") || u.email || u.phone || "—";
-const ROLES: Role[] = ["OWNER", "ADMIN", "CONTENT_EDITOR", "STUDENT_MEMBER", "STUDENT_ACTIVE_MEMBER", "STUDENT_INACTIVE_MEMBER", "FACULTY_MEMBER", "GUEST"];
+const ROLES: Role[] = ["OWNER", "ADMIN", "CONTENT_EDITOR", "STUDENT_MEMBER", "FACULTY_MEMBER", "GUEST"];
 const PAGE_SIZE = 8;
 
 interface FormState {
@@ -256,14 +256,43 @@ export default function MembersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="max-h-[70vh] w-full max-w-md overflow-y-auto rounded-xl border border-white/10 bg-gray-900 p-6" dir="rtl">
             <h2 className="mb-4 text-lg font-bold">{modal.editing ? "ویرایش عضو" : "افزودن عضو جدید"}</h2>
+
+            {/* Read-only email/phone display for edit mode */}
+{modal.editing && (
+  <div className="mb-3 grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 p-3">
+    <div className="flex min-w-0 flex-col gap-1">
+      <span className="text-xs text-gray-500">ایمیل</span>
+      <span className="dir-ltr break-all text-sm text-gray-300">{modal.editing.email ?? "—"}</span>
+    </div>
+    <div className="flex min-w-0 flex-col gap-1">
+      <span className="text-xs text-gray-500">موبایل</span>
+      <span className="dir-ltr break-all text-sm text-gray-300">{modal.editing.phone ?? "—"}</span>
+    </div>
+  </div>
+)}
+
             <div className="grid grid-cols-2 gap-3 pr-1">
-              {([["firstName", "نام"], ["lastName", "نام خانوادگی"], ["email", "ایمیل"], ["phone", "تلفن"], ["studentId", "شماره دانشجویی"], ["major", "رشته"], ["entryYear", "سال ورود"]] as [keyof FormState, string][]).map(([key, label]) => (
+              {(
+                [
+                  ["firstName", "نام"],
+                  ["lastName", "نام خانوادگی"],
+                  ["studentId", "شماره دانشجویی"],
+                  ["major", "رشته"],
+                  ["entryYear", "سال ورود"],
+                ] as [keyof FormState, string][]
+              ).map(([key, label]) => (
                 <div key={key} className="flex flex-col gap-1"><label className="text-xs text-gray-400">{label}</label><input className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm" value={form[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} /></div>
               ))}
               {modal.editing && ([["github", "گیت‌هاب"], ["linkedin", "لینکدین"], ["website", "وب‌سایت"]] as [keyof FormState, string][]).map(([key, label]) => (
                 <div key={key} className="flex flex-col gap-1"><label className="text-xs text-gray-400">{label}</label><input className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm" dir="ltr" placeholder="https://..." value={form[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} /></div>
               ))}
-              {!modal.editing && <div className="flex flex-col gap-1"><label className="text-xs text-gray-400">رمز عبور</label><input type="password" className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} /></div>}
+              {!modal.editing && (
+                <>
+                  <div className="flex flex-col gap-1"><label className="text-xs text-gray-400">ایمیل</label><input className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm" dir="ltr" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} /></div>
+                  <div className="flex flex-col gap-1"><label className="text-xs text-gray-400">تلفن</label><input className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm" dir="ltr" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} /></div>
+                  <div className="flex flex-col gap-1"><label className="text-xs text-gray-400">رمز عبور</label><input type="password" className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} /></div>
+                </>
+              )}
               <div className="flex flex-col gap-1"><label className="text-xs text-gray-400">نقش</label><select className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm disabled:opacity-60" value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as Role }))} disabled={!canManageRoles}>{ROLES.map((r) => <option key={r} value={r}>{r}</option>)}</select></div>
             </div>
             <div className="mt-5 flex justify-end gap-3"><button onClick={() => setModal({ open: false, editing: null })} className="px-4 py-2 text-sm text-gray-400 hover:text-white">انصراف</button><button onClick={save} disabled={saving} className="rounded-lg bg-cyan-600 px-4 py-2 text-sm disabled:opacity-50">{saving ? "در حال ذخیره..." : "ذخیره"}</button></div>

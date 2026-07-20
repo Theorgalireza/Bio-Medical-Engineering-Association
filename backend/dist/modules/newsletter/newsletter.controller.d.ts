@@ -4,34 +4,62 @@ export declare class NewsletterController {
     private readonly service;
     constructor(service: NewsletterService);
     subscribe(dto: SubscribeDto): Promise<{
-        name: string | null;
         id: string;
         email: string;
         token: string;
+        name: string | null;
         isActive: boolean;
         createdAt: Date;
     }>;
     unsubscribe(token: string): Promise<{
-        name: string | null;
         id: string;
         email: string;
         token: string;
+        name: string | null;
         isActive: boolean;
         createdAt: Date;
     }>;
-    getSubscribers(all?: string): Promise<{
-        name: string | null;
+    getMySubscription(req: any): Promise<{
+        subscribed: boolean;
+    }>;
+    unsubscribeMe(req: any): Promise<{
         id: string;
         email: string;
         token: string;
+        name: string | null;
         isActive: boolean;
         createdAt: Date;
-    }[]>;
-    deleteSubscriber(id: string): Promise<{
-        name: string | null;
+    }>;
+    resubscribeMe(req: any): Promise<{
         id: string;
         email: string;
         token: string;
+        name: string | null;
+        isActive: boolean;
+        createdAt: Date;
+    }>;
+    getSubscribers(all?: string): Promise<({
+        id: string;
+        email: string;
+        name: string | null;
+        isActive: boolean;
+        createdAt: Date;
+        token: string | null;
+        source: "user";
+    } | {
+        id: string;
+        email: string;
+        name: string | null;
+        isActive: boolean;
+        createdAt: Date;
+        token: string;
+        source: "guest";
+    })[]>;
+    deleteSubscriber(id: string): Promise<{
+        id: string;
+        email: string;
+        token: string;
+        name: string | null;
         isActive: boolean;
         createdAt: Date;
     }>;

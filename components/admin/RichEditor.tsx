@@ -180,15 +180,19 @@ export default function RichEditor({
     input.click();
   }, [emitCurrentValue]);
 
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (!editor) return;
+ useEffect(() => {
+  const editor = editorRef.current;
+  if (!editor) return;
 
-    if (editor.innerHTML !== value) {
-      editor.innerHTML = value;
-    }
+  // فقط وقتی ادیتور فوکوس ندارد (یعنی تغییر از بیرون آمده، نه از تایپ کاربر)
+  if (document.activeElement === editor) return;
 
-  }, [value]);
+  if (editor.innerHTML !== value) {
+    editor.innerHTML = value;
+  }
+}, [value]);
+
+
 
   const tools: { title: string; icon: ReactNode; action: CommandAction }[] = [
     { title: "Bold", icon: <Bold size={15} />, action: { cmd: "bold" } },
@@ -228,7 +232,6 @@ export default function RichEditor({
         onPaste={() => {
           requestAnimationFrame(emitCurrentValue);
         }}
-        dangerouslySetInnerHTML={{ __html: value }}
         style={{ minHeight }}
         className={`prose prose-invert max-w-none bg-[#0a0f1e] p-4 text-sm leading-relaxed text-gray-200 outline-none
           [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-white

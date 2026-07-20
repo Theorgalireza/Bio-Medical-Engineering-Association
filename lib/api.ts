@@ -775,6 +775,17 @@ export async function publicSubscribe(data: { email: string; name?: string }) {
     body: JSON.stringify(data),
   });
 }
+export async function getMyNewsletterSubscription(): Promise<{ subscribed: boolean }> {
+  return apiFetch<{ subscribed: boolean }>('/newsletter/my-subscription', {}, true);
+}
+
+export async function unsubscribeFromNewsletter(): Promise<void> {
+  return apiFetch('/newsletter/unsubscribe-me', { method: 'POST' }, true);
+}
+
+export async function resubscribeToNewsletter(): Promise<void> {
+  return apiFetch('/newsletter/resubscribe-me', { method: 'POST' }, true);
+}
 
 export async function adminGetRoleStats(): Promise<RoleStat[]> {
   return apiFetch<RoleStat[]>('/users/stats/roles', { auth: true });

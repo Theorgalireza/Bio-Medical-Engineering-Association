@@ -20,14 +20,22 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
-  
+  Bell,
+  BellOff,
 } from "lucide-react";
+
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { FaLinkedinIn } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { updateMyProfile, type Profile } from "@/lib/api";
+import {
+  updateMyProfile,
+  getMyNewsletterSubscription,
+  unsubscribeFromNewsletter,
+  resubscribeToNewsletter,
+  type Profile,
+} from "@/lib/api";
 import { ROLE_LABELS, ROLE_COLORS } from "@/lib/roles";
 import NeonButton from "@/components/ui/NeonButton";
 import ProfileGuard from "@/components/profile/ProfileGuard";
@@ -88,9 +96,32 @@ function ProfilePageContent() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState<boolean | null>(null);
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterFetching, setNewsletterFetching] = useState(true);
+  const [newsletterError, setNewsletterError] = useState<string | null>(null);
+
   useEffect(() => {
     setForm(toForm(user?.profile));
   }, [user]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setNewsletterFetching(true);
+    getMyNewsletterSubscription()
+      .then((res) => {
+        if (!cancelled) setNewsletterSubscribed(res.subscribed);
+      })
+      .catch(() => {
+        if (!cancelled) setNewsletterSubscribed(null);
+      })
+      .finally(() => {
+        if (!cancelled) setNewsletterFetching(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const displayName =
     user?.profile?.firstName || user?.profile?.lastName
@@ -141,6 +172,26 @@ function ProfilePageContent() {
   const handleLogout = async () => {
     await logout();
     router.push("/");
+  };
+
+  const handleNewsletterToggle = async () => {
+    setNewsletterLoading(true);
+    setNewsletterError(null);
+    try {
+      if (newsletterSubscribed) {
+        await unsubscribeFromNewsletter();
+        setNewsletterSubscribed(false);
+      } else {
+        await resubscribeToNewsletter();
+        setNewsletterSubscribed(true);
+      }
+    } catch (err) {
+      setNewsletterError(
+        err instanceof Error ? err.message : "خطا در به‌روزرسانی وضعیت خبرنامه."
+      );
+    } finally {
+      setNewsletterLoading(false);
+    }
   };
 
   const infoFields: {
@@ -342,6 +393,80 @@ function ProfilePageContent() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* اشتراک خبرنامه */}
+        <div className="mt-6 rounded-3xl border border-borderSoft bg-primaryLight/40 p-6 md:p-8">
+          <h2 className="mb-4 text-lg font-bold text-white">خبرنامه انجمن</h2>
+
+          {newsletterFetching ? (
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <Spinner size={16} />
+              در حال بررسی وضعیت اشتراک...
+            </div>
+          ) : newsletterSubscribed === null ? (
+            <div className="flex items-center gap-2 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <AlertCircle size={16} />
+              خطا در دریافت وضعیت اشتراک خبرنامه.
+            </div>
+          ) : (
+            <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-borderSoft/60 bg-primary/30 px-4 py-4 md:flex-row md:items-center">
+              <div className="flex items-center gap-3">
+                <span
+                  className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                    newsletterSubscribed
+                      ? "bg-neonGreen/10 text-neonGreen"
+                      : "bg-gray-500/10 text-gray-400"
+                  }`}
+                >
+                  {newsletterSubscribed ? <Bell size={18} /> : <BellOff size={18} />}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    {newsletterSubscribed
+                      ? "شما در خبرنامه انجمن عضو هستید."
+                      : "شما از خبرنامه انجمن خارج شده‌اید."}
+                  </p>
+                  <p className="mt-0.5 text-xs text-gray-400">
+                    {newsletterSubscribed
+                      ? "ایمیل‌های خبرنامه و اطلاعیه‌های انجمن برای شما ارسال می‌شود."
+                      : "برای دریافت مجدد ایمیل‌های خبرنامه، عضویت خود را فعال کنید."}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleNewsletterToggle}
+                disabled={newsletterLoading}
+                className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-5 py-2 text-sm font-medium transition-colors disabled:opacity-60 ${
+                  newsletterSubscribed
+                    ? "border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                    : "border-neonGreen/40 bg-neonGreen/10 text-neonGreen hover:bg-neonGreen/20"
+                }`}
+              >
+                {newsletterLoading ? (
+                  <Spinner size={16} />
+                ) : newsletterSubscribed ? (
+                  <BellOff size={16} />
+                ) : (
+                  <Bell size={16} />
+                )}
+                {newsletterLoading
+                  ? "در حال ثبت..."
+                  : newsletterSubscribed
+                  ? "لغو اشتراک خبرنامه"
+                  : "عضویت مجدد در خبرنامه"}
+              </button>
+            </div>
+          )}
+
+          {newsletterError && (
+            <div className="mt-3 flex items-center gap-2 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <AlertCircle size={16} />
+              {newsletterError}
+            </div>
+          )}
         </div>
       </div>
     </div>

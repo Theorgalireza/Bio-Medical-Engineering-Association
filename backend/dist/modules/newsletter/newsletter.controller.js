@@ -19,6 +19,7 @@ const newsletter_dto_1 = require("./dto/newsletter.dto");
 const public_decorator_1 = require("../../common/decorators/public.decorator");
 const skip_csrf_decorator_1 = require("../../common/decorators/skip-csrf.decorator");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const client_1 = require("@prisma/client");
 let NewsletterController = class NewsletterController {
     constructor(service) {
@@ -29,6 +30,15 @@ let NewsletterController = class NewsletterController {
     }
     unsubscribe(token) {
         return this.service.unsubscribe(token);
+    }
+    getMySubscription(req) {
+        return this.service.getMySubscription(req.user?.email);
+    }
+    unsubscribeMe(req) {
+        return this.service.unsubscribeMe(req.user?.email);
+    }
+    resubscribeMe(req) {
+        return this.service.resubscribeMe(req.user?.email);
     }
     getSubscribers(all) {
         return this.service.getSubscribers(all !== 'true');
@@ -62,6 +72,30 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], NewsletterController.prototype, "unsubscribe", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('my-subscription'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NewsletterController.prototype, "getMySubscription", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('unsubscribe-me'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NewsletterController.prototype, "unsubscribeMe", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('resubscribe-me'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NewsletterController.prototype, "resubscribeMe", null);
 __decorate([
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER),
     (0, common_1.Get)('subscribers'),

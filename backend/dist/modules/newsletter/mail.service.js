@@ -34,7 +34,7 @@ let MailService = MailService_1 = class MailService {
                 from: this.config.get('app.mailFrom'),
                 to,
                 subject,
-                html,
+                html: this.wrapEmailTemplate(html),
             });
             return true;
         }
@@ -43,6 +43,43 @@ let MailService = MailService_1 = class MailService {
             this.logger.error(`Failed to send email to ${to}: ${message}`);
             return false;
         }
+    }
+    wrapEmailTemplate(body) {
+        return `<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @font-face {
+    font-family: 'Vazirmatn';
+    src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.3/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2');
+    font-weight: normal;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f5;
+  }
+  .email-wrapper {
+    font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.9;
+    direction: rtl;
+    text-align: right;
+    color: #1f2937;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #ffffff;
+  }
+</style>
+</head>
+<body>
+  <div class="email-wrapper" dir="rtl">
+    ${body}
+  </div>
+</body>
+</html>`;
     }
 };
 exports.MailService = MailService;
