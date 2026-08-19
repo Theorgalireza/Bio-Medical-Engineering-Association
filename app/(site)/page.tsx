@@ -1,4 +1,5 @@
 // app/(site)/page.tsx
+import { Suspense } from "react";
 import Hero from "@/components/sections/Hero";
 import CTASection from "@/components/sections/CTASection";
 import StatsSection from "@/components/sections/StatsSection";
@@ -11,8 +12,10 @@ import NeonButton from "@/components/ui/NeonButton";
 import GallerySection from "@/components/sections/GallerySection";
 import { getAnnouncements, getFacultyMembers, getGalleryItems, getArticles } from "@/lib/api";
 import { getCachedSiteSettings } from "@/lib/site/settings";
+import HomeSkeleton from "@/components/site/HomeSkeleton";
+import HomeLoadingGate from "@/components/site/HomeLoadingGate";
 
-export default async function Home() {
+async function HomeContent() {
   const [announcementsResult, articlesResult, facultyResult, galleryResult, settings] =
     await Promise.all([
       getAnnouncements().then((data) => ({ data, error: false })).catch(() => ({ data: [], error: true })),
@@ -22,7 +25,6 @@ export default async function Home() {
       getCachedSiteSettings(),
     ]);
 
-
   return (
     <main>
       <Hero />
@@ -31,18 +33,18 @@ export default async function Home() {
 
       <section id="announcements" className="py-4">
         <AnnouncementsSection items={announcementsResult.data} initialError={announcementsResult.error} />
-        <div className="flex justify-center mt-10 pb-8">
+        <div className="mt-10 flex justify-center pb-8">
           <NeonButton href="/announcements" variant="outline">
-            مشاهده تمام اخبار ↶
+            مشاهده تمام اخبار ←
           </NeonButton>
         </div>
       </section>
 
       <PublicationsSection items={articlesResult.data} initialError={articlesResult.error} />
 
-      <div className="flex justify-center mt-10 pb-12">
+      <div className="mt-10 flex justify-center pb-12">
         <NeonButton href="/articles" variant="outline">
-          مشاهده تمام مقالات ↶
+          مشاهده تمام مقالات ←
         </NeonButton>
       </div>
 
@@ -51,5 +53,15 @@ export default async function Home() {
       <Feedback />
       <Contact settings={settings} />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<HomeSkeleton />}>
+      <HomeLoadingGate>
+        <HomeContent />
+      </HomeLoadingGate>
+    </Suspense>
   );
 }
