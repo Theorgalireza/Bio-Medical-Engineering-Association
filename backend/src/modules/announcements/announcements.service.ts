@@ -51,8 +51,10 @@ export class AnnouncementsService {
     });
   }
 
-  async findBySlug(slug: string) {
-    const item = await this.prisma.announcement.findUnique({ where: { slug } });
+  async findBySlug(slug: string, publishedOnly = false) {
+    const item = await this.prisma.announcement.findUnique({
+      where: publishedOnly ? { slug, status: ContentStatus.PUBLISHED } : { slug },
+    });
     if (!item) throw new NotFoundException('Announcement not found');
     return item;
   }

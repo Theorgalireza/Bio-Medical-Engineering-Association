@@ -40,7 +40,7 @@ export class NewsletterService {
   async getMySubscription(email: string) {
     if (!email) return { subscribed: false };
     const sub = await this.prisma.newsletterSubscriber.findUnique({ where: { email } });
-    return { subscribed: sub ? sub.isActive : true };
+    return { subscribed: sub ? sub.isActive : false };
   }
 
   async unsubscribeMe(email: string) {
@@ -64,10 +64,11 @@ export class NewsletterService {
   async getSubscribers(onlyActive = true) {
     const [users, subscriberRows] = await Promise.all([
       this.prisma.user.findMany({
-        where: { isActive: true, email: { not: null } },
+        where: { email: { not: null } },
         select: {
           id: true,
           email: true,
+          isActive: true,
           createdAt: true,
           profile: { select: { firstName: true } },
         },
@@ -87,7 +88,7 @@ export class NewsletterService {
           id: row ? row.id : `user-${u.id}`,
           email: u.email!,
           name: row?.name ?? u.profile?.firstName ?? null,
-          isActive: row ? row.isActive : true,
+          isActive: row ? row.isActive : u.isActive,
           createdAt: row ? row.createdAt : u.createdAt,
           token: row?.token ?? null,
           source: 'user' as const,
@@ -159,6 +160,8 @@ export class NewsletterService {
           ${dto.body}
           <hr style="margin-top:32px"/>
           <p style="font-size:12px;color:#888">
+            اگر مایل به دریافت ایمیل‌های بعدی نیستید،
+            <a href="${unsubLink}" style="color:#2563eb">لغو اشتراک خبرنامه</a>
           </p>`;
         const ok = await this.mail.sendMail(sub.email, dto.subject, html);
         if (ok) successCount++;

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-import { getCachedSiteSettings } from "@/lib/site-settings";
+import { getCachedSiteSettings } from "@/lib/site/settings";
 
 const vazirmatn = Vazirmatn({
   subsets: ["arabic"],

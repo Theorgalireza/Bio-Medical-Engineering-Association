@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Shield, Users, UserCog, CheckCircle2, AlertTriangle } from "lucide-react";
 import { adminGetRoleStats } from "@/lib/api";
 import type { RoleStat } from "@/types";
-import { ROLE_LABELS } from "@/lib/roles";
+import { ROLE_LABELS } from "@/lib/auth/roles";
 import { useAuth } from "@/context/AuthContext";
 
 const ROLE_PERMISSIONS: Record<string, string[]> = {

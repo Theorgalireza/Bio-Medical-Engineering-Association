@@ -90,8 +90,8 @@ export default function FacultyPage() {
               <p className="text-xs text-gray-400 mt-0.5">{item.role} — {item.field}</p>
             </div>
             <div className="flex gap-2 shrink-0">
-              <button onClick={() => openEdit(item)} className="text-gray-400 hover:text-[#22c55e] transition-colors"><Pencil size={15} /></button>
-              <button onClick={async () => { await adminDeleteFaculty(item.id); await load(); }} className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
+              <button type="button" title="ویرایش عضو" aria-label="ویرایش عضو" onClick={() => openEdit(item)} className="text-gray-400 hover:text-[#22c55e] transition-colors"><Pencil size={15} /></button>
+              <button type="button" title="حذف عضو" aria-label="حذف عضو" onClick={async () => { if (!confirm("این عضو حذف شود؟")) return; await adminDeleteFaculty(item.id); await load(); }} className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
             </div>
           </div>
         ))}

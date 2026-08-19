@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Trash2, Mail, MailOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { adminDeleteContact, adminGetContacts, adminMarkContactRead } from "@/lib/api";
-import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin-table";
+import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { AdminContact } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 

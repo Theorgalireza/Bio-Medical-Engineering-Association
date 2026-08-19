@@ -30,7 +30,7 @@ import type {
   RoleStat,
 } from "@/types";
 import { useAuth } from "@/context/AuthContext";
-import { ROLE_LABELS } from "@/lib/roles";
+import { ROLE_LABELS } from "@/lib/auth/roles";
 
 import {
   Chart as ChartJS,
@@ -85,20 +85,22 @@ export default function AdminDashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsStats | null>(null);
   const [roleStats, setRoleStats] = useState<RoleStat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   const privileged = useMemo(() => isPrivileged(user?.role), [user?.role]);
 
   useEffect(() => {
     let mounted = true;
 
+    setLoadError(false);
     Promise.all([
-      adminGetAnnouncements().catch(() => []),
-      adminGetArticles().catch(() => []),
-      adminGetFaculty().catch(() => []),
-      privileged ? adminGetFeedback().catch(() => []) : Promise.resolve([]),
-      privileged ? adminGetContacts().catch(() => []) : Promise.resolve([]),
-      privileged ? adminGetAnalyticsStats().catch(() => null) : Promise.resolve(null),
-      privileged ? adminGetRoleStats().catch(() => []) : Promise.resolve([]),
+      adminGetAnnouncements(),
+      adminGetArticles(),
+      adminGetFaculty(),
+      privileged ? adminGetFeedback() : Promise.resolve([]),
+      privileged ? adminGetContacts() : Promise.resolve([]),
+      privileged ? adminGetAnalyticsStats() : Promise.resolve(null),
+      privileged ? adminGetRoleStats() : Promise.resolve([]),
     ]).then(([announcements, articles, faculty, feedback, contacts, analyticsStats, statsByRole]) => {
       if (!mounted) return;
 
@@ -133,6 +135,10 @@ export default function AdminDashboard() {
       setStats(privileged ? [...nextStats, ...privilegedCards] : nextStats);
       setAnalytics(analyticsStats);
       setRoleStats(statsByRole);
+      setLoading(false);
+    }).catch(() => {
+      if (!mounted) return;
+      setLoadError(true);
       setLoading(false);
     });
 
@@ -169,18 +175,30 @@ export default function AdminDashboard() {
           <h2 className="text-xl font-bold">داشبورد</h2>
         </div>
 
-        <Link
-          href="/"
-          className="flex items-center gap-2 px-4 py-2 bg-[#0d1526] border border-[#1e2d4a] text-gray-300 hover:text-white hover:border-[#00d4ff] rounded-lg transition-all text-sm font-medium"
-        >
-          <ArrowLeft size={16} />
-          <span>بازگشت به سایت</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/admin/articles" className="rounded-lg border border-[#1e2d4a] bg-[#0d1526] px-3 py-2 text-xs text-gray-300 transition hover:border-[#00d4ff] hover:text-white">
+            افزودن مقاله
+          </Link>
+          <Link href="/admin/announcements" className="rounded-lg border border-[#1e2d4a] bg-[#0d1526] px-3 py-2 text-xs text-gray-300 transition hover:border-[#00d4ff] hover:text-white">
+            افزودن اطلاعیه
+          </Link>
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0d1526] border border-[#1e2d4a] text-gray-300 hover:text-white hover:border-[#00d4ff] rounded-lg transition-all text-sm font-medium"
+          >
+            <ArrowLeft size={16} />
+            <span>بازگشت به سایت</span>
+          </Link>
+        </div>
       </div>
 
       {loading ? (
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-gray-400">
           در حال بارگذاری آمار...
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-300">
+          دریافت اطلاعات داشبورد ناموفق بود. صفحه را دوباره بارگذاری کنید.
         </div>
       ) : (
         <>

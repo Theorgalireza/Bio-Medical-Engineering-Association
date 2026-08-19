@@ -54,29 +54,6 @@ const ToolbarBtn = ({
   </button>
 );
 
-async function uploadImageAndGetUrl(file: File): Promise<string | null> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  try {
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) return null;
-
-    const data = await res.json().catch(() => null);
-    if (typeof data?.url === "string" && data.url.length > 0) {
-      return data.url;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 function insertHtmlAtCursor(html: string) {
   const selection = window.getSelection();
   if (!selection) return;
@@ -165,8 +142,7 @@ export default function RichEditor({
       const file = input.files?.[0];
       if (!file) return;
 
-      const uploadedUrl = await uploadImageAndGetUrl(file);
-      const finalUrl = uploadedUrl ?? window.prompt("آدرس تصویر را وارد کنید:", "https://")?.trim() ?? "";
+      const finalUrl = window.prompt("آدرس تصویر را وارد کنید:", "https://")?.trim() ?? "";
       if (!finalUrl) return;
       if (!/^https?:\/\//i.test(finalUrl)) {
         window.alert("لطفاً یک آدرس معتبر با http یا https وارد کنید.");

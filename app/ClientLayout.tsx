@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { MotionConfig } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { trackPageView } from "@/lib/api";
-import type { SiteSettings } from "@/lib/site-settings";
+import type { SiteSettings } from "@/lib/site/settings";
 
 export default function ClientLayout({
   children,
@@ -26,10 +27,10 @@ export default function ClientLayout({
   }, [pathname]);
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <Navbar settings={settings} />
       {children}
       <Footer settings={settings} />
-    </>
+    </MotionConfig>
   );
 }

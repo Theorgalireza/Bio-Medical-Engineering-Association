@@ -7,7 +7,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { Role, User } from '@prisma/client';
+import { ContentStatus, Role, User } from '@prisma/client';
 
 @Controller('announcements')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -17,13 +17,19 @@ export class AnnouncementsController {
   @Get()
   @Public()
   findAll(@Query() query: QueryAnnouncementDto) {
+    return this.service.findAll({ ...query, status: ContentStatus.PUBLISHED });
+  }
+
+  @Get('admin')
+  @Roles(Role.ADMIN, Role.OWNER, Role.CONTENT_EDITOR)
+  findAllAdmin(@Query() query: QueryAnnouncementDto) {
     return this.service.findAll(query);
   }
 
   @Get(':slug')
   @Public()
   findBySlug(@Param('slug') slug: string) {
-    return this.service.findBySlug(slug);
+    return this.service.findBySlug(slug, true);
   }
 
   @Post()

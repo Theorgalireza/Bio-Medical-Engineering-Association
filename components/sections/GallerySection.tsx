@@ -6,30 +6,39 @@ import { getGalleryItems } from "@/lib/api";
 import type { GalleryItem } from "@/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import NeonButton from "@/components/ui/NeonButton";
+import AsyncState from "@/components/ui/AsyncState";
 
 const MAX_ITEMS_HOME = 6;
 
-type Props = { items?: GalleryItem[] };
+type Props = { items?: GalleryItem[]; initialError?: boolean };
 
-export default function GallerySection({ items }: Props) {
+export default function GallerySection({ items, initialError = false }: Props) {
   const [gallery, setGallery] = useState<GalleryItem[]>(items ?? []);
+  const [status, setStatus] = useState<"loading" | "error" | "ready">(
+    initialError ? "error" : items ? "ready" : "loading"
+  );
+  const [selected, setSelected] = useState<GalleryItem | null>(null);
   const itemsToShow = useMemo(() => gallery.slice(0, MAX_ITEMS_HOME), [gallery]);
+
+  const load = () => {
+    setStatus("loading");
+    getGalleryItems()
+      .then((data) => {
+        setGallery(data);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
+  };
 
   useEffect(() => {
     if (items) {
       setGallery(items);
+      setStatus(initialError ? "error" : "ready");
       return;
     }
 
-    let mounted = true;
-    getGalleryItems()
-      .then((data) => mounted && setGallery(data))
-      .catch(() => mounted && setGallery([]));
-
-    return () => {
-      mounted = false;
-    };
-  }, [items]);
+    load();
+  }, [items, initialError]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -120,14 +129,20 @@ export default function GallerySection({ items }: Props) {
             onScroll={updateScrollState}
             className="scrollbar-hide flex gap-4 overflow-x-auto pb-4 md:gap-6"
           >
-            {itemsToShow.length === 0 ? (
-              <div className="flex min-h-[260px] w-full items-center justify-center rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 text-center text-sm text-gray-400">
-                هنوز تصویری در گالری ثبت نشده است.
+            {status !== "ready" || itemsToShow.length === 0 ? (
+              <div className="w-full">
+                <AsyncState
+                  status={status === "ready" ? "empty" : status}
+                  empty="هنوز تصویری در گالری ثبت نشده است."
+                  onRetry={load}
+                />
               </div>
             ) : itemsToShow.map((item) => (
-              <article
+              <button
+                type="button"
+                onClick={() => setSelected(item)}
                 key={item.id}
-                className="w-[260px] shrink-0 overflow-hidden rounded-2xl border border-[#1e2d4a] bg-[#0d1526] shadow-lg md:w-[320px]"
+                className="w-[260px] shrink-0 overflow-hidden rounded-2xl border border-[#1e2d4a] bg-[#0d1526] text-right shadow-lg transition hover:border-accent/60 md:w-[320px]"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img
@@ -156,9 +171,34 @@ export default function GallerySection({ items }: Props) {
                     </div>
                   )}
                 </div>
-              </article>
+              </button>
             ))}
           </div>
+          {selected && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={selected.title}
+              className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4"
+              onClick={() => setSelected(null)}
+            >
+              <div
+                className="relative max-h-[90vh] max-w-4xl overflow-hidden rounded-2xl border border-borderSoft bg-primaryLight"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelected(null)}
+                  className="absolute left-3 top-3 z-10 rounded-full bg-black/60 px-3 py-1 text-sm text-white"
+                  aria-label="بستن تصویر"
+                >
+                  ×
+                </button>
+                <img src={selected.imageUrl} alt={selected.title} className="max-h-[78vh] w-auto object-contain" />
+                <p className="px-5 py-3 text-sm text-white">{selected.title}</p>
+              </div>
+            </div>
+          )}
 
           <button
             type="button"

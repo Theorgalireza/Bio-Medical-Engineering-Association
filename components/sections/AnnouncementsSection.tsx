@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import WaveformIcon from "@/components/ui/WaveformIcon";
 import { getAnnouncements } from "@/lib/api";
 import type { Announcement } from "@/types";
+import AsyncState from "@/components/ui/AsyncState";
 
 const typeStyles: Record<string, string> = {
   رویداد: "bg-electric/10 text-electric border-electric/30",
@@ -30,26 +31,33 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-type Props = { items?: Announcement[] };
+type Props = { items?: Announcement[]; initialError?: boolean };
 
-export default function Announcements({ items }: Props) {
+export default function Announcements({ items, initialError = false }: Props) {
   const [announcementItems, setAnnouncementItems] = useState<Announcement[]>(items ?? []);
+  const [status, setStatus] = useState<"loading" | "error" | "ready">(
+    initialError ? "error" : items ? "ready" : "loading"
+  );
+
+  const load = () => {
+    setStatus("loading");
+    getAnnouncements()
+      .then((data) => {
+        setAnnouncementItems(data);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
+  };
 
   useEffect(() => {
     if (items) {
       setAnnouncementItems(items);
+      setStatus(initialError ? "error" : "ready");
       return;
     }
 
-    let mounted = true;
-    getAnnouncements()
-      .then((data) => mounted && setAnnouncementItems(data))
-      .catch(() => mounted && setAnnouncementItems([]));
-
-    return () => {
-      mounted = false;
-    };
-  }, [items]);
+    load();
+  }, [items, initialError]);
 
   return (
     <section id="announcements" className="relative overflow-hidden bg-surface py-24">
@@ -70,10 +78,12 @@ export default function Announcements({ items }: Props) {
           <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-accent shadow-neon" />
         </motion.div>
 
-        {announcementItems.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 py-14 text-center text-sm text-gray-400">
-            هنوز اعلامیه‌ای ثبت نشده است.
-          </div>
+        {status !== "ready" || announcementItems.length === 0 ? (
+          <AsyncState
+            status={status === "ready" ? "empty" : status}
+            empty="هنوز اعلامیه‌ای ثبت نشده است."
+            onRetry={load}
+          />
         ) : (
           <motion.div
             variants={container}

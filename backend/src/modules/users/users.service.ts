@@ -123,7 +123,10 @@ export class UsersService {
     return user;
   }
 
-  async create(dto: CreateUserDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+  async create(dto: CreateUserDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null, actorRole?: Role) {
+    if (dto.role === Role.OWNER && actorRole !== Role.OWNER) {
+      throw new BadRequestException('فقط مالک سیستم می‌تواند کاربر OWNER ایجاد کند');
+    }
     if (!dto.email && !dto.phone) {
       throw new BadRequestException('حداقل ایمیل یا شماره موبایل الزامی است');
     }
@@ -233,8 +236,12 @@ export class UsersService {
     actorId?: string | null,
     actorEmail?: string | null,
     ip?: string | null,
+    actorRole?: Role,
   ) {
     const user = await this.findById(id);
+    if (dto.role === Role.OWNER && actorRole !== Role.OWNER) {
+      throw new BadRequestException('فقط مالک سیستم می‌تواند نقش OWNER را تعیین کند');
+    }
 
     const updated = await this.prisma.user.update({
       where: { id },

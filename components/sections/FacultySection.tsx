@@ -15,26 +15,35 @@ const item = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5 } },
 };
 
-type Props = { items?: FacultyMember[] };
+type Props = { items?: FacultyMember[]; initialError?: boolean };
 
-export default function Faculty({ items }: Props) {
+export default function Faculty({ items, initialError = false }: Props) {
   const [facultyItems, setFacultyItems] = useState<FacultyMember[]>(items ?? []);
+  const [status, setStatus] = useState<"loading" | "error" | "ready">(
+    initialError ? "error" : items ? "ready" : "loading"
+  );
 
   useEffect(() => {
     if (items) {
       setFacultyItems(items);
+      setStatus(initialError ? "error" : "ready");
       return;
     }
 
     let mounted = true;
     getFacultyMembers()
-      .then((data) => mounted && setFacultyItems(data))
-      .catch(() => mounted && setFacultyItems([]));
+      .then((data) => {
+        if (mounted) {
+          setFacultyItems(data);
+          setStatus("ready");
+        }
+      })
+      .catch(() => mounted && setStatus("error"));
 
     return () => {
       mounted = false;
     };
-  }, [items]);
+  }, [items, initialError]);
 
   return (
     <section id="faculty" className="relative overflow-hidden bg-surface py-24">
@@ -55,9 +64,9 @@ export default function Faculty({ items }: Props) {
           <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-accent shadow-neon" />
         </motion.div>
 
-        {facultyItems.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 py-14 text-center text-sm text-gray-400">
-            هنوز عضوی برای نمایش ثبت نشده است.
+        {status !== "ready" || facultyItems.length === 0 ? (
+          <div className="flex min-h-[180px] items-center justify-center rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 text-center text-sm text-gray-400">
+            {status === "loading" ? "در حال بارگذاری اعضای هیئت علمی..." : status === "error" ? "دریافت اعضای هیئت علمی ناموفق بود." : "هنوز عضوی برای نمایش ثبت نشده است."}
           </div>
         ) : (
           <motion.div

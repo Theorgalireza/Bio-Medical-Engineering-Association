@@ -36,7 +36,7 @@ import {
   resubscribeToNewsletter,
   type Profile,
 } from "@/lib/api";
-import { ROLE_LABELS, ROLE_COLORS } from "@/lib/roles";
+import { ROLE_LABELS, ROLE_COLORS } from "@/lib/auth/roles";
 import NeonButton from "@/components/ui/NeonButton";
 import ProfileGuard from "@/components/profile/ProfileGuard";
 import Spinner from "@/components/ui/Spinner";

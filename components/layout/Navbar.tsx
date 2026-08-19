@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import type { SiteSettings } from "@/lib/site-settings";
+import type { SiteSettings } from "@/lib/site/settings";
 
 export default function Navbar({ settings }: { settings: SiteSettings }) {
   const [scrolled, setScrolled] = useState(false);
@@ -41,6 +41,17 @@ export default function Navbar({ settings }: { settings: SiteSettings }) {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
   // بستن dropdown پروفایل با کلیک بیرون از آن
@@ -94,7 +105,10 @@ export default function Navbar({ settings }: { settings: SiteSettings }) {
           ) : isAuthenticated ? (
             <div className="relative" ref={profileRef}>
               <button
+                type="button"
                 onClick={() => setProfileMenuOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={profileMenuOpen}
                 className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 py-1.5 pl-3 pr-1.5 text-sm font-medium text-accent hover:bg-accent/20 transition-colors"
               >
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/20 overflow-hidden">
@@ -123,6 +137,7 @@ export default function Navbar({ settings }: { settings: SiteSettings }) {
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.15 }}
                     className="absolute left-0 mt-2 w-52 overflow-hidden rounded-xl border border-borderSoft bg-primaryLight shadow-xl"
+                    role="menu"
                   >
                     <Link
                       href="/profile"
@@ -165,9 +180,12 @@ export default function Navbar({ settings }: { settings: SiteSettings }) {
 
         {/* دکمه hamburger موبایل */}
         <button
+          type="button"
           onClick={() => setMobileOpen((v) => !v)}
           className="flex flex-col gap-1.5 md:hidden"
           aria-label="منو"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
         >
           <span className={`h-0.5 w-6 bg-accent transition-transform ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
           <span className={`h-0.5 w-6 bg-accent transition-opacity ${mobileOpen ? "opacity-0" : ""}`} />
@@ -178,13 +196,21 @@ export default function Navbar({ settings }: { settings: SiteSettings }) {
       {/* منوی موبایل */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="md:hidden overflow-hidden bg-primary/95 backdrop-blur-md border-t border-borderSoft"
-          >
-            <div className="flex flex-col gap-1 px-4 py-4">
+          <>
+            <button
+              type="button"
+              aria-label="بستن منو"
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 -z-10 bg-black/40 md:hidden"
+            />
+            <motion.div
+              id="mobile-navigation"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="md:hidden overflow-hidden bg-primary/95 backdrop-blur-md border-t border-borderSoft"
+            >
+              <div className="flex flex-col gap-1 px-4 py-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -245,8 +271,9 @@ export default function Navbar({ settings }: { settings: SiteSettings }) {
                   {authLink.label}
                 </Link>
               )}
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </nav>

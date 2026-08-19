@@ -6,28 +6,35 @@ import { useEffect, useState } from "react";
 import SyntheticCover from "@/components/ui/WaveformIcon";
 import { getArticles } from "@/lib/api";
 import type { Article } from "@/types";
+import AsyncState from "@/components/ui/AsyncState";
 
-type Props = { items?: Article[] };
+type Props = { items?: Article[]; initialError?: boolean };
 
-const PublicationsSection = ({ items }: Props) => {
+const PublicationsSection = ({ items, initialError = false }: Props) => {
   const [publicationItems, setPublicationItems] = useState<Article[]>(items ?? []);
+  const [status, setStatus] = useState<"loading" | "error" | "ready">(
+    initialError ? "error" : items ? "ready" : "loading"
+  );
+
+  const load = () => {
+    setStatus("loading");
+    getArticles()
+      .then((data) => {
+        setPublicationItems(data);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
+  };
 
   useEffect(() => {
     if (items) {
       setPublicationItems(items);
+      setStatus(initialError ? "error" : "ready");
       return;
     }
 
-    let mounted = true;
-
-    getArticles()
-      .then((data) => mounted && setPublicationItems(data))
-      .catch(() => mounted && setPublicationItems([]));
-
-    return () => {
-      mounted = false;
-    };
-  }, [items]);
+    load();
+  }, [items, initialError]);
 
   return (
     <section
@@ -87,10 +94,12 @@ const PublicationsSection = ({ items }: Props) => {
           </div>
         </div>
 
-        {publicationItems.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 py-14 text-center text-sm text-gray-400">
-            هنوز مقاله‌ای منتشر نشده است.
-          </div>
+        {status !== "ready" || publicationItems.length === 0 ? (
+          <AsyncState
+            status={status === "ready" ? "empty" : status}
+            empty="هنوز مقاله‌ای منتشر نشده است."
+            onRetry={load}
+          />
         ) : (
           <motion.div
             className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8"
@@ -105,19 +114,10 @@ const PublicationsSection = ({ items }: Props) => {
             }}
           >
             {publicationItems.map((pub, idx) => {
-              const href =
-                pub.downloadUrl && pub.downloadUrl !== "#"
-                  ? pub.downloadUrl
-                  : "/articles";
-
-              const external = href.startsWith("http");
-
               return (
                 <Link
                   key={pub.id}
-                  href={href}
-                  target={external ? "_blank" : undefined}
-                  rel={external ? "noreferrer" : undefined}
+                  href={`/articles/${pub.slug}`}
                   className="block"
                 >
                   <motion.article
@@ -157,6 +157,9 @@ const PublicationsSection = ({ items }: Props) => {
                           {pub.year}
                         </span>
                       </div>
+                      <span className="mt-4 inline-flex text-sm font-medium text-accent">
+                        مطالعه مقاله ←
+                      </span>
                     </div>
                   </motion.article>
                 </Link>

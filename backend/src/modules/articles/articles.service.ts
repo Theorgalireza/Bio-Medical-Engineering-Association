@@ -53,9 +53,9 @@ export class ArticlesService {
     });
   }
 
-  async findBySlug(slug: string) {
+  async findBySlug(slug: string, publishedOnly = false) {
     const item = await this.prisma.article.findUnique({
-      where: { slug },
+      where: publishedOnly ? { slug, status: ContentStatus.PUBLISHED } : { slug },
       include: { tags: { include: { tag: true } } },
     });
     if (!item) throw new NotFoundException('Article not found');

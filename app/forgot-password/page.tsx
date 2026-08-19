@@ -4,22 +4,26 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
-import { Mail, CheckCircle2 } from "lucide-react";
+import { Mail, CheckCircle2, Loader2 } from "lucide-react";
 import { forgotPassword } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email) return;
+    if (!identifier.trim()) return;
 
+    setLoading(true);
     try {
-      await forgotPassword(email);
+      await forgotPassword(identifier.trim());
       setIsSubmitted(true);
     } catch {
       setIsSubmitted(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,30 +47,42 @@ export default function ForgotPasswordPage() {
             </h1>
 
             <p className="mt-3 leading-8 text-gray-400">
-              ایمیل خود را وارد کنید تا در صورت وجود حساب، لینک بازیابی
+              ایمیل یا شماره موبایل خود را وارد کنید تا در صورت وجود حساب، لینک بازیابی
               رمز عبور برای شما ارسال شود.
             </p>
           </div>
 
           {!isSubmitted ? (
             <>
-              <div className="relative">
-  <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent" />
-
-  <input
-    type="email"
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-    placeholder="example@sbu.ac.ir"
-    className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pl-12 pr-4 text-white outline-none transition focus:border-accent"
-  />
-</div>
+              <label className="block space-y-2 text-sm text-gray-300">
+                ایمیل یا شماره موبایل
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent" />
+                  <input
+                    type="text"
+                    inputMode="email"
+                    required
+                    autoComplete="username"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="example@sbu.ac.ir یا ۰۹۱۲..."
+                    className="w-full rounded-2xl border border-borderSoft bg-surface/70 py-3 pl-12 pr-4 text-white outline-none transition focus:border-accent"
+                  />
+                </div>
+              </label>
 
               <NeonButton
                 type="submit"
                 className="mt-6 w-full justify-center"
               >
-                ارسال لینک بازیابی
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    در حال ارسال...
+                  </>
+                ) : (
+                  "ارسال لینک بازیابی"
+                )}
               </NeonButton>
 
               <div className="mt-6 text-center">

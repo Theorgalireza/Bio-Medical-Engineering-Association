@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Trash2, Star, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { adminDeleteFeedback, adminGetFeedback, adminUpdateFeedback } from "@/lib/api";
-import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin-table";
+import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { AdminFeedback } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 
@@ -116,8 +116,8 @@ export default function FeedbackPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <button onClick={async () => { await adminUpdateFeedback(item.id, { approved: !item.approved }); await load(); }} className={`rounded px-2 py-0.5 text-xs font-vazir transition-colors ${item.approved ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-gray-500/15 text-gray-400"}`}>{item.approved ? "تأیید شده" : "در انتظار"}</button>
-                <button onClick={async () => { if (!confirm("این بازخورد حذف شود؟")) return; await adminDeleteFeedback(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
+                <button type="button" aria-label={item.approved ? "لغو تأیید بازخورد" : "تأیید بازخورد"} onClick={async () => { await adminUpdateFeedback(item.id, { approved: !item.approved }); await load(); }} className={`rounded px-2 py-0.5 text-xs font-vazir transition-colors ${item.approved ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-gray-500/15 text-gray-400"}`}>{item.approved ? "تأیید شده" : "در انتظار"}</button>
+                <button type="button" title="حذف بازخورد" aria-label="حذف بازخورد" onClick={async () => { if (!confirm("این بازخورد حذف شود؟")) return; await adminDeleteFeedback(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
               </div>
             </div>
           </div>

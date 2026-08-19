@@ -1,5 +1,5 @@
 "use client";
-import type { SiteSettings } from "@/lib/site-settings";
+import type { SiteSettings } from "@/lib/site/settings";
 
 
 import Link from "next/link";

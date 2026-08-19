@@ -157,6 +157,9 @@ export default function GalleryAdminPage() {
 
                 <div className="mt-4 flex items-center gap-2">
                   <button
+                    type="button"
+                    title="ویرایش تصویر"
+                    aria-label="ویرایش تصویر"
                     onClick={() => openEdit(item)}
                     className="flex items-center gap-1 rounded-lg border border-borderSoft px-3 py-1.5 text-xs text-gray-300 hover:bg-primary/40"
                   >
@@ -164,6 +167,9 @@ export default function GalleryAdminPage() {
                     ویرایش
                   </button>
                   <button
+                    type="button"
+                    title="حذف تصویر"
+                    aria-label="حذف تصویر"
                     onClick={() => handleDelete(item.id)}
                     className="flex items-center gap-1 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10"
                   >

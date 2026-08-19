@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import NeonButton from "@/components/ui/NeonButton";
 import { getArticles } from "@/lib/api";
 import type { Article } from "@/types";
+import AsyncState from "@/components/ui/AsyncState";
 
 function ArticleCover({ seed }: { seed: number }) {
   const hue = (seed * 53) % 360;
@@ -33,20 +34,37 @@ function ArticleCover({ seed }: { seed: number }) {
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [status, setStatus] = useState<"loading" | "error" | "ready">("loading");
+  const [query, setQuery] = useState("");
+
+  const load = () => {
+    setStatus("loading");
+    getArticles()
+      .then((data) => {
+        setArticles(data);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
+  };
 
   useEffect(() => {
-    let mounted = true;
-    getArticles()
-      .then((data) => mounted && setArticles(data))
-      .catch(() => mounted && setArticles([]));
-
-    return () => {
-      mounted = false;
-    };
+    load();
   }, []);
 
   const featured = articles.find((a) => a.featured);
-  const list = articles.filter((a) => !a.featured);
+  const list = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    return articles
+      .filter((a) => !a.featured)
+      .filter((a) =>
+        !normalized
+          ? true
+          : [a.title, a.summary, a.category, ...(a.authors ?? [])]
+              .join(" ")
+              .toLowerCase()
+              .includes(normalized)
+      );
+  }, [articles, query]);
 
   return (
     <main className="min-h-screen bg-primary pt-24 pb-20">
@@ -83,10 +101,26 @@ export default function ArticlesPage() {
       )}
 
       <section className="mx-auto max-w-7xl px-4 md:px-8">
-        {list.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-borderSoft bg-primaryLight/40 px-6 py-20 text-center text-sm text-gray-400">
-            هنوز مقاله‌ای برای نمایش ثبت نشده است.
+        {status === "ready" && articles.length > 0 && (
+          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <label className="sr-only" htmlFor="article-search">جستجوی مقاله</label>
+            <input
+              id="article-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="جستجو در عنوان، خلاصه، دسته‌بندی یا نویسنده..."
+              className="w-full rounded-xl border border-borderSoft bg-primaryLight/50 px-4 py-3 text-sm text-white outline-none transition focus:border-accent sm:max-w-xl"
+            />
+            <span className="text-sm text-gray-500">{list.length} مقاله</span>
           </div>
+        )}
+        {status !== "ready" || list.length === 0 ? (
+          <AsyncState
+            status={status === "ready" ? "empty" : status}
+            empty={query ? "مقاله‌ای با این جستجو پیدا نشد." : "هنوز مقاله‌ای برای نمایش ثبت نشده است."}
+            onRetry={load}
+          />
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {list.map((article, index) => (

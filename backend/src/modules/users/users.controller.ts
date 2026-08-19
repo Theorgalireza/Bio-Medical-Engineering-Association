@@ -44,7 +44,7 @@ export class UsersController {
   @Post()
   @Roles(Role.OWNER, Role.ADMIN)
   create(@Req() req: any, @Body() dto: CreateUserDto) {
-    return this.usersService.create(dto, req.user.id, req.user?.email ?? null, req.ip);
+    return this.usersService.create(dto, req.user.id, req.user?.email ?? null, req.ip, req.user.role);
   }
 
   @Get('stats/roles')
@@ -72,9 +72,9 @@ export class UsersController {
   }
 
   @Patch(':id/role')
-  @Roles(Role.OWNER, Role.ADMIN)
+  @Roles(Role.OWNER)
   updateRole(@Req() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserRoleDto) {
-    return this.usersService.updateRole(id, dto, req.user.id, req.user?.email ?? null, req.ip);
+    return this.usersService.updateRole(id, dto, req.user.id, req.user?.email ?? null, req.ip, req.user.role);
   }
 
   @Delete(':id')

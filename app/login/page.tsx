@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useEffect, useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
@@ -16,20 +16,28 @@ const ADMIN_ROLES = new Set(["OWNER", "ADMIN", "CONTENT_EDITOR"]);
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
 
 const [form, setForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleOAuthLogin = (provider: OAuthProvider) => {
     window.location.href = getOAuthLoginUrl(provider);
   };
 
   useEffect(() => {
-    const provider = searchParams.get("provider");
+    const remembered = window.localStorage.getItem("remembered-login");
+    if (remembered) {
+      setForm((current) => ({ ...current, identifier: remembered }));
+      setRememberMe(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const provider = new URLSearchParams(window.location.search).get("provider");
     if (!provider) return;
 
     let cancelled = false;
@@ -48,7 +56,7 @@ const [form, setForm] = useState({ identifier: "", password: "" });
     return () => {
       cancelled = true;
     };
-  }, [router, refreshUser, searchParams]);
+  }, [router, refreshUser]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
   event.preventDefault();
@@ -56,6 +64,11 @@ const [form, setForm] = useState({ identifier: "", password: "" });
   setLoading(true);
 
   const identifier = form.identifier.trim();
+  if (rememberMe) {
+    window.localStorage.setItem("remembered-login", identifier);
+  } else {
+    window.localStorage.removeItem("remembered-login");
+  }
   const isEmail = identifier.includes("@");
   const payload = isEmail
     ? { email: identifier, password: form.password }
@@ -175,6 +188,8 @@ const [form, setForm] = useState({ identifier: "", password: "" });
   <input
     type="text"
     inputMode="email"
+    autoComplete="username"
+    aria-label="ایمیل یا شماره موبایل"
     value={form.identifier}
     onChange={(e) => setForm({ ...form, identifier: e.target.value })}
     placeholder="ایمیل یا شماره موبایل"
@@ -189,6 +204,8 @@ const [form, setForm] = useState({ identifier: "", password: "" });
               <LockKeyhole className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent" />
               <input
                 type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                aria-label="رمز عبور"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 placeholder="رمز عبور خود را وارد کنید"
@@ -207,7 +224,7 @@ const [form, setForm] = useState({ identifier: "", password: "" });
 
             <div className="flex items-center justify-between gap-3 text-sm text-gray-400">
               <label className="flex items-center gap-2">
-                <input type="checkbox" className="h-4 w-4 rounded border-borderSoft bg-surface" />
+                <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-borderSoft bg-surface" />
                 <span>مرا به خاطر بسپار</span>
               </label>
               <Link href="/forgot-password" className="transition hover:text-accent">

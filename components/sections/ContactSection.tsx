@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import CircuitBackground from "@/components/ui/CircuitBackground";
 import { MailIcon, PhoneIcon, PinIcon, CheckIcon, SendIcon } from "@/components/ui/Icons";
 import { submitContact } from "@/lib/api";
-import type { SiteSettings } from "@/lib/site-settings";
+import type { SiteSettings } from "@/lib/site/settings";
 
 type ContactForm = { name: string; email: string; subject: string; message: string };
 const initialState: ContactForm = { name: "", email: "", subject: "", message: "" };
@@ -34,11 +34,9 @@ export default function Contact({ settings }: { settings: SiteSettings }) {
       await submitContact(form);
       setStatus("success");
       setForm(initialState);
-      timeoutRef.current = window.setTimeout(() => setStatus("idle"), 4000);
     } catch {
       setStatus("error");
       setError("ارسال پیام ناموفق بود. دوباره تلاش کنید.");
-      timeoutRef.current = window.setTimeout(() => setStatus("idle"), 4000);
     }
   };
 
@@ -95,19 +93,38 @@ export default function Contact({ settings }: { settings: SiteSettings }) {
                   </div>
                   <h3 className="text-lg font-bold text-white">پیام شما ثبت شد</h3>
                   <p className="mt-2 text-sm leading-7 text-gray-400">به‌زودی پاسخ شما را بررسی می‌کنیم.</p>
+                  <button
+                    type="button"
+                    onClick={() => setStatus("idle")}
+                    className="mt-4 rounded-full border border-accent/40 px-4 py-2 text-sm text-accent transition hover:bg-accent/10"
+                  >
+                    ارسال پیام دیگری
+                  </button>
                 </motion.div>
               ) : (
                 <motion.form key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="نام"
-                      className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent" />
-                    <input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="ایمیل"
-                      className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent" />
+                    <label className="space-y-2 text-sm text-gray-300">
+                      نام <span className="text-accent">*</span>
+                      <input aria-label="نام" required value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="نام و نام خانوادگی"
+                        className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent" />
+                    </label>
+                    <label className="space-y-2 text-sm text-gray-300">
+                      ایمیل <span className="text-accent">*</span>
+                      <input aria-label="ایمیل" type="email" required autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="you@example.com"
+                        className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent" />
+                    </label>
                   </div>
-                  <input value={form.subject} onChange={(e) => update("subject", e.target.value)} placeholder="موضوع"
-                    className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent" />
-                  <textarea value={form.message} onChange={(e) => update("message", e.target.value)} placeholder="پیام شما" rows={6}
-                    className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent" />
+                  <label className="block space-y-2 text-sm text-gray-300">
+                    موضوع
+                    <input aria-label="موضوع" value={form.subject} onChange={(e) => update("subject", e.target.value)} placeholder="موضوع پیام"
+                      className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent" />
+                  </label>
+                  <label className="block space-y-2 text-sm text-gray-300">
+                    پیام <span className="text-accent">*</span>
+                    <textarea aria-label="پیام" required value={form.message} onChange={(e) => update("message", e.target.value)} placeholder="پیام خود را بنویسید" rows={6}
+                      className="w-full rounded-xl border border-borderSoft bg-primary/60 px-4 py-3 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-accent" />
+                  </label>
                   {status === "error" && error && <p className="text-sm text-red-400">{error}</p>}
                   <button type="submit" disabled={status === "submitting"}
                     className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">

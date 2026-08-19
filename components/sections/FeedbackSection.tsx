@@ -71,11 +71,9 @@ export default function Feedback() {
       });
       setStatus("success");
       setForm(initialState);
-      timeoutRef.current = window.setTimeout(() => setStatus("idle"), 4000);
     } catch {
       setStatus("error");
       setError("ارسال بازخورد ناموفق بود. دوباره تلاش کنید.");
-      timeoutRef.current = window.setTimeout(() => setStatus("idle"), 4000);
     }
   };
 
@@ -127,6 +125,13 @@ export default function Feedback() {
                 <p className="text-sm text-gray-400">
                   از اینکه وقت گذاشتید سپاسگزاریم 🙏
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setStatus("idle")}
+                  className="mt-4 rounded-full border border-accent/40 px-4 py-2 text-sm text-accent transition hover:bg-accent/10"
+                >
+                  ثبت بازخورد دیگری
+                </button>
               </motion.div>
             ) : (
               <motion.form
@@ -197,6 +202,7 @@ export default function Feedback() {
                         onMouseLeave={() => setHoverRating(0)}
                         onClick={() => update("rating", n)}
                         className="text-gray-600 transition-colors duration-200"
+                        aria-label={`${n} از ۵`}
                       >
                         <StarIcon
                           size={26}

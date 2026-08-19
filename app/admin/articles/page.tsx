@@ -9,7 +9,7 @@ import {
   adminGetArticles,
   adminUpdateArticle,
 } from "@/lib/api";
-import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin-table";
+import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { AdminArticle } from "@/types";
 
 const empty: Omit<AdminArticle, "id"> = {
@@ -216,8 +216,8 @@ export default function ArticlesPage() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => openEdit(item)} className="text-gray-400 transition-colors hover:text-[#a855f7]"><Pencil size={15} /></button>
-                    <button onClick={async () => { if (!confirm("این مقاله حذف شود؟")) return; await adminDeleteArticle(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
+                    <button type="button" title="ویرایش مقاله" aria-label="ویرایش مقاله" onClick={() => openEdit(item)} className="text-gray-400 transition-colors hover:text-[#a855f7]"><Pencil size={15} /></button>
+                    <button type="button" title="حذف مقاله" aria-label="حذف مقاله" onClick={async () => { if (!confirm("این مقاله حذف شود؟")) return; await adminDeleteArticle(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
                   </div>
                 </td>
               </tr>

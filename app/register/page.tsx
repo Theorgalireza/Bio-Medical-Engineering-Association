@@ -43,6 +43,10 @@ const [form, setForm] = useState({
     setError("وارد کردن ایمیل یا شماره موبایل الزامی است.");
     return;
   }
+  if (password && password.length < 8) {
+    setError("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+    return;
+  }
 
   setLoading(true);
 
@@ -116,7 +120,8 @@ const [form, setForm] = useState({
           <Mail size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="email"
-            placeholder="ایمیل (اختیاری)"
+            placeholder="ایمیل (در صورت استفاده)"
+            autoComplete="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             className="w-full rounded-lg border border-[#1e2d4a] bg-[#0a0f1e] py-2.5 pr-9 pl-4 text-sm text-white placeholder-gray-600 font-vazir focus:outline-none focus:border-[#00d4ff]/50"
@@ -127,7 +132,8 @@ const [form, setForm] = useState({
           <Phone size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="tel"
-            placeholder="شماره موبایل (اختیاری)"
+            placeholder="شماره موبایل (در صورت استفاده)"
+            autoComplete="tel"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             className="w-full rounded-lg border border-[#1e2d4a] bg-[#0a0f1e] py-2.5 pr-9 pl-4 text-sm text-white placeholder-gray-600 font-vazir focus:outline-none focus:border-[#00d4ff]/50"
@@ -138,7 +144,8 @@ const [form, setForm] = useState({
           <LockKeyhole size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type={showPassword ? "text" : "password"}
-            placeholder="رمز عبور (اختیاری)"
+            placeholder="رمز عبور (اختیاری، حداقل ۸ کاراکتر)"
+            autoComplete="new-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             className="w-full rounded-lg border border-[#1e2d4a] bg-[#0a0f1e] py-2.5 pr-9 pl-10 text-sm text-white placeholder-gray-600 font-vazir focus:outline-none focus:border-[#00d4ff]/50"
@@ -154,7 +161,7 @@ const [form, setForm] = useState({
         </div>
 
         <p className="text-xs text-gray-500 font-vazir">
-حداقل یکی از ایمیل یا موبایل الزامی است.         </p>
+حداقل یکی از ایمیل یا موبایل الزامی است. در صورت استفاده از رمز، حداقل ۸ کاراکتر وارد کنید.         </p>
 
         {error && <p className="text-center text-sm text-red-400 font-vazir">{error}</p>}
 

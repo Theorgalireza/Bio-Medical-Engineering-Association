@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { getUsers, createUser, updateUserProfile, updateUserRole, updateUserStatus, deleteUser } from "@/lib/api";
-import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin-table";
+import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { ApiUser, Role, CreateUserPayload, UpdateProfilePayload } from "@/types";
 
 const fullName = (u: ApiUser) => [u.profile?.firstName, u.profile?.lastName].filter(Boolean).join(" ") || u.email || u.phone || "—";
@@ -31,7 +31,7 @@ const EMPTY_FORM: FormState = { firstName: "", lastName: "", email: "", phone: "
 export default function MembersPage() {
   const { user: currentUser, loading: authLoading } = useAuth();
   const canManageUsers = currentUser?.role === "OWNER" || currentUser?.role === "ADMIN";
-  const canManageRoles = currentUser?.role === "OWNER" || currentUser?.role === "ADMIN";
+  const canManageRoles = currentUser?.role === "OWNER";
   const canManageStatus = canManageUsers;
 
   const [users, setUsers] = useState<ApiUser[]>([]);

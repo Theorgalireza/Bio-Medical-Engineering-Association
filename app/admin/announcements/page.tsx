@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import RichEditor from "@/components/admin/RichEditor";
 import { Plus, Pencil, Trash2, X, Check, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { adminCreateAnnouncement, adminDeleteAnnouncement, adminGetAnnouncements, adminUpdateAnnouncement } from "@/lib/api";
-import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin-table";
+import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { AdminAnnouncement } from "@/types";
 
 const empty: Omit<AdminAnnouncement, "id"> = {
@@ -155,8 +155,8 @@ export default function AnnouncementsPage() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => openEdit(item)} className="text-gray-400 transition-colors hover:text-[#a855f7]"><Pencil size={15} /></button>
-                    <button onClick={async () => { if (!confirm("این اطلاعیه حذف شود؟")) return; await adminDeleteAnnouncement(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
+                    <button type="button" title="ویرایش اطلاعیه" aria-label="ویرایش اطلاعیه" onClick={() => openEdit(item)} className="text-gray-400 transition-colors hover:text-[#a855f7]"><Pencil size={15} /></button>
+                    <button type="button" title="حذف اطلاعیه" aria-label="حذف اطلاعیه" onClick={async () => { if (!confirm("این اطلاعیه حذف شود؟")) return; await adminDeleteAnnouncement(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
                   </div>
                 </td>
               </tr>
