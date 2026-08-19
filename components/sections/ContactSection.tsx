@@ -14,6 +14,7 @@ export default function Contact({ settings }: { settings: SiteSettings }) {
   const [form, setForm] = useState<ContactForm>(initialState);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState("");
+  const [referenceCode, setReferenceCode] = useState("");
   const timeoutRef = useRef<number | null>(null);
 
   const update = <K extends keyof ContactForm>(key: K, value: ContactForm[K]) =>
@@ -31,8 +32,9 @@ export default function Contact({ settings }: { settings: SiteSettings }) {
     setStatus("submitting");
     setError("");
     try {
-      await submitContact(form);
+      const result = await submitContact(form);
       setStatus("success");
+      setReferenceCode(result.referenceCode);
       setForm(initialState);
     } catch {
       setStatus("error");
@@ -93,9 +95,12 @@ export default function Contact({ settings }: { settings: SiteSettings }) {
                   </div>
                   <h3 className="text-lg font-bold text-white">پیام شما ثبت شد</h3>
                   <p className="mt-2 text-sm leading-7 text-gray-400">به‌زودی پاسخ شما را بررسی می‌کنیم.</p>
+                  <p className="mt-3 rounded-lg border border-accent/20 bg-accent/5 px-4 py-2 text-sm text-accent">
+                    شماره پیگیری: <span dir="ltr" className="font-mono">{referenceCode}</span>
+                  </p>
                   <button
                     type="button"
-                    onClick={() => setStatus("idle")}
+                    onClick={() => { setStatus("idle"); setReferenceCode(""); }}
                     className="mt-4 rounded-full border border-accent/40 px-4 py-2 text-sm text-accent transition hover:bg-accent/10"
                   >
                     ارسال پیام دیگری

@@ -7,6 +7,7 @@ export declare class FeedbackController {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
@@ -15,6 +16,7 @@ export declare class FeedbackController {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
@@ -23,6 +25,7 @@ export declare class FeedbackController {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
@@ -31,6 +34,7 @@ export declare class FeedbackController {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
@@ -39,11 +43,23 @@ export declare class FeedbackController {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
     }>;
     remove(req: any, id: string): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(req: any, token: string): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        referenceCode: string;
+        message: string;
+        rating: number | null;
+        approved: boolean;
     }>;
 }

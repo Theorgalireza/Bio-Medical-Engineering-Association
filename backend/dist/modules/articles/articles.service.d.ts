@@ -19,14 +19,14 @@ export declare class ArticlesService {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         content: string;
-        updatedAt: Date;
+        createdAt: Date;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
+        updatedAt: Date;
         summary: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
@@ -34,7 +34,7 @@ export declare class ArticlesService {
         readingTime: number | null;
         featured: boolean;
     })[]>;
-    findBySlug(slug: string): Promise<{
+    findBySlug(slug: string, publishedOnly?: boolean): Promise<{
         tags: ({
             tag: {
                 name: string;
@@ -46,14 +46,14 @@ export declare class ArticlesService {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         content: string;
-        updatedAt: Date;
+        createdAt: Date;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
+        updatedAt: Date;
         summary: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
@@ -73,14 +73,14 @@ export declare class ArticlesService {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         content: string;
-        updatedAt: Date;
+        createdAt: Date;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
+        updatedAt: Date;
         summary: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
@@ -100,14 +100,14 @@ export declare class ArticlesService {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         content: string;
-        updatedAt: Date;
+        createdAt: Date;
         slug: string;
         title: string;
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
+        updatedAt: Date;
         summary: string;
         category: string;
         authors: import("@prisma/client/runtime/library").JsonValue;
@@ -117,6 +117,35 @@ export declare class ArticlesService {
     }>;
     remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        tags: ({
+            tag: {
+                name: string;
+                id: string;
+            };
+        } & {
+            tagId: string;
+            articleId: string;
+        })[];
+    } & {
+        id: string;
+        content: string;
+        createdAt: Date;
+        slug: string;
+        title: string;
+        status: import(".prisma/client").$Enums.ContentStatus;
+        publishedAt: Date | null;
+        authorId: string | null;
+        updatedAt: Date;
+        summary: string;
+        category: string;
+        authors: import("@prisma/client/runtime/library").JsonValue;
+        year: number;
+        readingTime: number | null;
+        featured: boolean;
     }>;
     private resolveTagConnects;
 }

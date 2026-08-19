@@ -82,4 +82,10 @@ export class UsersController {
   remove(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id, req.user.id, req.user?.email ?? null, req.ip);
   }
+
+  @Post('restore/:token')
+  @Roles(Role.OWNER)
+  restore(@Req() req: any, @Param('token') token: string) {
+    return this.usersService.restore(token, req.user.id, req.user?.email ?? null, req.ip);
+  }
 }

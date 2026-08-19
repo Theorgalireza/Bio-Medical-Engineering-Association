@@ -2,22 +2,26 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Trash2, Mail, MailOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { adminDeleteContact, adminGetContacts, adminMarkContactRead } from "@/lib/api";
+import { adminDeleteContact, adminGetContacts, adminMarkContactRead, adminRestoreContact } from "@/lib/api";
 import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { AdminContact } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
 
 const PAGE_SIZE = 8;
 
 export default function ContactsPage() {
   const { user, loading: authLoading } = useAuth();
   const canManage = user?.role === "OWNER" || user?.role === "ADMIN";
+  const requestConfirm = useConfirm();
   const [items, setItems] = useState<AdminContact[]>([]);
   const [selected, setSelected] = useState<AdminContact | null>(null);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [undoTokens, setUndoTokens] = useState<string[]>([]);
+  const [undoBusy, setUndoBusy] = useState(false);
 
   const load = async () => {
     try {
@@ -67,9 +71,22 @@ export default function ContactsPage() {
   const bulkDelete = async () => {
     const targets = items.filter((item) => selectedIds.has(item.id));
     if (!targets.length) return;
-    if (!confirm(`حذف ${targets.length} پیام تماس انجام شود؟`)) return;
-    await Promise.all(targets.map((item) => adminDeleteContact(item.id)));
+    if (!(await requestConfirm({ title: "حذف پیام‌ها", description: `آیا از حذف ${targets.length} پیام تماس انتخاب‌شده مطمئن هستید؟` }))) return;
+    const deleted = await Promise.all(targets.map((item) => adminDeleteContact(item.id)));
+    setUndoTokens(deleted.map((item) => item.undoToken));
     await load();
+  };
+
+  const undoDelete = async () => {
+    if (!undoTokens.length) return;
+    setUndoBusy(true);
+    try {
+      await Promise.all(undoTokens.map((token) => adminRestoreContact(token)));
+      setUndoTokens([]);
+      await load();
+    } finally {
+      setUndoBusy(false);
+    }
   };
 
   if (authLoading) return <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/50">در حال بارگذاری...</div>;
@@ -115,7 +132,7 @@ export default function ContactsPage() {
               className={`w-full rounded-xl border bg-[#0d1526] p-4 text-right transition-colors hover:border-[#00d4ff]/30 ${selected?.id === item.id ? "border-[#00d4ff]/40" : "border-[#1e2d4a]"}`}
             >
               <div className="flex items-start gap-3">
-                <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => setSelectedIds((prev) => toggleSelection(prev, item.id))} className="mt-1 accent-[#00d4ff]" onClick={(e) => e.stopPropagation()} />
+                <input type="checkbox" aria-label={`انتخاب پیام ${item.subject || item.name}`} checked={selectedIds.has(item.id)} onChange={() => setSelectedIds((prev) => toggleSelection(prev, item.id))} className="mt-1 accent-[#00d4ff]" onClick={(e) => e.stopPropagation()} />
                 <div className="mt-0.5 shrink-0">{item.read ? <MailOpen size={16} className="text-gray-500" /> : <Mail size={16} className="text-[#00d4ff]" />}</div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
@@ -138,7 +155,7 @@ export default function ContactsPage() {
                 <h3 className="font-medium text-gray-200">{selected.subject}</h3>
                 <p className="mt-1 font-vazir text-xs text-gray-500">{selected.name} — {selected.email}</p>
               </div>
-              <button onClick={async () => { await adminDeleteContact(selected.id); setSelected(null); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
+              <button type="button" aria-label="حذف پیام تماس" title="حذف پیام تماس" onClick={async () => { if (!(await requestConfirm({ title: "حذف پیام تماس", description: "این پیام برای مدت کوتاه قابل بازگردانی است. ادامه می‌دهید؟" }))) return; const deleted = await adminDeleteContact(selected.id); setUndoTokens([deleted.undoToken]); setSelected(null); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
             </div>
             <p className="border-t border-[#1e2d4a] pt-4 text-sm leading-relaxed text-gray-300">{selected.message}</p>
             <p className="font-vazir text-xs text-gray-500">{selected.date}</p>
@@ -153,6 +170,15 @@ export default function ContactsPage() {
           <button disabled={currentPage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-2 disabled:cursor-not-allowed disabled:opacity-40"><ChevronRight size={15} /> قبلی</button>
           <span>صفحه {currentPage.toLocaleString("fa-IR")} از {totalPages.toLocaleString("fa-IR")}</span>
           <button disabled={currentPage >= totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-2 disabled:cursor-not-allowed disabled:opacity-40">بعدی <ChevronLeft size={15} /></button>
+        </div>
+      )}
+      {undoTokens.length > 0 && (
+        <div className="fixed bottom-5 left-5 z-50 flex items-center gap-4 rounded-xl border border-cyan-400/30 bg-[#0d1526] px-4 py-3 text-sm text-gray-200 shadow-2xl">
+          <span>{undoTokens.length.toLocaleString("fa-IR")} پیام حذف شد.</span>
+          <button type="button" onClick={undoDelete} disabled={undoBusy} className="font-semibold text-cyan-300 hover:text-cyan-200 disabled:opacity-50">
+            {undoBusy ? "در حال بازگردانی..." : "بازگردانی"}
+          </button>
+          <button type="button" aria-label="بستن پیام بازگردانی" onClick={() => setUndoTokens([])} className="text-gray-500 hover:text-white">×</button>
         </div>
       )}
     </div>

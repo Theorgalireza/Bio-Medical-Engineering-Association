@@ -6,11 +6,14 @@ import { Plus, Pencil, Trash2, X, Check, Search, ChevronLeft, ChevronRight } fro
 import {
   adminCreateArticle,
   adminDeleteArticle,
+  adminRestoreArticle,
   adminGetArticles,
   adminUpdateArticle,
 } from "@/lib/api";
 import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { AdminArticle } from "@/types";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
+import UndoToast from "@/components/admin/UndoToast";
 
 const empty: Omit<AdminArticle, "id"> = {
   title: "",
@@ -38,6 +41,7 @@ function extractYear(value: string) {
 const PAGE_SIZE = 6;
 
 export default function ArticlesPage() {
+  const requestConfirm = useConfirm();
   const [items, setItems] = useState<AdminArticle[]>([]);
   const [modal, setModal] = useState<{ open: boolean; editing: AdminArticle | null }>({ open: false, editing: null });
   const [form, setForm] = useState(empty);
@@ -46,6 +50,9 @@ export default function ArticlesPage() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
+  const [undoTokens, setUndoTokens] = useState<string[]>([]);
+  const [undoBusy, setUndoBusy] = useState(false);
 
   const load = async () => {
     try {
@@ -107,20 +114,22 @@ export default function ArticlesPage() {
     };
 
     try {
+      setError(null);
       if (modal.editing) await adminUpdateArticle(modal.editing.id, payload);
       else await adminCreateArticle(payload);
       close();
       await load();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "ذخیره مقاله ناموفق بود.");
+      setError(error instanceof Error ? error.message : "ذخیره مقاله ناموفق بود.");
     }
   };
 
   const bulkDelete = async () => {
     const targets = items.filter((item) => selectedIds.has(item.id));
     if (!targets.length) return;
-    if (!confirm(`حذف ${targets.length} مقاله انجام شود؟`)) return;
-    await Promise.all(targets.map((item) => adminDeleteArticle(item.id)));
+    if (!(await requestConfirm({ title: "حذف مقالات", description: `آیا از حذف ${targets.length} مقاله انتخاب‌شده مطمئن هستید؟` }))) return;
+    const deleted = await Promise.all(targets.map((item) => adminDeleteArticle(item.id)));
+    setUndoTokens(deleted.map((item) => item.undoToken));
     await load();
   };
 
@@ -138,6 +147,7 @@ export default function ArticlesPage() {
 
   return (
     <div className="space-y-5" dir="rtl">
+      {error && <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-xl font-bold">مقالات</h2>
@@ -217,7 +227,7 @@ export default function ArticlesPage() {
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
                     <button type="button" title="ویرایش مقاله" aria-label="ویرایش مقاله" onClick={() => openEdit(item)} className="text-gray-400 transition-colors hover:text-[#a855f7]"><Pencil size={15} /></button>
-                    <button type="button" title="حذف مقاله" aria-label="حذف مقاله" onClick={async () => { if (!confirm("این مقاله حذف شود؟")) return; await adminDeleteArticle(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
+                    <button type="button" title="حذف مقاله" aria-label="حذف مقاله" onClick={async () => { if (!(await requestConfirm({ title: "حذف مقاله", description: "این مقاله برای همیشه حذف می‌شود. ادامه می‌دهید؟" }))) return; const deleted = await adminDeleteArticle(item.id); setUndoTokens([deleted.undoToken]); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
                   </div>
                 </td>
               </tr>
@@ -268,6 +278,21 @@ export default function ArticlesPage() {
           </div>
         </div>
       )}
+      <UndoToast
+        count={undoTokens.length}
+        busy={undoBusy}
+        onDismiss={() => setUndoTokens([])}
+        onUndo={async () => {
+          setUndoBusy(true);
+          try {
+            await Promise.all(undoTokens.map(adminRestoreArticle));
+            setUndoTokens([]);
+            await load();
+          } finally {
+            setUndoBusy(false);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Trash2, Send, Users, Mail, RefreshCw, Search } from "lucide-react";
 import {
   adminGetSubscribers,
   adminDeleteSubscriber,
+  adminRestoreSubscriber,
   adminGetCampaigns,
   adminSendCampaign,
 } from "@/lib/api";
@@ -16,6 +17,8 @@ import RichEditor from "@/components/admin/RichEditor";
 import NeonButton from "@/components/ui/NeonButton";
 import Spinner from "@/components/ui/Spinner";
 import { useAuth } from "@/context/AuthContext";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
+import UndoToast from "@/components/admin/UndoToast";
 
 type Tab = "subscribers" | "send" | "history";
 type Message = { type: "ok" | "err"; text: string } | null;
@@ -33,6 +36,7 @@ function formatDate(value?: string | null) {
 
 export default function NewsletterPage() {
   const { user, loading: authLoading } = useAuth();
+  const requestConfirm = useConfirm();
   const canManage = user?.role === "OWNER" || user?.role === "ADMIN";
   const [tab, setTab] = useState<Tab>("subscribers");
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
@@ -44,6 +48,8 @@ export default function NewsletterPage() {
   const [msg, setMsg] = useState<Message>(null);
   const [query, setQuery] = useState("");
   const [showAll, setShowAll] = useState(true);
+  const [undoTokens, setUndoTokens] = useState<string[]>([]);
+  const [undoBusy, setUndoBusy] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -87,9 +93,10 @@ export default function NewsletterPage() {
   }, [query, subscribers]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("آیا از حذف این مشترک مطمئن هستید؟")) return;
+    if (!(await requestConfirm({ title: "حذف مشترک", description: "این مشترک از فهرست خبرنامه حذف می‌شود. ادامه می‌دهید؟" }))) return;
     try {
-      await adminDeleteSubscriber(id);
+      const deleted = await adminDeleteSubscriber(id);
+      setUndoTokens([deleted.undoToken]);
       setSubscribers((prev) => prev.filter((s) => s.id !== id));
     } catch (error) {
       setMsg({
@@ -350,6 +357,7 @@ export default function NewsletterPage() {
           )}
         </>
       )}
+      <UndoToast count={undoTokens.length} busy={undoBusy} onDismiss={() => setUndoTokens([])} onUndo={async () => { setUndoBusy(true); try { await Promise.all(undoTokens.map(adminRestoreSubscriber)); setUndoTokens([]); await load(); } finally { setUndoBusy(false); } }} />
     </div>
   );
 }

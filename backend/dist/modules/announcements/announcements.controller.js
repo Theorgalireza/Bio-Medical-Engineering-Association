@@ -27,10 +27,13 @@ let AnnouncementsController = class AnnouncementsController {
         this.service = service;
     }
     findAll(query) {
+        return this.service.findAll({ ...query, status: client_1.ContentStatus.PUBLISHED });
+    }
+    findAllAdmin(query) {
         return this.service.findAll(query);
     }
     findBySlug(slug) {
-        return this.service.findBySlug(slug);
+        return this.service.findBySlug(slug, true);
     }
     create(dto, user, req) {
         return this.service.create(dto, user, req.user?.id ?? null, req.user?.email ?? null, req.ip);
@@ -40,6 +43,9 @@ let AnnouncementsController = class AnnouncementsController {
     }
     remove(req, id) {
         return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip);
+    }
+    restore(req, token) {
+        return this.service.restore(token, req.user.id, req.user?.email ?? null, req.ip);
     }
 };
 exports.AnnouncementsController = AnnouncementsController;
@@ -51,6 +57,14 @@ __decorate([
     __metadata("design:paramtypes", [announcement_dto_1.QueryAnnouncementDto]),
     __metadata("design:returntype", void 0)
 ], AnnouncementsController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('admin'),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER, client_1.Role.CONTENT_EDITOR),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [announcement_dto_1.QueryAnnouncementDto]),
+    __metadata("design:returntype", void 0)
+], AnnouncementsController.prototype, "findAllAdmin", null);
 __decorate([
     (0, common_1.Get)(':slug'),
     (0, public_decorator_1.Public)(),
@@ -88,6 +102,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AnnouncementsController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('restore/:token'),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER, client_1.Role.CONTENT_EDITOR),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('token')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AnnouncementsController.prototype, "restore", null);
 exports.AnnouncementsController = AnnouncementsController = __decorate([
     (0, common_1.Controller)('announcements'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

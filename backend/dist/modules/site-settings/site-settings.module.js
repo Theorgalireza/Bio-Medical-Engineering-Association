@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const site_settings_service_1 = require("./site-settings.service");
 const site_settings_controller_1 = require("./site-settings.controller");
 const prisma_module_1 = require("../../prisma/prisma.module");
+const activity_log_module_1 = require("../activity-log/activity-log.module");
 let SiteSettingsModule = class SiteSettingsModule {
 };
 exports.SiteSettingsModule = SiteSettingsModule;
 exports.SiteSettingsModule = SiteSettingsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, activity_log_module_1.ActivityLogModule],
         controllers: [site_settings_controller_1.SiteSettingsController],
         providers: [site_settings_service_1.SiteSettingsService],
         exports: [site_settings_service_1.SiteSettingsService],

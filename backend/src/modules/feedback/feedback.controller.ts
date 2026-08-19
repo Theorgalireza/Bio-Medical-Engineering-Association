@@ -31,4 +31,9 @@ export class FeedbackController {
 
   @Delete(':id') @Roles('ADMIN', 'OWNER')
   remove(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
+
+  @Post('restore/:token') @Roles('ADMIN', 'OWNER')
+  restore(@Req() req: any, @Param('token') token: string) {
+    return this.service.restore(token, req.user.id, req.user?.email ?? null, req.ip);
+  }
 }

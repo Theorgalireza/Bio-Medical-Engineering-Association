@@ -11,8 +11,6 @@ export declare class JwtStrategy extends JwtStrategy_base {
     }): Promise<{
         profile: {
             id: string;
-            github: string | null;
-            linkedin: string | null;
             userId: string;
             firstName: string | null;
             lastName: string | null;
@@ -21,21 +19,23 @@ export declare class JwtStrategy extends JwtStrategy_base {
             major: string | null;
             field: string | null;
             entryYear: number | null;
+            github: string | null;
+            linkedin: string | null;
             website: string | null;
             profileEmail: string | null;
         } | null;
     } & {
         id: string;
         email: string | null;
-        isActive: boolean;
-        createdAt: Date;
         phone: string | null;
         passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
         provider: string | null;
         providerId: string | null;
         avatarUrl: string | null;
+        createdAt: Date;
         updatedAt: Date;
+        isActive: boolean;
     }>;
 }
 export {};

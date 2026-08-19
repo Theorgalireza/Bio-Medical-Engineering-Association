@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FeedbackService = void 0;
 const common_1 = require("@nestjs/common");
+const crypto_1 = require("crypto");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const activity_log_service_1 = require("../activity-log/activity-log.service");
 let FeedbackService = class FeedbackService {
@@ -48,7 +49,8 @@ let FeedbackService = class FeedbackService {
         return item;
     }
     async create(dto, actorId, actorEmail, ip) {
-        const item = await this.prisma.feedback.create({ data: dto });
+        const referenceCode = `FDB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${(0, crypto_1.randomBytes)(3).toString('hex').toUpperCase()}`;
+        const item = await this.prisma.feedback.create({ data: { ...dto, referenceCode } });
         await this.logActivity({
             actorId,
             actorEmail,
@@ -76,6 +78,16 @@ let FeedbackService = class FeedbackService {
     }
     async remove(id, actorId, actorEmail, ip) {
         const existing = await this.findOne(id);
+        await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+        const trash = await this.prisma.deletedRecord.create({
+            data: {
+                entityType: 'Feedback',
+                entityId: id,
+                payload: JSON.parse(JSON.stringify(existing)),
+                deletedBy: actorId ?? null,
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+            },
+        });
         await this.prisma.feedback.delete({ where: { id } });
         await this.logActivity({
             actorId,
@@ -85,7 +97,28 @@ let FeedbackService = class FeedbackService {
             detail: `Deleted feedback from ${existing.name}`,
             ip,
         });
-        return { message: 'Deleted successfully' };
+        return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+    }
+    async restore(token, actorId, actorEmail, ip) {
+        const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+        if (!trash || trash.entityType !== 'Feedback' || trash.expiresAt < new Date()) {
+            throw new common_1.NotFoundException('Undo window expired');
+        }
+        const payload = trash.payload;
+        const restored = await this.prisma.$transaction(async (tx) => {
+            const item = await tx.feedback.create({ data: payload });
+            await tx.deletedRecord.delete({ where: { id: trash.id } });
+            return item;
+        });
+        await this.logActivity({
+            actorId,
+            actorEmail,
+            action: 'RESTORE_FEEDBACK',
+            targetId: restored.id,
+            detail: `Restored feedback ${restored.referenceCode}`,
+            ip,
+        });
+        return restored;
     }
 };
 exports.FeedbackService = FeedbackService;

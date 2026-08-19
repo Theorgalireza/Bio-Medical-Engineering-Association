@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GalleryController = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const gallery_service_1 = require("./gallery.service");
 const gallery_dto_1 = require("./dto/gallery.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
@@ -29,6 +30,7 @@ let GalleryController = class GalleryController {
     create(dto, req) { return this.service.create(dto, req.user?.id, req.user?.id ?? null, req.user?.email ?? null, req.ip); }
     update(req, id, dto) { return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip); }
     remove(req, id) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
+    restore(req, token) { return this.service.restore(token, req.user.id, req.user?.email ?? null, req.ip); }
 };
 exports.GalleryController = GalleryController;
 __decorate([
@@ -75,6 +77,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], GalleryController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('restore/:token'),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER, client_1.Role.CONTENT_EDITOR),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('token')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], GalleryController.prototype, "restore", null);
 exports.GalleryController = GalleryController = __decorate([
     (0, common_1.Controller)('gallery'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import NeonButton from "@/components/ui/NeonButton";
 import { Mail, Phone, LockKeyhole, Eye, EyeOff } from "lucide-react";
 import { getOAuthLoginUrl, register, type OAuthProvider } from "@/lib/api";
@@ -22,10 +22,24 @@ const [form, setForm] = useState({
   email: "",
   phone: "",
   password: "",
+  confirmPassword: "",
 });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const passwordStrength = useMemo(() => {
+    const password = form.password;
+    if (!password) return { label: "بدون رمز عبور", className: "bg-gray-600", width: "w-0" };
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password) || /[آ-ی]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[^A-Za-z0-9آ-ی]/.test(password)) score++;
+    if (score <= 1) return { label: "ضعیف", className: "bg-red-500", width: "w-1/4" };
+    if (score === 2) return { label: "متوسط", className: "bg-amber-400", width: "w-2/4" };
+    if (score === 3) return { label: "خوب", className: "bg-cyan-400", width: "w-3/4" };
+    return { label: "قوی", className: "bg-emerald-400", width: "w-full" };
+  }, [form.password]);
 
   const handleOAuthLogin = (provider: OAuthProvider) => {
     window.location.href = getOAuthLoginUrl(provider);
@@ -43,8 +57,16 @@ const [form, setForm] = useState({
     setError("وارد کردن ایمیل یا شماره موبایل الزامی است.");
     return;
   }
-  if (password && password.length < 8) {
+  if (!password) {
+    setError("رمز عبور الزامی است.");
+    return;
+  }
+  if (password.length < 8) {
     setError("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+    return;
+  }
+  if (password && password !== form.confirmPassword) {
+    setError("تکرار رمز عبور با رمز اصلی یکسان نیست.");
     return;
   }
 
@@ -144,7 +166,8 @@ const [form, setForm] = useState({
           <LockKeyhole size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type={showPassword ? "text" : "password"}
-            placeholder="رمز عبور (اختیاری، حداقل ۸ کاراکتر)"
+            placeholder="رمز عبور (حداقل ۸ کاراکتر)"
+            required
             autoComplete="new-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -160,8 +183,30 @@ const [form, setForm] = useState({
           </button>
         </div>
 
+        {form.password && (
+          <div aria-live="polite" className="space-y-1">
+            <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+              <div className={`h-full transition-all ${passwordStrength.width} ${passwordStrength.className}`} />
+            </div>
+            <p className="text-xs text-gray-500">قدرت رمز: {passwordStrength.label}</p>
+          </div>
+        )}
+
+        <div className="relative">
+          <LockKeyhole size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="تکرار رمز عبور"
+            required
+            autoComplete="new-password"
+            value={form.confirmPassword}
+            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            className="w-full rounded-lg border border-[#1e2d4a] bg-[#0a0f1e] py-2.5 pr-9 pl-10 text-sm text-white placeholder-gray-600 font-vazir focus:outline-none focus:border-[#00d4ff]/50"
+          />
+        </div>
+
         <p className="text-xs text-gray-500 font-vazir">
-حداقل یکی از ایمیل یا موبایل الزامی است. در صورت استفاده از رمز، حداقل ۸ کاراکتر وارد کنید.         </p>
+حداقل یکی از ایمیل یا موبایل و یک رمز عبور معتبر الزامی است. رمز باید حداقل ۸ کاراکتر باشد.         </p>
 
         {error && <p className="text-center text-sm text-red-400 font-vazir">{error}</p>}
 

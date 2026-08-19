@@ -49,7 +49,7 @@ export default function WaveformIcon({
       xmlns="http://www.w3.org/2000/svg"
       className={`${active ? "text-accent" : "text-borderSoft"} ${className}`}
       animate={active ? { opacity: [0.7, 1, 0.7] } : {}}
-      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      transition={{ duration: 3, repeat: 1, ease: "easeInOut" }}
     >
       <path
         d={path}

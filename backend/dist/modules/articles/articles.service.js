@@ -55,9 +55,9 @@ let ArticlesService = class ArticlesService {
             include: { tags: { include: { tag: true } } },
         });
     }
-    async findBySlug(slug) {
+    async findBySlug(slug, publishedOnly = false) {
         const item = await this.prisma.article.findUnique({
-            where: { slug },
+            where: publishedOnly ? { slug, status: client_1.ContentStatus.PUBLISHED } : { slug },
             include: { tags: { include: { tag: true } } },
         });
         if (!item)
@@ -141,9 +141,22 @@ let ArticlesService = class ArticlesService {
         return article;
     }
     async remove(id, actorId, actorEmail, ip) {
-        const item = await this.prisma.article.findUnique({ where: { id } });
+        const item = await this.prisma.article.findUnique({
+            where: { id },
+            include: { tags: { include: { tag: true } } },
+        });
         if (!item)
             throw new common_1.NotFoundException('Article not found');
+        await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+        const trash = await this.prisma.deletedRecord.create({
+            data: {
+                entityType: 'Article',
+                entityId: id,
+                payload: JSON.parse(JSON.stringify(item)),
+                deletedBy: actorId ?? null,
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+            },
+        });
         await this.prisma.article.delete({ where: { id } });
         await this.logActivity({
             actorId,
@@ -153,7 +166,37 @@ let ArticlesService = class ArticlesService {
             detail: `Deleted article '${item.title}' (${item.slug})`,
             ip,
         });
-        return { message: 'Deleted successfully' };
+        return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+    }
+    async restore(token, actorId, actorEmail, ip) {
+        const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+        if (!trash || trash.entityType !== 'Article' || trash.expiresAt < new Date()) {
+            throw new common_1.NotFoundException('Undo window expired');
+        }
+        const payload = trash.payload;
+        const { tags = [], author, ...data } = payload;
+        const restored = await this.prisma.$transaction(async (tx) => {
+            const article = await tx.article.create({
+                data: {
+                    ...data,
+                    tags: tags.length ? {
+                        create: await Promise.all(tags.map(async (entry) => {
+                            const name = entry.tag?.name ?? entry.tagId;
+                            const tag = await tx.tag.upsert({ where: { name }, create: { name }, update: {} });
+                            return { tagId: tag.id };
+                        })),
+                    } : undefined,
+                },
+                include: { tags: { include: { tag: true } } },
+            });
+            await tx.deletedRecord.delete({ where: { id: trash.id } });
+            return article;
+        });
+        await this.logActivity({
+            actorId, actorEmail, action: 'RESTORE_ARTICLE', targetId: restored.id,
+            detail: `Restored article '${restored.title}'`, ip,
+        });
+        return restored;
     }
     async resolveTagConnects(tagNames) {
         return Promise.all(tagNames.map(async (name) => {

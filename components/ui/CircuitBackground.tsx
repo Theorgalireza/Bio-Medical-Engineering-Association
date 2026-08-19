@@ -42,7 +42,7 @@ export default function CircuitBackground({
         strokeLinecap="round"
         initial={{ strokeDashoffset: 0 }}
         animate={{ strokeDashoffset: -400 }}
-        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 8, repeat: 1, ease: "linear" }}
         className="drop-shadow-[0_0_6px_#00D4FF]"
       />
       <motion.path
@@ -53,7 +53,7 @@ export default function CircuitBackground({
         strokeLinecap="round"
         initial={{ strokeDashoffset: 0 }}
         animate={{ strokeDashoffset: -400 }}
-        transition={{ duration: 5, repeat: Infinity, ease: "linear", delay: 1 }}
+        transition={{ duration: 10, repeat: 1, ease: "linear", delay: 1 }}
         className="drop-shadow-[0_0_6px_#B026FF]"
       />
       <motion.path
@@ -64,7 +64,7 @@ export default function CircuitBackground({
         strokeLinecap="round"
         initial={{ strokeDashoffset: 0 }}
         animate={{ strokeDashoffset: -400 }}
-        transition={{ duration: 4.5, repeat: Infinity, ease: "linear", delay: 0.5 }}
+        transition={{ duration: 9, repeat: 1, ease: "linear", delay: 0.5 }}
         className="drop-shadow-[0_0_6px_#39FF14]"
       />
     </svg>

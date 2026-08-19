@@ -4,9 +4,10 @@ import { NewsletterController } from './newsletter.controller';
 import { NewsletterService } from './newsletter.service';
 import { MailService } from './mail.service';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, ActivityLogModule],
   controllers: [NewsletterController],
   providers: [NewsletterService, MailService],
 })

@@ -12,12 +12,13 @@ const newsletter_controller_1 = require("./newsletter.controller");
 const newsletter_service_1 = require("./newsletter.service");
 const mail_service_1 = require("./mail.service");
 const prisma_module_1 = require("../../prisma/prisma.module");
+const activity_log_module_1 = require("../activity-log/activity-log.module");
 let NewsletterModule = class NewsletterModule {
 };
 exports.NewsletterModule = NewsletterModule;
 exports.NewsletterModule = NewsletterModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, activity_log_module_1.ActivityLogModule],
         controllers: [newsletter_controller_1.NewsletterController],
         providers: [newsletter_service_1.NewsletterService, mail_service_1.MailService],
     })

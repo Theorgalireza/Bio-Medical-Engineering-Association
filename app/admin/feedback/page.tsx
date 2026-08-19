@@ -2,21 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Trash2, Star, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { adminDeleteFeedback, adminGetFeedback, adminUpdateFeedback } from "@/lib/api";
+import { adminDeleteFeedback, adminGetFeedback, adminUpdateFeedback, adminRestoreFeedback } from "@/lib/api";
 import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { AdminFeedback } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
 
 const PAGE_SIZE = 8;
 
 export default function FeedbackPage() {
   const { user, loading: authLoading } = useAuth();
   const canManage = user?.role === "OWNER" || user?.role === "ADMIN";
+  const requestConfirm = useConfirm();
   const [items, setItems] = useState<AdminFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [undoTokens, setUndoTokens] = useState<string[]>([]);
+  const [undoBusy, setUndoBusy] = useState(false);
 
   const load = async () => {
     try {
@@ -58,9 +62,22 @@ export default function FeedbackPage() {
   const bulkDelete = async () => {
     const targets = items.filter((item) => selectedIds.has(item.id));
     if (!targets.length) return;
-    if (!confirm(`حذف ${targets.length} بازخورد انجام شود؟`)) return;
-    await Promise.all(targets.map((item) => adminDeleteFeedback(item.id)));
+    if (!(await requestConfirm({ title: "حذف بازخوردها", description: `آیا از حذف ${targets.length} بازخورد انتخاب‌شده مطمئن هستید؟` }))) return;
+    const deleted = await Promise.all(targets.map((item) => adminDeleteFeedback(item.id)));
+    setUndoTokens(deleted.map((item) => item.undoToken));
     await load();
+  };
+
+  const undoDelete = async () => {
+    if (!undoTokens.length) return;
+    setUndoBusy(true);
+    try {
+      await Promise.all(undoTokens.map((token) => adminRestoreFeedback(token)));
+      setUndoTokens([]);
+      await load();
+    } finally {
+      setUndoBusy(false);
+    }
   };
 
   if (authLoading) return <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/50">در حال بارگذاری...</div>;
@@ -117,7 +134,7 @@ export default function FeedbackPage() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button type="button" aria-label={item.approved ? "لغو تأیید بازخورد" : "تأیید بازخورد"} onClick={async () => { await adminUpdateFeedback(item.id, { approved: !item.approved }); await load(); }} className={`rounded px-2 py-0.5 text-xs font-vazir transition-colors ${item.approved ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-gray-500/15 text-gray-400"}`}>{item.approved ? "تأیید شده" : "در انتظار"}</button>
-                <button type="button" title="حذف بازخورد" aria-label="حذف بازخورد" onClick={async () => { if (!confirm("این بازخورد حذف شود؟")) return; await adminDeleteFeedback(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
+                <button type="button" title="حذف بازخورد" aria-label="حذف بازخورد" onClick={async () => { if (!(await requestConfirm({ title: "حذف بازخورد", description: "این بازخورد برای مدت کوتاه قابل بازگردانی است. ادامه می‌دهید؟" }))) return; const deleted = await adminDeleteFeedback(item.id); setUndoTokens([deleted.undoToken]); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
               </div>
             </div>
           </div>
@@ -131,6 +148,15 @@ export default function FeedbackPage() {
           <button disabled={currentPage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-2 disabled:cursor-not-allowed disabled:opacity-40"><ChevronRight size={15} /> قبلی</button>
           <span>صفحه {currentPage.toLocaleString("fa-IR")} از {totalPages.toLocaleString("fa-IR")}</span>
           <button disabled={currentPage >= totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-2 disabled:cursor-not-allowed disabled:opacity-40">بعدی <ChevronLeft size={15} /></button>
+        </div>
+      )}
+      {undoTokens.length > 0 && (
+        <div className="fixed bottom-5 left-5 z-50 flex items-center gap-4 rounded-xl border border-cyan-400/30 bg-[#0d1526] px-4 py-3 text-sm text-gray-200 shadow-2xl">
+          <span>{undoTokens.length.toLocaleString("fa-IR")} بازخورد حذف شد.</span>
+          <button type="button" onClick={undoDelete} disabled={undoBusy} className="font-semibold text-cyan-300 hover:text-cyan-200 disabled:opacity-50">
+            {undoBusy ? "در حال بازگردانی..." : "بازگردانی"}
+          </button>
+          <button type="button" aria-label="بستن پیام بازگردانی" onClick={() => setUndoTokens([])} className="text-gray-500 hover:text-white">×</button>
         </div>
       )}
     </div>

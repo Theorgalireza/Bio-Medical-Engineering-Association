@@ -37,7 +37,7 @@ let UsersController = class UsersController {
         return this.usersService.findAll();
     }
     create(req, dto) {
-        return this.usersService.create(dto, req.user.id, req.user?.email ?? null, req.ip);
+        return this.usersService.create(dto, req.user.id, req.user?.email ?? null, req.ip, req.user.role);
     }
     countByRole() {
         return this.usersService.countByRole();
@@ -52,10 +52,13 @@ let UsersController = class UsersController {
         return this.usersService.updateStatus(id, dto.isActive, req.user.id, req.user?.email ?? null, req.ip);
     }
     updateRole(req, id, dto) {
-        return this.usersService.updateRole(id, dto, req.user.id, req.user?.email ?? null, req.ip);
+        return this.usersService.updateRole(id, dto, req.user.id, req.user?.email ?? null, req.ip, req.user.role);
     }
     remove(req, id) {
         return this.usersService.remove(id, req.user.id, req.user?.email ?? null, req.ip);
+    }
+    restore(req, token) {
+        return this.usersService.restore(token, req.user.id, req.user?.email ?? null, req.ip);
     }
 };
 exports.UsersController = UsersController;
@@ -127,7 +130,7 @@ __decorate([
 ], UsersController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Patch)(':id/role'),
-    (0, roles_decorator_1.Roles)(client_1.Role.OWNER, client_1.Role.ADMIN),
+    (0, roles_decorator_1.Roles)(client_1.Role.OWNER),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Body)()),
@@ -144,6 +147,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('restore/:token'),
+    (0, roles_decorator_1.Roles)(client_1.Role.OWNER),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('token')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "restore", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, common_1.Controller)('users'),

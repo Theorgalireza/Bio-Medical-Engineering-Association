@@ -9,7 +9,7 @@ export default function CTASection() {
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
-          transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
+          transition={{ duration: 12, repeat: 1, repeatType: "reverse" }}
           className="absolute inset-0 opacity-30"
           style={{
             backgroundImage:

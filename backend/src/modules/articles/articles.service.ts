@@ -151,8 +151,21 @@ export class ArticlesService {
   }
 
   async remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
-    const item = await this.prisma.article.findUnique({ where: { id } });
+    const item = await this.prisma.article.findUnique({
+      where: { id },
+      include: { tags: { include: { tag: true } } },
+    });
     if (!item) throw new NotFoundException('Article not found');
+    await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    const trash = await this.prisma.deletedRecord.create({
+      data: {
+        entityType: 'Article',
+        entityId: id,
+        payload: JSON.parse(JSON.stringify(item)),
+        deletedBy: actorId ?? null,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
     await this.prisma.article.delete({ where: { id } });
 
     await this.logActivity({
@@ -164,7 +177,38 @@ export class ArticlesService {
       ip,
     });
 
-    return { message: 'Deleted successfully' };
+    return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+  }
+
+  async restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+    if (!trash || trash.entityType !== 'Article' || trash.expiresAt < new Date()) {
+      throw new NotFoundException('Undo window expired');
+    }
+    const payload = trash.payload as any;
+    const { tags = [], author, ...data } = payload;
+    const restored = await this.prisma.$transaction(async (tx) => {
+      const article = await tx.article.create({
+        data: {
+          ...data,
+          tags: tags.length ? {
+            create: await Promise.all(tags.map(async (entry: any) => {
+              const name = entry.tag?.name ?? entry.tagId;
+              const tag = await tx.tag.upsert({ where: { name }, create: { name }, update: {} });
+              return { tagId: tag.id };
+            })),
+          } : undefined,
+        },
+        include: { tags: { include: { tag: true } } },
+      });
+      await tx.deletedRecord.delete({ where: { id: trash.id } });
+      return article;
+    });
+    await this.logActivity({
+      actorId, actorEmail, action: 'RESTORE_ARTICLE', targetId: restored.id,
+      detail: `Restored article '${restored.title}'`, ip,
+    });
+    return restored;
   }
 
   private async resolveTagConnects(tagNames: string[]) {

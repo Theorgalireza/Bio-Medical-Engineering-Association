@@ -104,7 +104,10 @@ let UsersService = class UsersService {
         }
         return user;
     }
-    async create(dto, actorId, actorEmail, ip) {
+    async create(dto, actorId, actorEmail, ip, actorRole) {
+        if (dto.role === client_1.Role.OWNER && actorRole !== client_1.Role.OWNER) {
+            throw new common_1.BadRequestException('فقط مالک سیستم می‌تواند کاربر OWNER ایجاد کند');
+        }
         if (!dto.email && !dto.phone) {
             throw new common_1.BadRequestException('حداقل ایمیل یا شماره موبایل الزامی است');
         }
@@ -180,8 +183,11 @@ let UsersService = class UsersService {
         });
         return updated;
     }
-    async updateRole(id, dto, actorId, actorEmail, ip) {
+    async updateRole(id, dto, actorId, actorEmail, ip, actorRole) {
         const user = await this.findById(id);
+        if (dto.role === client_1.Role.OWNER && actorRole !== client_1.Role.OWNER) {
+            throw new common_1.BadRequestException('فقط مالک سیستم می‌تواند نقش OWNER را تعیین کند');
+        }
         const updated = await this.prisma.user.update({
             where: { id },
             data: { role: dto.role },
@@ -198,7 +204,19 @@ let UsersService = class UsersService {
         return updated;
     }
     async remove(id, actorId, actorEmail, ip) {
-        const user = await this.findById(id);
+        const user = await this.prisma.user.findUnique({ where: { id }, include: { profile: true } });
+        if (!user)
+            throw new common_1.NotFoundException('کاربر یافت نشد');
+        await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+        const trash = await this.prisma.deletedRecord.create({
+            data: {
+                entityType: 'User',
+                entityId: id,
+                payload: JSON.parse(JSON.stringify(user)),
+                deletedBy: actorId ?? null,
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+            },
+        });
         await this.prisma.user.delete({ where: { id } });
         await this.logActivity({
             actorId,
@@ -208,7 +226,31 @@ let UsersService = class UsersService {
             detail: `Deleted user ${user.email ?? user.phone ?? id}`,
             ip,
         });
-        return { message: 'کاربر با موفقیت حذف شد' };
+        return { message: 'کاربر با موفقیت حذف شد', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+    }
+    async restore(token, actorId, actorEmail, ip) {
+        const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+        if (!trash || trash.entityType !== 'User' || trash.expiresAt < new Date()) {
+            throw new common_1.NotFoundException('Undo window expired');
+        }
+        const payload = trash.payload;
+        const { profile, otpCodes, passwordResetTokens, ...data } = payload;
+        const restored = await this.prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    ...data,
+                    profile: profile ? { create: { ...profile, id: undefined, userId: undefined } } : undefined,
+                },
+                select: this.userSelect,
+            });
+            await tx.deletedRecord.delete({ where: { id: trash.id } });
+            return user;
+        });
+        await this.logActivity({
+            actorId, actorEmail, action: 'RESTORE_USER', targetId: restored.id,
+            detail: `Restored user ${restored.email ?? restored.phone ?? restored.id}`, ip,
+        });
+        return restored;
     }
     async countByRole() {
         const roles = Object.values(client_1.Role);

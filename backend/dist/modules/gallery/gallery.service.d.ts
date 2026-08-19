@@ -60,5 +60,16 @@ export declare class GalleryService {
     }>;
     remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        id: string;
+        createdAt: Date;
+        title: string;
+        description: string | null;
+        imageUrl: string;
+        category: string | null;
+        uploadedById: string | null;
     }>;
 }

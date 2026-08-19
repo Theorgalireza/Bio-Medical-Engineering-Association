@@ -104,6 +104,7 @@ export function toGalleryItem(item: any): GalleryItem {
 export function toFeedback(item: any): Feedback {
   return {
     id: String(item.id),
+    referenceCode: item.referenceCode ? String(item.referenceCode) : undefined,
     name: item.name ?? undefined,
     message: String(item.message ?? ""),
     rating: Number(item.rating ?? 0),
@@ -115,6 +116,7 @@ export function toFeedback(item: any): Feedback {
 export function toContact(item: any): AdminContact {
   return {
     id: String(item.id),
+    referenceCode: item.referenceCode ? String(item.referenceCode) : undefined,
     name: String(item.name ?? ""),
     email: String(item.email ?? ""),
     subject: String(item.subject ?? ""),

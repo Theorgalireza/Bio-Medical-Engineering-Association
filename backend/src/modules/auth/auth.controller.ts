@@ -14,6 +14,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { GoogleAuthGuard } from '../../common/guards/google-auth.guard';
 import { GithubAuthGuard } from '../../common/guards/github-auth.guard';
 import { LinkedinAuthGuard } from '../../common/guards/linkedin-auth.guard';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 class ForgotPasswordDto {
   @IsString()
   identifier!: string;
@@ -24,6 +25,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly config: ConfigService,
+    private readonly activityLog: ActivityLogService,
   ) {}
 
   private setAuthCookie(reply: any, accessToken: string) {
@@ -43,6 +45,16 @@ export class AuthController {
     return reply.redirect(`${frontendUrl}/login?provider=${provider}`);
   }
 
+  private logAuthFailure(action: string, detail: string, req: any, actorEmail?: string | null) {
+    return this.activityLog.log({
+      actorEmail: actorEmail ?? null,
+      action,
+      targetType: 'User',
+      detail,
+      ip: req.ip,
+    });
+  }
+
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('register')
@@ -56,35 +68,63 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(@Body() dto: LoginDto, @Req() req: any, @Res() reply: any) {
-    const result = await this.auth.login(dto, null, req.ip);
-    this.setAuthCookie(reply, result.access_token);
-    return reply.send(result);
+    try {
+      const result = await this.auth.login(dto, null, req.ip);
+      this.setAuthCookie(reply, result.access_token);
+      return reply.send(result);
+    } catch (error) {
+      await this.logAuthFailure(
+        'LOGIN_FAILED',
+        `Failed login attempt using ${dto.email ? 'email' : dto.phone ? 'phone' : 'unknown identifier'}`,
+        req,
+        dto.email,
+      );
+      throw error;
+    }
   }
 
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('send-otp')
   sendOtp(@Body() dto: SendOtpDto, @Req() req: any) {
-    return this.auth.sendOtp(dto.phone, null, req.ip);
+    return this.auth.sendOtp(dto.phone, null, req.ip).catch(async (error) => {
+      await this.logAuthFailure('SEND_OTP_FAILED', 'Failed to send OTP', req, null);
+      throw error;
+    });
   }
 
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('forgot-password')
   forgot(@Body() dto: ForgotPasswordDto, @Req() req: any) {
-    return this.auth.forgotPassword(dto.identifier, null, req.ip);
+    return this.auth.forgotPassword(dto.identifier, null, req.ip).catch(async (error) => {
+      await this.logAuthFailure('FORGOT_PASSWORD_FAILED', 'Failed password reset request', req, dto.identifier);
+      throw error;
+    });
   }
 
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post('reset-password')
   reset(@Body() dto: ResetPasswordDto, @Req() req: any) {
-    return this.auth.resetPassword(dto.token, dto.newPassword, null, req.ip);
+    return this.auth.resetPassword(dto.token, dto.newPassword, null, req.ip).catch(async (error) => {
+      await this.logAuthFailure('RESET_PASSWORD_FAILED', 'Failed password reset', req);
+      throw error;
+    });
   }
 
   @Public()
   @Post('logout')
-  logout(@Res() reply: any) {
+  async logout(@Req() req: any, @Res() reply: any) {
+    await this.activityLog.log({
+      actorId: req.user?.id ?? null,
+      actorEmail: req.user?.email ?? null,
+      action: 'LOGOUT',
+      targetType: 'User',
+      targetId: req.user?.id ?? null,
+      detail: req.user?.id ? 'User logged out' : 'Anonymous logout request',
+      ip: req.ip,
+    });
     const isProd = this.config.get<string>('NODE_ENV') === 'production';
     reply.clearCookie('access_token', { path: '/', sameSite: 'lax', secure: isProd });
     return reply.send({ success: true });

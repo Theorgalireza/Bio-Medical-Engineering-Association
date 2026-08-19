@@ -57,11 +57,12 @@ export async function adminCreateUser(payload: CreateUserPayload) {
 export const createUser = adminCreateUser;
 
 export async function adminDeleteUser(userId: string) {
-  return apiFetch<void>(`/users/${userId}`, {
+  return apiFetch<{ undoToken: string; undoExpiresAt: string }>(`/users/${userId}`, {
     method: "DELETE",
     auth: true,
   });
 }
+export const adminRestoreUser = (token: string) => apiFetch(`/users/restore/${token}`, { method: "POST", auth: true });
 
 export const deleteUser = adminDeleteUser;
 

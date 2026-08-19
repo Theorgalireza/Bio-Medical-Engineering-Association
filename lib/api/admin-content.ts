@@ -51,11 +51,12 @@ export async function adminUpdateAnnouncement(id: string, body: object) {
 }
 
 export async function adminDeleteAnnouncement(id: string) {
-  return apiFetch<void>(`/announcements/${id}`, {
+  return apiFetch<{ undoToken: string; undoExpiresAt: string }>(`/announcements/${id}`, {
     method: "DELETE",
     auth: true,
   });
 }
+export const adminRestoreAnnouncement = (token: string) => apiFetch(`/announcements/restore/${token}`, { method: "POST", auth: true });
 
 export async function adminGetArticles(): Promise<AdminArticle[]> {
   const results = await Promise.all(
@@ -99,11 +100,12 @@ export async function adminUpdateArticle(id: string, body: object) {
 }
 
 export async function adminDeleteArticle(id: string) {
-  return apiFetch<void>(`/articles/${id}`, {
+  return apiFetch<{ undoToken: string; undoExpiresAt: string }>(`/articles/${id}`, {
     method: "DELETE",
     auth: true,
   });
 }
+export const adminRestoreArticle = (token: string) => apiFetch(`/articles/restore/${token}`, { method: "POST", auth: true });
 
 export async function adminGetFaculty(): Promise<AdminFacultyMember[]> {
   const items = await apiFetch<any[]>("/faculty", { auth: true });
@@ -137,11 +139,12 @@ export async function adminUpdateFaculty(id: string, body: object) {
 }
 
 export async function adminDeleteFaculty(id: string) {
-  return apiFetch<void>(`/faculty/${id}`, {
+  return apiFetch<{ undoToken: string; undoExpiresAt: string }>(`/faculty/${id}`, {
     method: "DELETE",
     auth: true,
   });
 }
+export const adminRestoreFaculty = (token: string) => apiFetch(`/faculty/restore/${token}`, { method: "POST", auth: true });
 
 export async function adminGetGallery(): Promise<GalleryItem[]> {
   const items = await apiFetch<any[]>("/gallery", { auth: true });
@@ -165,8 +168,9 @@ export async function adminUpdateGallery(id: string, body: object) {
 }
 
 export async function adminDeleteGallery(id: string) {
-  return apiFetch<void>(`/gallery/${id}`, {
+  return apiFetch<{ undoToken: string; undoExpiresAt: string }>(`/gallery/${id}`, {
     method: "DELETE",
     auth: true,
   });
 }
+export const adminRestoreGallery = (token: string) => apiFetch(`/gallery/restore/${token}`, { method: "POST", auth: true });

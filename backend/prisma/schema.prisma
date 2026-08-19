@@ -31,6 +31,7 @@ enum AnnouncementType {
   EVENT
   NEWS
 }
+
 model SiteSetting {
   key       String   @id
   value     String   @db.Text
@@ -58,30 +59,31 @@ model NewsletterCampaign {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String?  @unique
-  phone         String?  @unique
-  passwordHash  String?
-  role          Role     @default(GUEST)
+  id           String  @id @default(uuid())
+  email        String? @unique
+  phone        String? @unique
+  passwordHash String?
+  role         Role    @default(GUEST)
 
-  provider      String?
-  providerId    String?
-  avatarUrl     String?
+  provider   String?
+  providerId String?
+  avatarUrl  String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  isActive      Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
 
-  profile              Profile?
-  otpCodes             OtpCode[]
-  passwordResetTokens  PasswordResetToken[]
-  announcements        Announcement[]
-  articles             Article[]
-  galleryItems         GalleryItem[]
-  pageViews PageView[]
+  profile             Profile?
+  otpCodes            OtpCode[]
+  passwordResetTokens PasswordResetToken[]
+  announcements       Announcement[]
+  articles            Article[]
+  galleryItems        GalleryItem[]
+  pageViews           PageView[]
 
   @@index([provider, providerId])
 }
+
 model ActivityLog {
   id         String   @id @default(uuid())
   actorId    String?
@@ -92,7 +94,12 @@ model ActivityLog {
   detail     String?
   ip         String?
   createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action, createdAt])
+  @@index([targetType, createdAt])
 }
+
 model PageView {
   id        String   @id @default(uuid())
   path      String
@@ -243,20 +250,36 @@ model GalleryItem {
 }
 
 model Feedback {
-  id        String   @id @default(uuid())
-  name      String
-  message   String   @db.Text
-  rating    Int?
-  approved  Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  referenceCode String   @unique
+  name          String
+  message       String   @db.Text
+  rating        Int?
+  approved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
 }
 
 model Contact {
-  id        String   @id @default(uuid())
-  name      String
-  email     String
-  subject   String?
-  message   String   @db.Text
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  referenceCode String   @unique
+  name          String
+  email         String
+  subject       String?
+  message       String   @db.Text
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model DeletedRecord {
+  id         String   @id @default(uuid())
+  token      String   @unique @default(uuid())
+  entityType String
+  entityId   String
+  payload    Json
+  deletedBy  String?
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+
+  @@index([entityType, entityId])
+  @@index([expiresAt])
 }

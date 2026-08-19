@@ -18,7 +18,6 @@ export declare class AnnouncementsService {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         description: string;
@@ -28,11 +27,11 @@ export declare class AnnouncementsService {
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
+        updatedAt: Date;
     })[]>;
-    findBySlug(slug: string): Promise<{
+    findBySlug(slug: string, publishedOnly?: boolean): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         description: string;
@@ -42,11 +41,11 @@ export declare class AnnouncementsService {
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
+        updatedAt: Date;
     }>;
     create(dto: CreateAnnouncementDto, user: User, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         description: string;
@@ -56,11 +55,11 @@ export declare class AnnouncementsService {
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
+        updatedAt: Date;
     }>;
     update(id: string, dto: UpdateAnnouncementDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         slug: string;
         title: string;
         description: string;
@@ -70,8 +69,25 @@ export declare class AnnouncementsService {
         status: import(".prisma/client").$Enums.ContentStatus;
         publishedAt: Date | null;
         authorId: string | null;
+        updatedAt: Date;
     }>;
     remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        id: string;
+        createdAt: Date;
+        slug: string;
+        title: string;
+        description: string;
+        imageUrl: string | null;
+        type: import(".prisma/client").$Enums.AnnouncementType;
+        isNew: boolean;
+        status: import(".prisma/client").$Enums.ContentStatus;
+        publishedAt: Date | null;
+        authorId: string | null;
+        updatedAt: Date;
     }>;
 }

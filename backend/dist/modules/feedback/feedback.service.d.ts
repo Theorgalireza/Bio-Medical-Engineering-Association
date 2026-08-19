@@ -10,6 +10,7 @@ export declare class FeedbackService {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
@@ -18,6 +19,7 @@ export declare class FeedbackService {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
@@ -26,6 +28,7 @@ export declare class FeedbackService {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
@@ -34,11 +37,23 @@ export declare class FeedbackService {
         name: string;
         id: string;
         createdAt: Date;
+        referenceCode: string;
         message: string;
         rating: number | null;
         approved: boolean;
     }>;
     remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        referenceCode: string;
+        message: string;
+        rating: number | null;
+        approved: boolean;
     }>;
 }

@@ -68,6 +68,7 @@ export interface FacultyMember {
 
 export interface Feedback {
   id: string;
+  referenceCode?: string;
   name?: string;
   email?: string;
   message: string;
@@ -90,6 +91,16 @@ export interface ContactInfoItem {
   label: string;
   value: string;
   icon: "mail" | "phone" | "pin";
+}
+
+export interface ContactSubmissionResult {
+  id: string;
+  referenceCode: string;
+}
+
+export interface FeedbackSubmissionResult {
+  id: string;
+  referenceCode: string;
 }
 
 export type Role =
@@ -228,6 +239,7 @@ export interface AdminFacultyMember {
 
 export interface AdminFeedback {
   id: string;
+  referenceCode?: string;
   name: string;
   message: string;
   rating: number;
@@ -237,6 +249,7 @@ export interface AdminFeedback {
 
 export interface AdminContact {
   id: string;
+  referenceCode?: string;
   name: string;
   email: string;
   subject: string;

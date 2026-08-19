@@ -29,6 +29,7 @@ export default function Feedback() {
   const [hoverRating, setHoverRating] = useState(0);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState("");
+  const [referenceCode, setReferenceCode] = useState("");
   const timeoutRef = useRef<number | null>(null);
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -64,12 +65,13 @@ export default function Feedback() {
     messageParts.push(form.message.trim());
 
     try {
-      await submitFeedback({
+      const result = await submitFeedback({
         name: form.name || "ناشناس",
         message: messageParts.join("\n"),
         rating: form.rating || 1,
       });
       setStatus("success");
+      setReferenceCode(result.referenceCode);
       setForm(initialState);
     } catch {
       setStatus("error");
@@ -125,9 +127,12 @@ export default function Feedback() {
                 <p className="text-sm text-gray-400">
                   از اینکه وقت گذاشتید سپاسگزاریم 🙏
                 </p>
+                <p className="mt-3 rounded-lg border border-accent/20 bg-accent/5 px-4 py-2 text-sm text-accent">
+                  شماره پیگیری: <span dir="ltr" className="font-mono">{referenceCode}</span>
+                </p>
                 <button
                   type="button"
-                  onClick={() => setStatus("idle")}
+                  onClick={() => { setStatus("idle"); setReferenceCode(""); }}
                   className="mt-4 rounded-full border border-accent/40 px-4 py-2 text-sm text-accent transition hover:bg-accent/10"
                 >
                   ثبت بازخورد دیگری

@@ -1,5 +1,6 @@
 // feedback.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateFeedbackDto, UpdateFeedbackDto, QueryFeedbackDto } from './dto/feedback.dto';
 import { ActivityLogService } from '../activity-log/activity-log.service';
@@ -49,7 +50,8 @@ export class FeedbackService {
   }
 
   async create(dto: CreateFeedbackDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
-    const item = await this.prisma.feedback.create({ data: dto });
+    const referenceCode = `FDB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomBytes(3).toString('hex').toUpperCase()}`;
+    const item = await this.prisma.feedback.create({ data: { ...dto, referenceCode } });
 
     await this.logActivity({
       actorId,
@@ -83,6 +85,16 @@ export class FeedbackService {
 
   async remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
     const existing = await this.findOne(id);
+    await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    const trash = await this.prisma.deletedRecord.create({
+      data: {
+        entityType: 'Feedback',
+        entityId: id,
+        payload: JSON.parse(JSON.stringify(existing)),
+        deletedBy: actorId ?? null,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
     await this.prisma.feedback.delete({ where: { id } });
 
     await this.logActivity({
@@ -94,6 +106,28 @@ export class FeedbackService {
       ip,
     });
 
-    return { message: 'Deleted successfully' };
+    return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+  }
+
+  async restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+    if (!trash || trash.entityType !== 'Feedback' || trash.expiresAt < new Date()) {
+      throw new NotFoundException('Undo window expired');
+    }
+    const payload = trash.payload as any;
+    const restored = await this.prisma.$transaction(async (tx) => {
+      const item = await tx.feedback.create({ data: payload });
+      await tx.deletedRecord.delete({ where: { id: trash.id } });
+      return item;
+    });
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'RESTORE_FEEDBACK',
+      targetId: restored.id,
+      detail: `Restored feedback ${restored.referenceCode}`,
+      ip,
+    });
+    return restored;
   }
 }

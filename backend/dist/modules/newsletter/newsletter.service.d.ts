@@ -2,45 +2,48 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from './mail.service';
 import { ConfigService } from '@nestjs/config';
 import { SubscribeDto, SendCampaignDto } from './dto/newsletter.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 export declare class NewsletterService {
     private prisma;
     private mail;
     private config;
-    constructor(prisma: PrismaService, mail: MailService, config: ConfigService);
-    subscribe(dto: SubscribeDto): Promise<{
-        id: string;
-        email: string;
-        token: string;
+    private activityLog;
+    constructor(prisma: PrismaService, mail: MailService, config: ConfigService, activityLog: ActivityLogService);
+    private logActivity;
+    subscribe(dto: SubscribeDto, ip?: string | null): Promise<{
         name: string | null;
-        isActive: boolean;
+        id: string;
         createdAt: Date;
+        email: string;
+        isActive: boolean;
+        token: string;
     }>;
-    unsubscribe(token: string): Promise<{
-        id: string;
-        email: string;
-        token: string;
+    unsubscribe(token: string, ip?: string | null): Promise<{
         name: string | null;
-        isActive: boolean;
+        id: string;
         createdAt: Date;
+        email: string;
+        isActive: boolean;
+        token: string;
     }>;
     getMySubscription(email: string): Promise<{
         subscribed: boolean;
     }>;
-    unsubscribeMe(email: string): Promise<{
-        id: string;
-        email: string;
-        token: string;
+    unsubscribeMe(email: string, ip?: string | null): Promise<{
         name: string | null;
-        isActive: boolean;
+        id: string;
         createdAt: Date;
+        email: string;
+        isActive: boolean;
+        token: string;
     }>;
-    resubscribeMe(email: string): Promise<{
-        id: string;
-        email: string;
-        token: string;
+    resubscribeMe(email: string, ip?: string | null): Promise<{
         name: string | null;
-        isActive: boolean;
+        id: string;
         createdAt: Date;
+        email: string;
+        isActive: boolean;
+        token: string;
     }>;
     getSubscribers(onlyActive?: boolean): Promise<({
         id: string;
@@ -59,27 +62,25 @@ export declare class NewsletterService {
         token: string;
         source: "guest";
     })[]>;
-    deleteSubscriber(id: string): Promise<{
-        id: string;
-        email: string;
-        token: string;
-        name: string | null;
-        isActive: boolean;
-        createdAt: Date;
+    deleteSubscriber(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
     }>;
+    restoreSubscriber(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<any>;
     getCampaigns(): Promise<{
+        body: string;
         id: string;
         createdAt: Date;
         subject: string;
-        body: string;
         sentAt: Date | null;
         recipientCount: number;
     }[]>;
-    sendCampaign(dto: SendCampaignDto): Promise<{
+    sendCampaign(dto: SendCampaignDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        body: string;
         id: string;
         createdAt: Date;
         subject: string;
-        body: string;
         sentAt: Date | null;
         recipientCount: number;
     }>;

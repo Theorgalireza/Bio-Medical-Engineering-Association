@@ -90,7 +90,7 @@ export default function Hero() {
             animate={{ rotate: 360 }}
             transition={{
               duration: 20,
-              repeat: Infinity,
+              repeat: 0,
               ease: "linear",
             }}
           >
@@ -123,7 +123,7 @@ export default function Hero() {
               "
               fill="none"
               stroke="#00D4FF"
-              strokeWidth="3"
+              strokeWidth="1"
               strokeLinecap="round"
               strokeLinejoin="round"
               filter="url(#hero-ring-glow)"
@@ -134,7 +134,7 @@ export default function Hero() {
               animate={{ rotate: 360 }}
               transition={{
                 duration: 4,
-                repeat: Infinity,
+                repeat: 0,
                 ease: "linear",
               }}
             >
@@ -152,7 +152,7 @@ export default function Hero() {
               animate={{ rotate: -180 }}
               transition={{
                 duration: 3,
-                repeat: Infinity,
+                repeat: 0,
                 ease: "linear",
               }}
             >
@@ -214,7 +214,7 @@ export default function Hero() {
               transition={{
                 duration: 2,
                 ease: "easeInOut",
-                repeat: Infinity,
+                repeat: 0,
                 repeatType: "loop",
                 repeatDelay: 1,
               }}

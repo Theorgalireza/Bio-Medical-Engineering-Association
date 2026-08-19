@@ -25,32 +25,35 @@ let NewsletterController = class NewsletterController {
     constructor(service) {
         this.service = service;
     }
-    subscribe(dto) {
-        return this.service.subscribe(dto);
+    subscribe(dto, req) {
+        return this.service.subscribe(dto, req.ip);
     }
-    unsubscribe(token) {
-        return this.service.unsubscribe(token);
+    unsubscribe(token, req) {
+        return this.service.unsubscribe(token, req.ip);
     }
     getMySubscription(req) {
         return this.service.getMySubscription(req.user?.email);
     }
     unsubscribeMe(req) {
-        return this.service.unsubscribeMe(req.user?.email);
+        return this.service.unsubscribeMe(req.user?.email, req.ip);
     }
     resubscribeMe(req) {
-        return this.service.resubscribeMe(req.user?.email);
+        return this.service.resubscribeMe(req.user?.email, req.ip);
     }
     getSubscribers(all) {
         return this.service.getSubscribers(all !== 'true');
     }
-    deleteSubscriber(id) {
-        return this.service.deleteSubscriber(id);
+    deleteSubscriber(id, req) {
+        return this.service.deleteSubscriber(id, req.user?.id, req.user?.email ?? null, req.ip);
+    }
+    restoreSubscriber(token, req) {
+        return this.service.restoreSubscriber(token, req.user?.id, req.user?.email ?? null, req.ip);
     }
     getCampaigns() {
         return this.service.getCampaigns();
     }
-    sendCampaign(dto) {
-        return this.service.sendCampaign(dto);
+    sendCampaign(dto, req) {
+        return this.service.sendCampaign(dto, req.user?.id, req.user?.email ?? null, req.ip);
     }
 };
 exports.NewsletterController = NewsletterController;
@@ -59,8 +62,9 @@ __decorate([
     (0, skip_csrf_decorator_1.SkipCsrf)(),
     (0, common_1.Post)('subscribe'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [newsletter_dto_1.SubscribeDto]),
+    __metadata("design:paramtypes", [newsletter_dto_1.SubscribeDto, Object]),
     __metadata("design:returntype", void 0)
 ], NewsletterController.prototype, "subscribe", null);
 __decorate([
@@ -68,8 +72,9 @@ __decorate([
     (0, skip_csrf_decorator_1.SkipCsrf)(),
     (0, common_1.Post)('unsubscribe'),
     __param(0, (0, common_1.Body)('token')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], NewsletterController.prototype, "unsubscribe", null);
 __decorate([
@@ -108,10 +113,20 @@ __decorate([
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER),
     (0, common_1.Delete)('subscribers/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], NewsletterController.prototype, "deleteSubscriber", null);
+__decorate([
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER),
+    (0, common_1.Post)('subscribers/restore/:token'),
+    __param(0, (0, common_1.Param)('token')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], NewsletterController.prototype, "restoreSubscriber", null);
 __decorate([
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER),
     (0, common_1.Get)('campaigns'),
@@ -123,8 +138,9 @@ __decorate([
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.OWNER),
     (0, common_1.Post)('campaigns/send'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [newsletter_dto_1.SendCampaignDto]),
+    __metadata("design:paramtypes", [newsletter_dto_1.SendCampaignDto, Object]),
     __metadata("design:returntype", void 0)
 ], NewsletterController.prototype, "sendCampaign", null);
 exports.NewsletterController = NewsletterController = __decorate([

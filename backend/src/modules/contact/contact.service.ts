@@ -1,5 +1,6 @@
 // contact.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateContactDto, UpdateContactDto, QueryContactDto } from './dto/contact.dto';
 import { ActivityLogService } from '../activity-log/activity-log.service';
@@ -51,7 +52,8 @@ export class ContactService {
   }
 
   async create(dto: CreateContactDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
-    const item = await this.prisma.contact.create({ data: dto });
+    const referenceCode = `CNT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomBytes(3).toString('hex').toUpperCase()}`;
+    const item = await this.prisma.contact.create({ data: { ...dto, referenceCode } });
 
     await this.logActivity({
       actorId,
@@ -85,6 +87,16 @@ export class ContactService {
 
   async remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
     const existing = await this.findOne(id);
+    await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    const trash = await this.prisma.deletedRecord.create({
+      data: {
+        entityType: 'Contact',
+        entityId: id,
+        payload: JSON.parse(JSON.stringify(existing)),
+        deletedBy: actorId ?? null,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
     await this.prisma.contact.delete({ where: { id } });
 
     await this.logActivity({
@@ -96,6 +108,28 @@ export class ContactService {
       ip,
     });
 
-    return { message: 'Deleted successfully' };
+    return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+  }
+
+  async restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+    if (!trash || trash.entityType !== 'Contact' || trash.expiresAt < new Date()) {
+      throw new NotFoundException('Undo window expired');
+    }
+    const payload = trash.payload as any;
+    const restored = await this.prisma.$transaction(async (tx) => {
+      const item = await tx.contact.create({ data: payload });
+      await tx.deletedRecord.delete({ where: { id: trash.id } });
+      return item;
+    });
+    await this.logActivity({
+      actorId,
+      actorEmail,
+      action: 'RESTORE_CONTACT_MESSAGE',
+      targetId: restored.id,
+      detail: `Restored contact message ${restored.referenceCode}`,
+      ip,
+    });
+    return restored;
   }
 }

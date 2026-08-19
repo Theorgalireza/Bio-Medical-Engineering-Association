@@ -49,4 +49,10 @@ export class ArticlesController {
   remove(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip);
   }
+
+  @Post('restore/:token')
+  @Roles(Role.ADMIN, Role.OWNER, Role.CONTENT_EDITOR)
+  restore(@Req() req: any, @Param('token') token: string) {
+    return this.service.restore(token, req.user.id, req.user?.email ?? null, req.ip);
+  }
 }

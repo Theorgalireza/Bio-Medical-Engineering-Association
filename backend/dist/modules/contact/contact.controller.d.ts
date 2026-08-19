@@ -6,8 +6,9 @@ export declare class ContactController {
     findAll(query: QueryContactDto): import(".prisma/client").Prisma.PrismaPromise<{
         name: string;
         id: string;
-        email: string;
         createdAt: Date;
+        email: string;
+        referenceCode: string;
         subject: string | null;
         message: string;
         read: boolean;
@@ -15,8 +16,9 @@ export declare class ContactController {
     findOne(id: string): Promise<{
         name: string;
         id: string;
-        email: string;
         createdAt: Date;
+        email: string;
+        referenceCode: string;
         subject: string | null;
         message: string;
         read: boolean;
@@ -24,8 +26,9 @@ export declare class ContactController {
     create(req: any, dto: CreateContactDto): Promise<{
         name: string;
         id: string;
-        email: string;
         createdAt: Date;
+        email: string;
+        referenceCode: string;
         subject: string | null;
         message: string;
         read: boolean;
@@ -33,13 +36,26 @@ export declare class ContactController {
     update(req: any, id: string, dto: UpdateContactDto): Promise<{
         name: string;
         id: string;
-        email: string;
         createdAt: Date;
+        email: string;
+        referenceCode: string;
         subject: string | null;
         message: string;
         read: boolean;
     }>;
     remove(req: any, id: string): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(req: any, token: string): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        email: string;
+        referenceCode: string;
+        subject: string | null;
+        message: string;
+        read: boolean;
     }>;
 }

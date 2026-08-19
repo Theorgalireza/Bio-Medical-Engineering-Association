@@ -262,8 +262,19 @@ export class UsersService {
   }
 
   async remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
-    const user = await this.findById(id);
+    const user = await this.prisma.user.findUnique({ where: { id }, include: { profile: true } });
+    if (!user) throw new NotFoundException('کاربر یافت نشد');
 
+    await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    const trash = await this.prisma.deletedRecord.create({
+      data: {
+        entityType: 'User',
+        entityId: id,
+        payload: JSON.parse(JSON.stringify(user)),
+        deletedBy: actorId ?? null,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
     await this.prisma.user.delete({ where: { id } });
 
     await this.logActivity({
@@ -275,7 +286,32 @@ export class UsersService {
       ip,
     });
 
-    return { message: 'کاربر با موفقیت حذف شد' };
+    return { message: 'کاربر با موفقیت حذف شد', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+  }
+
+  async restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+    if (!trash || trash.entityType !== 'User' || trash.expiresAt < new Date()) {
+      throw new NotFoundException('Undo window expired');
+    }
+    const payload = trash.payload as any;
+    const { profile, otpCodes, passwordResetTokens, ...data } = payload;
+    const restored = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          ...data,
+          profile: profile ? { create: { ...profile, id: undefined, userId: undefined } } : undefined,
+        },
+        select: this.userSelect,
+      });
+      await tx.deletedRecord.delete({ where: { id: trash.id } });
+      return user;
+    });
+    await this.logActivity({
+      actorId, actorEmail, action: 'RESTORE_USER', targetId: restored.id,
+      detail: `Restored user ${restored.email ?? restored.phone ?? restored.id}`, ip,
+    });
+    return restored;
   }
 
   async countByRole() {

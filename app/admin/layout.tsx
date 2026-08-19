@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Role } from "@/types";
 import Spinner from "@/components/ui/Spinner";
+import { ConfirmProvider } from "@/components/admin/ConfirmDialog";
 import {
   Activity,
   BarChart2,
@@ -240,6 +241,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
+    <ConfirmProvider>
     <div className="min-h-screen bg-gray-950 text-white" dir="rtl">
       {/* Desktop sidebar */}
       <div className="hidden lg:block fixed right-0 top-0 h-screen w-64 z-40">
@@ -291,5 +293,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
     </div>
+    </ConfirmProvider>
   );
 }

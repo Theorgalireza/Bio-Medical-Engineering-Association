@@ -25,11 +25,11 @@ let SiteSettingsController = class SiteSettingsController {
         this.service = service;
     }
     findAll() { return this.service.findAll(); }
-    upsert(key, dto) {
-        return this.service.upsert(key, dto.value);
+    upsert(key, dto, req) {
+        return this.service.upsert(key, dto.value, req.user?.id, req.user?.email ?? null, req.ip);
     }
-    bulkUpsert(dto) {
-        return this.service.bulkUpsert(dto.settings);
+    bulkUpsert(dto, req) {
+        return this.service.bulkUpsert(dto.settings, req.user?.id, req.user?.email ?? null, req.ip);
     }
 };
 exports.SiteSettingsController = SiteSettingsController;
@@ -45,16 +45,18 @@ __decorate([
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
     __param(0, (0, common_1.Param)('key')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, site_settings_dto_1.UpsertSettingDto]),
+    __metadata("design:paramtypes", [String, site_settings_dto_1.UpsertSettingDto, Object]),
     __metadata("design:returntype", void 0)
 ], SiteSettingsController.prototype, "upsert", null);
 __decorate([
     (0, common_1.Put)(),
     (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [site_settings_dto_1.BulkUpsertDto]),
+    __metadata("design:paramtypes", [site_settings_dto_1.BulkUpsertDto, Object]),
     __metadata("design:returntype", void 0)
 ], SiteSettingsController.prototype, "bulkUpsert", null);
 exports.SiteSettingsController = SiteSettingsController = __decorate([

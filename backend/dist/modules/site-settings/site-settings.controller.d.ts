@@ -8,12 +8,12 @@ export declare class SiteSettingsController {
         key: string;
         value: string;
     }[]>;
-    upsert(key: string, dto: UpsertSettingDto): Promise<{
+    upsert(key: string, dto: UpsertSettingDto, req: any): Promise<{
         updatedAt: Date;
         key: string;
         value: string;
     }>;
-    bulkUpsert(dto: BulkUpsertDto): Promise<{
+    bulkUpsert(dto: BulkUpsertDto, req: any): Promise<{
         updatedAt: Date;
         key: string;
         value: string;

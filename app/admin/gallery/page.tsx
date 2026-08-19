@@ -5,10 +5,13 @@ import { Plus, Pencil, Trash2, X, Check, ImageOff } from "lucide-react";
 import {
   adminCreateGallery,
   adminDeleteGallery,
+  adminRestoreGallery,
   adminGetGallery,
   adminUpdateGallery,
 } from "@/lib/api";
 import type { GalleryItem } from "@/types";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
+import UndoToast from "@/components/admin/UndoToast";
 
 const empty: Omit<GalleryItem, "id"> = {
   title: "",
@@ -18,10 +21,13 @@ const empty: Omit<GalleryItem, "id"> = {
 };
 
 export default function GalleryAdminPage() {
+  const requestConfirm = useConfirm();
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [undoTokens, setUndoTokens] = useState<string[]>([]);
+  const [undoBusy, setUndoBusy] = useState(false);
 
   const [modal, setModal] = useState<{
     open: boolean;
@@ -87,9 +93,10 @@ export default function GalleryAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("آیا از حذف این تصویر مطمئن هستید؟")) return;
+    if (!(await requestConfirm({ title: "حذف تصویر", description: "این تصویر برای همیشه از گالری حذف می‌شود. ادامه می‌دهید؟" }))) return;
     try {
-      await adminDeleteGallery(id);
+      const deleted = await adminDeleteGallery(id);
+      setUndoTokens([deleted.undoToken]);
       await load();
     } catch (e) {
       setError("خطا در حذف");
@@ -254,6 +261,21 @@ export default function GalleryAdminPage() {
           </div>
         </div>
       )}
+      <UndoToast
+        count={undoTokens.length}
+        busy={undoBusy}
+        onDismiss={() => setUndoTokens([])}
+        onUndo={async () => {
+          setUndoBusy(true);
+          try {
+            await Promise.all(undoTokens.map(adminRestoreGallery));
+            setUndoTokens([]);
+            await load();
+          } finally {
+            setUndoBusy(false);
+          }
+        }}
+      />
     </div>
   );
 }

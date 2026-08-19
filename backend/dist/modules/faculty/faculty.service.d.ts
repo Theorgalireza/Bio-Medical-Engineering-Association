@@ -9,48 +9,61 @@ export declare class FacultyService {
     findAll(query: QueryFacultyDto): import(".prisma/client").Prisma.PrismaPromise<{
         name: string;
         id: string;
-        isActive: boolean;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
-        monogram: string;
+        updatedAt: Date;
+        isActive: boolean;
         specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
         color: string;
     }[]>;
     findOne(id: string): Promise<{
         name: string;
         id: string;
-        isActive: boolean;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
-        monogram: string;
+        updatedAt: Date;
+        isActive: boolean;
         specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
         color: string;
     }>;
     create(dto: CreateFacultyDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         name: string;
         id: string;
-        isActive: boolean;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
-        monogram: string;
+        updatedAt: Date;
+        isActive: boolean;
         specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
         color: string;
     }>;
     update(id: string, dto: UpdateFacultyDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         name: string;
         id: string;
-        isActive: boolean;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
-        monogram: string;
+        updatedAt: Date;
+        isActive: boolean;
         specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
         color: string;
     }>;
     remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        title: string;
+        updatedAt: Date;
+        isActive: boolean;
+        specialties: import("@prisma/client/runtime/library").JsonValue;
+        monogram: string;
+        color: string;
     }>;
 }

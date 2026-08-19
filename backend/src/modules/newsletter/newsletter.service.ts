@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from './mail.service';
 import { ConfigService } from '@nestjs/config';
 import { SubscribeDto, SendCampaignDto } from './dto/newsletter.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Injectable()
 export class NewsletterService {
@@ -10,31 +11,44 @@ export class NewsletterService {
     private prisma: PrismaService,
     private mail: MailService,
     private config: ConfigService,
+    private activityLog: ActivityLogService,
   ) {}
 
-  async subscribe(dto: SubscribeDto) {
+  private logActivity(action: string, detail: string, actorId?: string | null, actorEmail?: string | null, targetId?: string | null, ip?: string | null) {
+    return this.activityLog.log({
+      actorId, actorEmail, action, targetType: 'Newsletter', targetId: targetId ?? null, detail, ip,
+    });
+  }
+
+  async subscribe(dto: SubscribeDto, ip?: string | null) {
     const existing = await this.prisma.newsletterSubscriber.findUnique({
       where: { email: dto.email },
     });
 
     if (existing) {
       if (existing.isActive) throw new BadRequestException('این ایمیل قبلاً ثبت شده است.');
-      return this.prisma.newsletterSubscriber.update({
+      const result = await this.prisma.newsletterSubscriber.update({
         where: { email: dto.email },
         data: { isActive: true, name: dto.name },
       });
+      await this.logActivity('SUBSCRIBE_NEWSLETTER', `Reactivated newsletter subscriber ${dto.email}`, null, dto.email, result.id, ip);
+      return result;
     }
 
-    return this.prisma.newsletterSubscriber.create({ data: dto });
+    const result = await this.prisma.newsletterSubscriber.create({ data: dto });
+    await this.logActivity('SUBSCRIBE_NEWSLETTER', `Created newsletter subscriber ${dto.email}`, null, dto.email, result.id, ip);
+    return result;
   }
 
-  async unsubscribe(token: string) {
+  async unsubscribe(token: string, ip?: string | null) {
     const sub = await this.prisma.newsletterSubscriber.findUnique({ where: { token } });
     if (!sub) throw new NotFoundException('لینک نامعتبر است.');
-    return this.prisma.newsletterSubscriber.update({
+    const result = await this.prisma.newsletterSubscriber.update({
       where: { token },
       data: { isActive: false },
     });
+    await this.logActivity('UNSUBSCRIBE_NEWSLETTER', `Unsubscribed newsletter subscriber ${sub.email}`, null, sub.email, sub.id, ip);
+    return result;
   }
 
   async getMySubscription(email: string) {
@@ -43,22 +57,26 @@ export class NewsletterService {
     return { subscribed: sub ? sub.isActive : false };
   }
 
-  async unsubscribeMe(email: string) {
+  async unsubscribeMe(email: string, ip?: string | null) {
     if (!email) throw new BadRequestException('ایمیل یافت نشد.');
-    return this.prisma.newsletterSubscriber.upsert({
+    const result = await this.prisma.newsletterSubscriber.upsert({
       where: { email },
       update: { isActive: false },
       create: { email, isActive: false },
     });
+    await this.logActivity('UNSUBSCRIBE_NEWSLETTER', `Unsubscribed newsletter subscriber ${email}`, null, email, result.id, ip);
+    return result;
   }
 
-  async resubscribeMe(email: string) {
+  async resubscribeMe(email: string, ip?: string | null) {
     if (!email) throw new BadRequestException('ایمیل یافت نشد.');
-    return this.prisma.newsletterSubscriber.upsert({
+    const result = await this.prisma.newsletterSubscriber.upsert({
       where: { email },
       update: { isActive: true },
       create: { email, isActive: true },
     });
+    await this.logActivity('SUBSCRIBE_NEWSLETTER', `Resubscribed newsletter subscriber ${email}`, null, email, result.id, ip);
+    return result;
   }
 
   async getSubscribers(onlyActive = true) {
@@ -114,7 +132,8 @@ export class NewsletterService {
     return onlyActive ? all.filter((s) => s.isActive) : all;
   }
 
-  async deleteSubscriber(id: string) {
+  async deleteSubscriber(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
     if (id.startsWith('user-')) {
       const userId = id.replace('user-', '');
       const user = await this.prisma.user.findUnique({
@@ -123,27 +142,79 @@ export class NewsletterService {
       });
       if (!user?.email) throw new NotFoundException('کاربر یافت نشد.');
 
-      return this.prisma.newsletterSubscriber.upsert({
+      const existing = await this.prisma.newsletterSubscriber.findUnique({ where: { email: user.email } });
+      const trash = await this.prisma.deletedRecord.create({
+        data: {
+          entityType: 'NewsletterSubscriber',
+          entityId: id,
+          payload: JSON.parse(JSON.stringify({ userId, email: user.email, existing })),
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        },
+      });
+      await this.prisma.newsletterSubscriber.upsert({
         where: { email: user.email },
         update: { isActive: false },
         create: { email: user.email, isActive: false },
       });
+      await this.logActivity('DELETE_NEWSLETTER_SUBSCRIBER', `Deactivated newsletter subscriber ${user.email}`, actorId, actorEmail, id, ip);
+      return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
     }
 
     const existing = await this.prisma.newsletterSubscriber.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('مشترک یافت نشد.');
 
-    return this.prisma.newsletterSubscriber.update({
+    const trash = await this.prisma.deletedRecord.create({
+      data: {
+        entityType: 'NewsletterSubscriber',
+        entityId: id,
+        payload: JSON.parse(JSON.stringify(existing)),
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+    await this.prisma.newsletterSubscriber.update({
       where: { id },
       data: { isActive: false },
     });
+    await this.logActivity('DELETE_NEWSLETTER_SUBSCRIBER', `Deactivated newsletter subscriber ${existing.email}`, actorId, actorEmail, id, ip);
+    return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+  }
+
+  async restoreSubscriber(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+    if (!trash || trash.entityType !== 'NewsletterSubscriber' || trash.expiresAt < new Date()) {
+      throw new NotFoundException('Undo window expired');
+    }
+    const payload = trash.payload as any;
+    const restored = await this.prisma.$transaction(async (tx) => {
+      let result;
+      if (payload.userId !== undefined) {
+        const previous = payload.existing;
+        result = previous
+          ? await tx.newsletterSubscriber.upsert({
+              where: { email: payload.email },
+              update: { name: previous.name, isActive: previous.isActive, token: previous.token },
+              create: { ...previous, id: undefined },
+            })
+          : await tx.newsletterSubscriber.delete({ where: { email: payload.email } }).catch(() => null);
+      } else {
+        result = await tx.newsletterSubscriber.upsert({
+          where: { email: payload.email },
+          update: { name: payload.name, isActive: payload.isActive, token: payload.token },
+          create: { ...payload, id: undefined },
+        });
+      }
+      await tx.deletedRecord.delete({ where: { id: trash.id } });
+      return result;
+    });
+    await this.logActivity('RESTORE_NEWSLETTER_SUBSCRIBER', `Restored newsletter subscriber ${payload.email}`, actorId, actorEmail, trash.entityId, ip);
+    return restored;
   }
 
   async getCampaigns() {
     return this.prisma.newsletterCampaign.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
-  async sendCampaign(dto: SendCampaignDto) {
+  async sendCampaign(dto: SendCampaignDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
     const subscribers = await this.getSubscribers(true);
     if (!subscribers.length) throw new BadRequestException('هیچ مشترک فعالی وجود ندارد.');
 
@@ -168,7 +239,7 @@ export class NewsletterService {
       }),
     );
 
-    return this.prisma.newsletterCampaign.create({
+    const campaign = await this.prisma.newsletterCampaign.create({
       data: {
         subject: dto.subject,
         body: dto.body,
@@ -176,5 +247,7 @@ export class NewsletterService {
         recipientCount: successCount,
       },
     });
+    await this.logActivity('SEND_NEWSLETTER_CAMPAIGN', `Sent newsletter campaign '${dto.subject}' to ${successCount} recipients`, actorId, actorEmail, campaign.id, ip);
+    return campaign;
   }
 }

@@ -9,8 +9,9 @@ export declare class ContactService {
     findAll(query: QueryContactDto): import(".prisma/client").Prisma.PrismaPromise<{
         name: string;
         id: string;
-        email: string;
         createdAt: Date;
+        email: string;
+        referenceCode: string;
         subject: string | null;
         message: string;
         read: boolean;
@@ -18,8 +19,9 @@ export declare class ContactService {
     findOne(id: string): Promise<{
         name: string;
         id: string;
-        email: string;
         createdAt: Date;
+        email: string;
+        referenceCode: string;
         subject: string | null;
         message: string;
         read: boolean;
@@ -27,8 +29,9 @@ export declare class ContactService {
     create(dto: CreateContactDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         name: string;
         id: string;
-        email: string;
         createdAt: Date;
+        email: string;
+        referenceCode: string;
         subject: string | null;
         message: string;
         read: boolean;
@@ -36,13 +39,26 @@ export declare class ContactService {
     update(id: string, dto: UpdateContactDto, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         name: string;
         id: string;
-        email: string;
         createdAt: Date;
+        email: string;
+        referenceCode: string;
         subject: string | null;
         message: string;
         read: boolean;
     }>;
     remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        email: string;
+        referenceCode: string;
+        subject: string | null;
+        message: string;
+        read: boolean;
     }>;
 }

@@ -34,20 +34,28 @@ export class ActivityLogService {
   constructor(private readonly prisma: PrismaService) {}
 
   async log(input: LogActivityInput): Promise<void> {
-    try {
-      await this.prisma.activityLog.create({
-        data: {
-          actorId: input.actorId ?? null,
-          actorEmail: input.actorEmail ?? null,
-          action: input.action,
-          targetType: input.targetType ?? null,
-          targetId: input.targetId ?? null,
-          detail: input.detail ?? null,
-          ip: input.ip ?? null,
-        },
-      });
-    } catch (error) {
-      console.error('Failed to write activity log', error);
+    const data = {
+      actorId: input.actorId ?? null,
+      actorEmail: input.actorEmail ?? null,
+      action: input.action,
+      targetType: input.targetType ?? null,
+      targetId: input.targetId ?? null,
+      detail: input.detail ?? null,
+      ip: input.ip ?? null,
+    };
+
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      try {
+        await this.prisma.activityLog.create({ data });
+        return;
+      } catch (error) {
+        if (attempt === 2) {
+          console.error('Failed to write activity log after retry', {
+            action: input.action,
+            error,
+          });
+        }
+      }
     }
   }
 

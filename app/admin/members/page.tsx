@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { getUsers, createUser, updateUserProfile, updateUserRole, updateUserStatus, deleteUser } from "@/lib/api";
+import { getUsers, createUser, updateUserProfile, updateUserRole, updateUserStatus, deleteUser, adminRestoreUser } from "@/lib/api";
 import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { ApiUser, Role, CreateUserPayload, UpdateProfilePayload } from "@/types";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
+import UndoToast from "@/components/admin/UndoToast";
 
 const fullName = (u: ApiUser) => [u.profile?.firstName, u.profile?.lastName].filter(Boolean).join(" ") || u.email || u.phone || "—";
 const ROLES: Role[] = ["OWNER", "ADMIN", "CONTENT_EDITOR", "STUDENT_MEMBER", "FACULTY_MEMBER", "GUEST"];
@@ -33,6 +35,7 @@ export default function MembersPage() {
   const canManageUsers = currentUser?.role === "OWNER" || currentUser?.role === "ADMIN";
   const canManageRoles = currentUser?.role === "OWNER";
   const canManageStatus = canManageUsers;
+  const requestConfirm = useConfirm();
 
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +46,8 @@ export default function MembersPage() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [undoTokens, setUndoTokens] = useState<string[]>([]);
+  const [undoBusy, setUndoBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -96,7 +101,7 @@ export default function MembersPage() {
   };
 
   const save = async () => {
-    if (!canManageUsers) { alert("شما دسترسی مدیریت اعضا را ندارید."); return; }
+    if (!canManageUsers) { setError("شما دسترسی مدیریت اعضا را ندارید."); return; }
     setSaving(true);
     try {
       if (modal.editing) {
@@ -129,20 +134,21 @@ export default function MembersPage() {
       setModal({ open: false, editing: null });
       await load();
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "خطا در ذخیره");
+      setError(e instanceof Error ? e.message : "خطا در ذخیره");
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (id: string) => {
-    if (!canManageRoles) { alert("فقط مالک می‌تواند اعضا را حذف کند."); return; }
-    if (!confirm("آیا مطمئن هستید؟")) return;
+    if (!canManageRoles) { setError("فقط مالک می‌تواند اعضا را حذف کند."); return; }
+    if (!(await requestConfirm({ title: "حذف عضو", description: "این عضو برای همیشه حذف می‌شود. ادامه می‌دهید؟" }))) return;
     try {
-      await deleteUser(id);
+      const deleted = await deleteUser(id);
+      setUndoTokens([deleted.undoToken]);
       setUsers((prev) => prev.filter((u) => u.id !== id));
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "خطا در حذف");
+      setError(e instanceof Error ? e.message : "خطا در حذف");
     }
   };
 
@@ -152,7 +158,7 @@ export default function MembersPage() {
       await updateUserStatus(u.id, !u.isActive);
       setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, isActive: !u.isActive } : x)));
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "خطا در تغییر وضعیت");
+      setError(e instanceof Error ? e.message : "خطا در تغییر وضعیت");
     }
   };
 
@@ -164,12 +170,17 @@ export default function MembersPage() {
   };
 
   const bulkDelete = async () => {
-    if (!canManageRoles) { alert("فقط مالک می‌تواند اعضا را حذف کند."); return; }
+    if (!canManageRoles) { setError("فقط مالک می‌تواند اعضا را حذف کند."); return; }
     const targets = users.filter((u) => selectedIds.has(u.id));
     if (!targets.length) return;
-    if (!confirm(`حذف ${targets.length} عضو انجام شود؟`)) return;
-    await Promise.all(targets.map((u) => deleteUser(u.id)));
-    await load();
+    if (!(await requestConfirm({ title: "حذف اعضا", description: `آیا از حذف ${targets.length} عضو انتخاب‌شده مطمئن هستید؟` }))) return;
+    try {
+      const deleted = await Promise.all(targets.map((u) => deleteUser(u.id)));
+      setUndoTokens(deleted.map((item) => item.undoToken));
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "خطا در حذف اعضا");
+    }
   };
 
   if (authLoading) return <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/50">در حال بارگذاری...</div>;
@@ -227,7 +238,7 @@ export default function MembersPage() {
             <tbody>
               {!loading && visible.map((u) => (
                 <tr key={u.id} className="border-b border-white/5 hover:bg-white/5">
-                  <td className="px-4 py-3"><input type="checkbox" checked={selectedIds.has(u.id)} onChange={() => setSelectedIds((prev) => toggleSelection(prev, u.id))} className="accent-cyan-500" /></td>
+                  <td className="px-4 py-3"><input type="checkbox" aria-label={`انتخاب ${fullName(u)}`} checked={selectedIds.has(u.id)} onChange={() => setSelectedIds((prev) => toggleSelection(prev, u.id))} className="accent-cyan-500" /></td>
                   <td className="px-4 py-3">{fullName(u)}</td>
                   <td className="px-4 py-3 text-gray-300">{u.email || u.phone || "—"}</td>
                   <td className="px-4 py-3 text-gray-300">{u.profile?.studentId || "—"}</td>
@@ -263,6 +274,7 @@ export default function MembersPage() {
     <div className="flex min-w-0 flex-col gap-1">
       <span className="text-xs text-gray-500">ایمیل</span>
       <span className="dir-ltr break-all text-sm text-gray-300">{modal.editing.email ?? "—"}</span>
+      <UndoToast count={undoTokens.length} busy={undoBusy} onDismiss={() => setUndoTokens([])} onUndo={async () => { setUndoBusy(true); try { await Promise.all(undoTokens.map(adminRestoreUser)); setUndoTokens([]); await load(); } finally { setUndoBusy(false); } }} />
     </div>
     <div className="flex min-w-0 flex-col gap-1">
       <span className="text-xs text-gray-500">موبایل</span>

@@ -1,8 +1,10 @@
 import type {
   Announcement,
   Article,
+  ContactSubmissionResult,
   FacultyMember,
   Feedback,
+  FeedbackSubmissionResult,
   GalleryItem,
 } from "@/types";
 import { apiFetch } from "./client";
@@ -81,8 +83,8 @@ export async function submitContact(payload: {
   email: string;
   subject: string;
   message: string;
-}) {
-  return apiFetch("/contact", {
+}): Promise<ContactSubmissionResult> {
+  return apiFetch<ContactSubmissionResult>("/contact", {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -92,8 +94,8 @@ export async function submitFeedback(payload: {
   name: string;
   message: string;
   rating: number;
-}) {
-  return apiFetch("/feedback", {
+}): Promise<FeedbackSubmissionResult> {
+  return apiFetch<FeedbackSubmissionResult>("/feedback", {
     method: "POST",
     body: JSON.stringify(payload),
   });

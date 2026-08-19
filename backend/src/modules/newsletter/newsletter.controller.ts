@@ -14,15 +14,15 @@ export class NewsletterController {
   @Public()
   @SkipCsrf()
   @Post('subscribe')
-  subscribe(@Body() dto: SubscribeDto) {
-    return this.service.subscribe(dto);
+  subscribe(@Body() dto: SubscribeDto, @Req() req: any) {
+    return this.service.subscribe(dto, req.ip);
   }
 
   @Public()
   @SkipCsrf()
   @Post('unsubscribe')
-  unsubscribe(@Body('token') token: string) {
-    return this.service.unsubscribe(token);
+  unsubscribe(@Body('token') token: string, @Req() req: any) {
+    return this.service.unsubscribe(token, req.ip);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -34,13 +34,13 @@ export class NewsletterController {
   @UseGuards(JwtAuthGuard)
   @Post('unsubscribe-me')
   unsubscribeMe(@Req() req: any) {
-    return this.service.unsubscribeMe(req.user?.email);
+    return this.service.unsubscribeMe(req.user?.email, req.ip);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('resubscribe-me')
   resubscribeMe(@Req() req: any) {
-    return this.service.resubscribeMe(req.user?.email);
+    return this.service.resubscribeMe(req.user?.email, req.ip);
   }
 
   @Roles(Role.ADMIN, Role.OWNER)
@@ -51,8 +51,14 @@ export class NewsletterController {
 
   @Roles(Role.ADMIN, Role.OWNER)
   @Delete('subscribers/:id')
-  deleteSubscriber(@Param('id') id: string) {
-    return this.service.deleteSubscriber(id);
+  deleteSubscriber(@Param('id') id: string, @Req() req: any) {
+    return this.service.deleteSubscriber(id, req.user?.id, req.user?.email ?? null, req.ip);
+  }
+
+  @Roles(Role.ADMIN, Role.OWNER)
+  @Post('subscribers/restore/:token')
+  restoreSubscriber(@Param('token') token: string, @Req() req: any) {
+    return this.service.restoreSubscriber(token, req.user?.id, req.user?.email ?? null, req.ip);
   }
 
   @Roles(Role.ADMIN, Role.OWNER)
@@ -63,7 +69,7 @@ export class NewsletterController {
 
   @Roles(Role.ADMIN, Role.OWNER)
   @Post('campaigns/send')
-  sendCampaign(@Body() dto: SendCampaignDto) {
-    return this.service.sendCampaign(dto);
+  sendCampaign(@Body() dto: SendCampaignDto, @Req() req: any) {
+    return this.service.sendCampaign(dto, req.user?.id, req.user?.email ?? null, req.ip);
   }
 }

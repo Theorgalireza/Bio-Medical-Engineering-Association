@@ -82,6 +82,16 @@ export class FacultyService {
 
   async remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
     const existing = await this.findOne(id);
+    await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    const trash = await this.prisma.deletedRecord.create({
+      data: {
+        entityType: 'FacultyMember',
+        entityId: id,
+        payload: JSON.parse(JSON.stringify(existing)),
+        deletedBy: actorId ?? null,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
     await this.prisma.facultyMember.delete({ where: { id } });
 
     await this.logActivity({
@@ -93,6 +103,23 @@ export class FacultyService {
       ip,
     });
 
-    return { message: 'Deleted successfully' };
+    return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+  }
+
+  async restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+    if (!trash || trash.entityType !== 'FacultyMember' || trash.expiresAt < new Date()) {
+      throw new NotFoundException('Undo window expired');
+    }
+    const restored = await this.prisma.$transaction(async (tx) => {
+      const item = await tx.facultyMember.create({ data: trash.payload as any });
+      await tx.deletedRecord.delete({ where: { id: trash.id } });
+      return item;
+    });
+    await this.logActivity({
+      actorId, actorEmail, action: 'RESTORE_FACULTY', targetId: restored.id,
+      detail: `Restored faculty member ${restored.name}`, ip,
+    });
+    return restored;
   }
 }

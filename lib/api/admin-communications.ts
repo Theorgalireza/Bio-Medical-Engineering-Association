@@ -6,6 +6,7 @@ export async function adminGetFeedback(): Promise<AdminFeedback[]> {
   const items = await apiFetch<any[]>("/feedback", { auth: true });
   return items.map((item) => ({
     id: String(item.id),
+    referenceCode: item.referenceCode ? String(item.referenceCode) : undefined,
     name: String(item.name ?? ""),
     message: String(item.message ?? ""),
     rating: Number(item.rating ?? 0),
@@ -23,16 +24,21 @@ export async function adminUpdateFeedback(id: string, body: object) {
 }
 
 export async function adminDeleteFeedback(id: string) {
-  return apiFetch<void>(`/feedback/${id}`, {
+  return apiFetch<{ undoToken: string; undoExpiresAt: string }>(`/feedback/${id}`, {
     method: "DELETE",
     auth: true,
   });
+}
+
+export async function adminRestoreFeedback(token: string) {
+  return apiFetch(`/feedback/restore/${token}`, { method: "POST", auth: true });
 }
 
 export async function adminGetContact(): Promise<AdminContact[]> {
   const items = await apiFetch<any[]>("/contact", { auth: true });
   return items.map((item) => ({
     id: String(item.id),
+    referenceCode: item.referenceCode ? String(item.referenceCode) : undefined,
     name: String(item.name ?? ""),
     email: String(item.email ?? ""),
     subject: String(item.subject ?? ""),
@@ -56,8 +62,12 @@ export const adminMarkContactRead = (id: string) =>
   adminUpdateContact(id, { read: true });
 
 export async function adminDeleteContact(id: string) {
-  return apiFetch<void>(`/contact/${id}`, {
+  return apiFetch<{ undoToken: string; undoExpiresAt: string }>(`/contact/${id}`, {
     method: "DELETE",
     auth: true,
   });
+}
+
+export async function adminRestoreContact(token: string) {
+  return apiFetch(`/contact/restore/${token}`, { method: "POST", auth: true });
 }

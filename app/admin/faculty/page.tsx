@@ -1,19 +1,24 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
-import { adminCreateFaculty, adminDeleteFaculty, adminGetFaculty, adminUpdateFaculty } from "@/lib/api";
+import { adminCreateFaculty, adminDeleteFaculty, adminGetFaculty, adminUpdateFaculty, adminRestoreFaculty } from "@/lib/api";
 import type { AdminFacultyMember } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
+import UndoToast from "@/components/admin/UndoToast";
 
 const empty: Omit<AdminFacultyMember, "id"> = { name: "", role: "", field: "", monogram: "", color: "#00d4ff" };
 
 export default function FacultyPage() {
   const { user, loading: authLoading } = useAuth();
+  const requestConfirm = useConfirm();
   const canManage = user?.role === "OWNER" || user?.role === "ADMIN";
   const [items, setItems] = useState<AdminFacultyMember[]>([]);
   const [modal, setModal] = useState<{ open: boolean; editing: AdminFacultyMember | null }>({ open: false, editing: null });
   const [form, setForm] = useState(empty);
   const [loading, setLoading] = useState(true);
+  const [undoTokens, setUndoTokens] = useState<string[]>([]);
+  const [undoBusy, setUndoBusy] = useState(false);
 
   const load = async () => {
     try {
@@ -91,7 +96,7 @@ export default function FacultyPage() {
             </div>
             <div className="flex gap-2 shrink-0">
               <button type="button" title="ویرایش عضو" aria-label="ویرایش عضو" onClick={() => openEdit(item)} className="text-gray-400 hover:text-[#22c55e] transition-colors"><Pencil size={15} /></button>
-              <button type="button" title="حذف عضو" aria-label="حذف عضو" onClick={async () => { if (!confirm("این عضو حذف شود؟")) return; await adminDeleteFaculty(item.id); await load(); }} className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
+              <button type="button" title="حذف عضو" aria-label="حذف عضو" onClick={async () => { if (!(await requestConfirm({ title: "حذف عضو هیئت علمی", description: "این عضو برای همیشه حذف می‌شود. ادامه می‌دهید؟" }))) return; const deleted = await adminDeleteFaculty(item.id); setUndoTokens([deleted.undoToken]); await load(); }} className="text-gray-400 hover:text-red-400 transition-colors"><Trash2 size={15} /></button>
             </div>
           </div>
         ))}
@@ -132,6 +137,7 @@ export default function FacultyPage() {
           </div>
         </div>
       )}
+      <UndoToast count={undoTokens.length} busy={undoBusy} onDismiss={() => setUndoTokens([])} onUndo={async () => { setUndoBusy(true); try { await Promise.all(undoTokens.map(adminRestoreFaculty)); setUndoTokens([]); await load(); } finally { setUndoBusy(false); } }} />
     </div>
   );
 }

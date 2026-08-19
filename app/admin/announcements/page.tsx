@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import RichEditor from "@/components/admin/RichEditor";
 import { Plus, Pencil, Trash2, X, Check, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { adminCreateAnnouncement, adminDeleteAnnouncement, adminGetAnnouncements, adminUpdateAnnouncement } from "@/lib/api";
+import { adminCreateAnnouncement, adminDeleteAnnouncement, adminGetAnnouncements, adminUpdateAnnouncement, adminRestoreAnnouncement } from "@/lib/api";
 import { filterBySearch, paginate, selectAllVisible, toggleSelection } from "@/lib/admin/table";
 import type { AdminAnnouncement } from "@/types";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
+import UndoToast from "@/components/admin/UndoToast";
 
 const empty: Omit<AdminAnnouncement, "id"> = {
   title: "",
@@ -23,6 +25,7 @@ const toApiType = (category?: string) => {
 };
 
 export default function AnnouncementsPage() {
+  const requestConfirm = useConfirm();
   const [items, setItems] = useState<AdminAnnouncement[]>([]);
   const [modal, setModal] = useState<{ open: boolean; editing: AdminAnnouncement | null }>({ open: false, editing: null });
   const [form, setForm] = useState(empty);
@@ -30,6 +33,9 @@ export default function AnnouncementsPage() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
+  const [undoTokens, setUndoTokens] = useState<string[]>([]);
+  const [undoBusy, setUndoBusy] = useState(false);
 
   const load = async () => {
     try {
@@ -78,20 +84,22 @@ export default function AnnouncementsPage() {
     };
 
     try {
+      setError(null);
       if (modal.editing) await adminUpdateAnnouncement(modal.editing.id, payload);
       else await adminCreateAnnouncement(payload);
       close();
       await load();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "ذخیره اطلاعیه ناموفق بود.");
+      setError(error instanceof Error ? error.message : "ذخیره اطلاعیه ناموفق بود.");
     }
   };
 
   const bulkDelete = async () => {
     const targets = items.filter((item) => selectedIds.has(item.id));
     if (!targets.length) return;
-    if (!confirm(`حذف ${targets.length} اطلاعیه انجام شود؟`)) return;
-    await Promise.all(targets.map((item) => adminDeleteAnnouncement(item.id)));
+    if (!(await requestConfirm({ title: "حذف اطلاعیه‌ها", description: `آیا از حذف ${targets.length} اطلاعیه انتخاب‌شده مطمئن هستید؟` }))) return;
+    const deleted = await Promise.all(targets.map((item) => adminDeleteAnnouncement(item.id)));
+    setUndoTokens(deleted.map((item) => item.undoToken));
     await load();
   };
 
@@ -104,6 +112,7 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="space-y-5" dir="rtl">
+      {error && <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-xl font-bold">اطلاعیه‌ها</h2>
@@ -156,7 +165,7 @@ export default function AnnouncementsPage() {
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
                     <button type="button" title="ویرایش اطلاعیه" aria-label="ویرایش اطلاعیه" onClick={() => openEdit(item)} className="text-gray-400 transition-colors hover:text-[#a855f7]"><Pencil size={15} /></button>
-                    <button type="button" title="حذف اطلاعیه" aria-label="حذف اطلاعیه" onClick={async () => { if (!confirm("این اطلاعیه حذف شود؟")) return; await adminDeleteAnnouncement(item.id); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
+                    <button type="button" title="حذف اطلاعیه" aria-label="حذف اطلاعیه" onClick={async () => { if (!(await requestConfirm({ title: "حذف اطلاعیه", description: "این اطلاعیه برای همیشه حذف می‌شود. ادامه می‌دهید؟" }))) return; const deleted = await adminDeleteAnnouncement(item.id); setUndoTokens([deleted.undoToken]); await load(); }} className="text-gray-400 transition-colors hover:text-red-400"><Trash2 size={15} /></button>
                   </div>
                 </td>
               </tr>
@@ -195,6 +204,21 @@ export default function AnnouncementsPage() {
           </div>
         </div>
       )}
+      <UndoToast
+        count={undoTokens.length}
+        busy={undoBusy}
+        onDismiss={() => setUndoTokens([])}
+        onUndo={async () => {
+          setUndoBusy(true);
+          try {
+            await Promise.all(undoTokens.map(adminRestoreAnnouncement));
+            setUndoTokens([]);
+            await load();
+          } finally {
+            setUndoBusy(false);
+          }
+        }}
+      />
     </div>
   );
 }

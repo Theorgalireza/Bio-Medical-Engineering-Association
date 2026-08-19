@@ -26,6 +26,7 @@ const public_decorator_1 = require("../../common/decorators/public.decorator");
 const google_auth_guard_1 = require("../../common/guards/google-auth.guard");
 const github_auth_guard_1 = require("../../common/guards/github-auth.guard");
 const linkedin_auth_guard_1 = require("../../common/guards/linkedin-auth.guard");
+const activity_log_service_1 = require("../activity-log/activity-log.service");
 class ForgotPasswordDto {
 }
 __decorate([
@@ -33,9 +34,10 @@ __decorate([
     __metadata("design:type", String)
 ], ForgotPasswordDto.prototype, "identifier", void 0);
 let AuthController = class AuthController {
-    constructor(auth, config) {
+    constructor(auth, config, activityLog) {
         this.auth = auth;
         this.config = config;
+        this.activityLog = activityLog;
     }
     setAuthCookie(reply, accessToken) {
         const isProd = this.config.get('NODE_ENV') === 'production';
@@ -52,26 +54,59 @@ let AuthController = class AuthController {
         const frontendUrl = this.config.get('app.frontendUrl') || 'http://localhost:3000';
         return reply.redirect(`${frontendUrl}/login?provider=${provider}`);
     }
+    logAuthFailure(action, detail, req, actorEmail) {
+        return this.activityLog.log({
+            actorEmail: actorEmail ?? null,
+            action,
+            targetType: 'User',
+            detail,
+            ip: req.ip,
+        });
+    }
     async register(dto, req, reply) {
         const result = await this.auth.register(dto, null, req.ip);
         this.setAuthCookie(reply, result.access_token);
         return reply.send(result);
     }
     async login(dto, req, reply) {
-        const result = await this.auth.login(dto, null, req.ip);
-        this.setAuthCookie(reply, result.access_token);
-        return reply.send(result);
+        try {
+            const result = await this.auth.login(dto, null, req.ip);
+            this.setAuthCookie(reply, result.access_token);
+            return reply.send(result);
+        }
+        catch (error) {
+            await this.logAuthFailure('LOGIN_FAILED', `Failed login attempt using ${dto.email ? 'email' : dto.phone ? 'phone' : 'unknown identifier'}`, req, dto.email);
+            throw error;
+        }
     }
     sendOtp(dto, req) {
-        return this.auth.sendOtp(dto.phone, null, req.ip);
+        return this.auth.sendOtp(dto.phone, null, req.ip).catch(async (error) => {
+            await this.logAuthFailure('SEND_OTP_FAILED', 'Failed to send OTP', req, null);
+            throw error;
+        });
     }
     forgot(dto, req) {
-        return this.auth.forgotPassword(dto.identifier, null, req.ip);
+        return this.auth.forgotPassword(dto.identifier, null, req.ip).catch(async (error) => {
+            await this.logAuthFailure('FORGOT_PASSWORD_FAILED', 'Failed password reset request', req, dto.identifier);
+            throw error;
+        });
     }
     reset(dto, req) {
-        return this.auth.resetPassword(dto.token, dto.newPassword, null, req.ip);
+        return this.auth.resetPassword(dto.token, dto.newPassword, null, req.ip).catch(async (error) => {
+            await this.logAuthFailure('RESET_PASSWORD_FAILED', 'Failed password reset', req);
+            throw error;
+        });
     }
-    logout(reply) {
+    async logout(req, reply) {
+        await this.activityLog.log({
+            actorId: req.user?.id ?? null,
+            actorEmail: req.user?.email ?? null,
+            action: 'LOGOUT',
+            targetType: 'User',
+            targetId: req.user?.id ?? null,
+            detail: req.user?.id ? 'User logged out' : 'Anonymous logout request',
+            ip: req.ip,
+        });
         const isProd = this.config.get('NODE_ENV') === 'production';
         reply.clearCookie('access_token', { path: '/', sameSite: 'lax', secure: isProd });
         return reply.send({ success: true });
@@ -157,10 +192,11 @@ __decorate([
 __decorate([
     (0, public_decorator_1.Public)(),
     (0, common_1.Post)('logout'),
-    __param(0, (0, common_1.Res)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 __decorate([
     (0, public_decorator_1.Public)(),
@@ -219,6 +255,7 @@ __decorate([
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        activity_log_service_1.ActivityLogService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

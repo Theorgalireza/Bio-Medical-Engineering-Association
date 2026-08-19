@@ -30,6 +30,9 @@ let ContactController = class ContactController {
     create(req, dto) { return this.service.create(dto, null, dto.email, req.ip); }
     update(req, id, dto) { return this.service.update(id, dto, req.user.id, req.user?.email ?? null, req.ip); }
     remove(req, id) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
+    restore(req, token) {
+        return this.service.restore(token, req.user.id, req.user?.email ?? null, req.ip);
+    }
 };
 exports.ContactController = ContactController;
 __decorate([
@@ -77,6 +80,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], ContactController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('restore/:token'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'OWNER'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('token')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], ContactController.prototype, "restore", null);
 exports.ContactController = ContactController = __decorate([
     (0, common_1.Controller)('contact'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

@@ -3,40 +3,40 @@ import { SendCampaignDto, SubscribeDto } from './dto/newsletter.dto';
 export declare class NewsletterController {
     private readonly service;
     constructor(service: NewsletterService);
-    subscribe(dto: SubscribeDto): Promise<{
-        id: string;
-        email: string;
-        token: string;
+    subscribe(dto: SubscribeDto, req: any): Promise<{
         name: string | null;
-        isActive: boolean;
+        id: string;
         createdAt: Date;
+        email: string;
+        isActive: boolean;
+        token: string;
     }>;
-    unsubscribe(token: string): Promise<{
-        id: string;
-        email: string;
-        token: string;
+    unsubscribe(token: string, req: any): Promise<{
         name: string | null;
-        isActive: boolean;
+        id: string;
         createdAt: Date;
+        email: string;
+        isActive: boolean;
+        token: string;
     }>;
     getMySubscription(req: any): Promise<{
         subscribed: boolean;
     }>;
     unsubscribeMe(req: any): Promise<{
-        id: string;
-        email: string;
-        token: string;
         name: string | null;
-        isActive: boolean;
+        id: string;
         createdAt: Date;
+        email: string;
+        isActive: boolean;
+        token: string;
     }>;
     resubscribeMe(req: any): Promise<{
-        id: string;
-        email: string;
-        token: string;
         name: string | null;
-        isActive: boolean;
+        id: string;
         createdAt: Date;
+        email: string;
+        isActive: boolean;
+        token: string;
     }>;
     getSubscribers(all?: string): Promise<({
         id: string;
@@ -55,27 +55,25 @@ export declare class NewsletterController {
         token: string;
         source: "guest";
     })[]>;
-    deleteSubscriber(id: string): Promise<{
-        id: string;
-        email: string;
-        token: string;
-        name: string | null;
-        isActive: boolean;
-        createdAt: Date;
+    deleteSubscriber(id: string, req: any): Promise<{
+        message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
     }>;
+    restoreSubscriber(token: string, req: any): Promise<any>;
     getCampaigns(): Promise<{
+        body: string;
         id: string;
         createdAt: Date;
         subject: string;
-        body: string;
         sentAt: Date | null;
         recipientCount: number;
     }[]>;
-    sendCampaign(dto: SendCampaignDto): Promise<{
+    sendCampaign(dto: SendCampaignDto, req: any): Promise<{
+        body: string;
         id: string;
         createdAt: Date;
         subject: string;
-        body: string;
         sentAt: Date | null;
         recipientCount: number;
     }>;

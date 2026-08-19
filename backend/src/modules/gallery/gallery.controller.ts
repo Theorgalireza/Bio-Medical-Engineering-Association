@@ -1,5 +1,6 @@
 // gallery.controller.ts
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, ParseUUIDPipe, Request } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { GalleryService } from './gallery.service';
 import { CreateGalleryDto, UpdateGalleryDto, QueryGalleryDto } from './dto/gallery.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -26,4 +27,7 @@ export class GalleryController {
 
   @Delete(':id') @Roles('ADMIN', 'OWNER','CONTENT_EDITOR')
   remove(@Request() req: any, @Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id, req.user.id, req.user?.email ?? null, req.ip); }
+
+  @Post('restore/:token') @Roles(Role.ADMIN, Role.OWNER, Role.CONTENT_EDITOR)
+  restore(@Request() req: any, @Param('token') token: string) { return this.service.restore(token, req.user.id, req.user?.email ?? null, req.ip); }
 }

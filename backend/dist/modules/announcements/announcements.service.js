@@ -51,8 +51,10 @@ let AnnouncementsService = class AnnouncementsService {
             include: { author: { select: { id: true, profile: { select: { firstName: true, lastName: true } } } } },
         });
     }
-    async findBySlug(slug) {
-        const item = await this.prisma.announcement.findUnique({ where: { slug } });
+    async findBySlug(slug, publishedOnly = false) {
+        const item = await this.prisma.announcement.findUnique({
+            where: publishedOnly ? { slug, status: client_1.ContentStatus.PUBLISHED } : { slug },
+        });
         if (!item)
             throw new common_1.NotFoundException('Announcement not found');
         return item;
@@ -118,6 +120,16 @@ let AnnouncementsService = class AnnouncementsService {
         const item = await this.prisma.announcement.findUnique({ where: { id } });
         if (!item)
             throw new common_1.NotFoundException('Announcement not found');
+        await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+        const trash = await this.prisma.deletedRecord.create({
+            data: {
+                entityType: 'Announcement',
+                entityId: id,
+                payload: JSON.parse(JSON.stringify(item)),
+                deletedBy: actorId ?? null,
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+            },
+        });
         await this.prisma.announcement.delete({ where: { id } });
         await this.logActivity({
             actorId,
@@ -127,7 +139,23 @@ let AnnouncementsService = class AnnouncementsService {
             detail: `Deleted announcement '${item.title}' (${item.slug})`,
             ip,
         });
-        return { message: 'Deleted successfully' };
+        return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+    }
+    async restore(token, actorId, actorEmail, ip) {
+        const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+        if (!trash || trash.entityType !== 'Announcement' || trash.expiresAt < new Date()) {
+            throw new common_1.NotFoundException('Undo window expired');
+        }
+        const restored = await this.prisma.$transaction(async (tx) => {
+            const item = await tx.announcement.create({ data: trash.payload });
+            await tx.deletedRecord.delete({ where: { id: trash.id } });
+            return item;
+        });
+        await this.logActivity({
+            actorId, actorEmail, action: 'RESTORE_ANNOUNCEMENT', targetId: restored.id,
+            detail: `Restored announcement '${restored.title}'`, ip,
+        });
+        return restored;
     }
 };
 exports.AnnouncementsService = AnnouncementsService;

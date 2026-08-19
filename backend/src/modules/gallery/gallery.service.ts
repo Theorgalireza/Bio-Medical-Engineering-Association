@@ -88,6 +88,16 @@ export class GalleryService {
 
   async remove(id: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
     const existing = await this.findOne(id);
+    await this.prisma.deletedRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    const trash = await this.prisma.deletedRecord.create({
+      data: {
+        entityType: 'GalleryItem',
+        entityId: id,
+        payload: JSON.parse(JSON.stringify(existing)),
+        deletedBy: actorId ?? null,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
     await this.prisma.galleryItem.delete({ where: { id } });
 
     await this.logActivity({
@@ -99,6 +109,25 @@ export class GalleryService {
       ip,
     });
 
-    return { message: 'Deleted successfully' };
+    return { message: 'Deleted successfully', undoToken: trash.token, undoExpiresAt: trash.expiresAt };
+  }
+
+  async restore(token: string, actorId?: string | null, actorEmail?: string | null, ip?: string | null) {
+    const trash = await this.prisma.deletedRecord.findUnique({ where: { token } });
+    if (!trash || trash.entityType !== 'GalleryItem' || trash.expiresAt < new Date()) {
+      throw new NotFoundException('Undo window expired');
+    }
+    const payload = trash.payload as any;
+    const { uploadedBy, ...data } = payload;
+    const restored = await this.prisma.$transaction(async (tx) => {
+      const item = await tx.galleryItem.create({ data });
+      await tx.deletedRecord.delete({ where: { id: trash.id } });
+      return item;
+    });
+    await this.logActivity({
+      actorId, actorEmail, action: 'RESTORE_GALLERY_ITEM', targetId: restored.id,
+      detail: `Restored gallery item '${restored.title}'`, ip,
+    });
+    return restored;
   }
 }

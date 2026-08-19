@@ -57,5 +57,16 @@ export declare class GalleryController {
     }>;
     remove(req: any, id: string): Promise<{
         message: string;
+        undoToken: string;
+        undoExpiresAt: Date;
+    }>;
+    restore(req: any, token: string): Promise<{
+        id: string;
+        createdAt: Date;
+        title: string;
+        description: string | null;
+        imageUrl: string;
+        category: string | null;
+        uploadedById: string | null;
     }>;
 }

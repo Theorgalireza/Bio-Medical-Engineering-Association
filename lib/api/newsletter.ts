@@ -11,11 +11,12 @@ export async function adminGetSubscribers(
 }
 
 export async function adminDeleteSubscriber(id: string) {
-  return apiFetch(`/newsletter/subscribers/${id}`, {
+  return apiFetch<{ undoToken: string; undoExpiresAt: string }>(`/newsletter/subscribers/${id}`, {
     method: "DELETE",
     auth: true,
   });
 }
+export const adminRestoreSubscriber = (token: string) => apiFetch(`/newsletter/subscribers/restore/${token}`, { method: "POST", auth: true });
 
 export async function adminGetCampaigns(): Promise<NewsletterCampaign[]> {
   return apiFetch<NewsletterCampaign[]>("/newsletter/campaigns", {
